@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from core import get_data, ensure_structure
 from storage import save_data
@@ -30,9 +31,12 @@ with st.form("add"):
         }
 
         if img:
+            os.makedirs("images", exist_ok=True)  # ← これを追加
+
             path = f"images/{img.name}"
             with open(path, "wb") as f:
                 f.write(img.read())
+
             data["items"][key]["img"] = path
 
         save_data(data)
