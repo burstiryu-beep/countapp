@@ -23,10 +23,13 @@ count_date = st.sidebar.date_input(
 )
 
 items = aggregate(data, current_tab)
+is_all_tab = current_tab == "all"
 
 st.subheader("弱点一覧")
 
-if count_date < date.today():
+if is_all_tab:
+    st.info("「全体」タブでは各月の合計を確認できます。カウントするにはタブを選択してください。")
+elif count_date < date.today():
     st.info(f"📅 {count_date.strftime('%Y-%m-%d')} の日付でカウントします")
 
 cols = st.columns(3)
@@ -34,15 +37,17 @@ cols = st.columns(3)
 for i, (name, val) in enumerate(items.items()):
     with cols[i % 3]:
         st.markdown(f"### {name}")
-        item = data["items"].get(make_key(name, current_tab), {})
-        img_path = resolve_img_path(item.get("img", ""))
-        if img_path:
-            st.image(str(img_path), use_container_width=True)
+        if not is_all_tab:
+            item = data["items"].get(make_key(name, current_tab), {})
+            img_path = resolve_img_path(item.get("img", ""))
+            if img_path:
+                st.image(str(img_path), use_container_width=True)
         st.metric("敗北数", val)
 
-        if st.button("カウント", key=f"btn_{name}"):
-            count_item(data, name, current_tab, count_date)
-            st.rerun()
+        if not is_all_tab:
+            if st.button("カウント", key=f"btn_{name}"):
+                count_item(data, name, current_tab, count_date)
+                st.rerun()
 
 st.divider()
 st.subheader("履歴")
