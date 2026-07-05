@@ -36,6 +36,25 @@ def save_data(data):
     save_cloud_data(data)
 
 
+def resolve_img_path(img_path):
+    if not img_path:
+        return None
+
+    p = Path(img_path)
+    if p.exists():
+        return p
+
+    alt = Path.cwd() / img_path
+    if alt.exists():
+        return alt
+
+    legacy = IMG_DIR / Path(img_path).name
+    if legacy.exists():
+        return legacy
+
+    return None
+
+
 def default_data():
     return {
         "tabs": [{"id": "all", "name": "全体"}],

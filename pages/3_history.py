@@ -1,5 +1,5 @@
 import streamlit as st
-from core import get_data, ensure_structure
+from core import get_data, ensure_structure, undo_count_from_history
 from storage import save_data
 
 data = ensure_structure(get_data())
@@ -31,6 +31,8 @@ if data["history"]:
     )
 
     if st.button("削除"):
+        entry = data["history"][sel]
+        undo_count_from_history(data, entry)
         data["history"].pop(sel)
         save_data(data)
         st.rerun()

@@ -1,7 +1,6 @@
-import os
 import streamlit as st
 from core import get_data, ensure_structure
-from storage import save_data
+from storage import save_data, IMG_DIR
 from utils import make_key
 
 data = ensure_structure(get_data())
@@ -31,13 +30,9 @@ with st.form("add"):
         }
 
         if img:
-            os.makedirs("images", exist_ok=True)  # ← これを追加
-
-            path = f"images/{img.name}"
-            with open(path, "wb") as f:
-                f.write(img.read())
-
-            data["items"][key]["img"] = path
+            path = IMG_DIR / img.name
+            path.write_bytes(img.read())
+            data["items"][key]["img"] = str(path)
 
         save_data(data)
         st.success("追加完了")

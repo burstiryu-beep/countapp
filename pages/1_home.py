@@ -1,5 +1,9 @@
+from pathlib import Path
+
 import streamlit as st
 from core import get_data, ensure_structure, aggregate, count_item
+from storage import resolve_img_path
+from utils import make_key
 
 data = ensure_structure(get_data())
 
@@ -21,6 +25,10 @@ cols = st.columns(3)
 for i, (name, val) in enumerate(items.items()):
     with cols[i % 3]:
         st.markdown(f"### {name}")
+        item = data["items"].get(make_key(name, current_tab), {})
+        img_path = resolve_img_path(item.get("img", ""))
+        if img_path:
+            st.image(str(img_path), use_container_width=True)
         st.metric("敗北数", val)
 
         if st.button("カウント", key=f"btn_{name}"):

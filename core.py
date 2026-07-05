@@ -49,12 +49,26 @@ def count_item(data, name, tab):
     save_data(data)
 
 
+def undo_count_from_history(data, entry):
+    key = make_key(entry["name"], entry["tab"])
+    if key not in data["items"]:
+        return
+
+    m = entry["time"][:7]
+    counts = data["items"][key]["counts"]
+    if m in counts and counts[m] > 0:
+        counts[m] -= 1
+        if counts[m] == 0:
+            del counts[m]
+
+
 def compute_points(data):
     points = {}
 
     for k, v in data["items"].items():
         name = v["name"]
-        points[name] = v.get("points", 0)
+        total = sum(v.get("counts", {}).values())
+        points[name] = points.get(name, 0) + total
 
     sorted_items = sorted(points.items(), key=lambda x: -x[1])
     n = len(sorted_items)
