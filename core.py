@@ -12,6 +12,11 @@ def ensure_structure(data):
     data.setdefault("items", {})
     data.setdefault("history", [])
     data.setdefault("tabs", [{"id": "all", "name": "全体"}])
+    for v in data["items"].values():
+        if not isinstance(v.get("counts"), dict):
+            v["counts"] = {}
+        if not isinstance(v.get("img"), str):
+            v["img"] = ""
     return data
 
 
@@ -28,10 +33,12 @@ def aggregate(data, tab_id):
 
 
 def count_item(data, name, tab, count_date=None):
-    if count_date is None:
+    if count_date is None or not isinstance(count_date, date):
         count_date = date.today()
     elif isinstance(count_date, str):
         count_date = datetime.strptime(count_date, "%Y-%m-%d").date()
+    if isinstance(count_date, datetime):
+        count_date = count_date.date()
 
     key = make_key(name, tab)
 

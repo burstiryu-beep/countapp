@@ -15,12 +15,13 @@ current_tab = st.sidebar.selectbox(
     format_func=lambda x: tab_names[x]
 )
 
-count_date = st.sidebar.date_input(
+_raw_date = st.sidebar.date_input(
     "カウント日付",
     value=date.today(),
     max_value=date.today(),
     help="前日分などを後から記録するときに変更してください"
 )
+count_date = _raw_date if isinstance(_raw_date, date) else date.today()
 
 items = aggregate(data, current_tab)
 is_all_tab = current_tab == "all"
