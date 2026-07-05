@@ -1,3 +1,5 @@
+from datetime import date
+
 import streamlit as st
 from core import get_data, ensure_structure, aggregate, count_item
 from utils import make_key, resolve_img_path
@@ -13,9 +15,19 @@ current_tab = st.sidebar.selectbox(
     format_func=lambda x: tab_names[x]
 )
 
+count_date = st.sidebar.date_input(
+    "カウント日付",
+    value=date.today(),
+    max_value=date.today(),
+    help="前日分などを後から記録するときに変更してください"
+)
+
 items = aggregate(data, current_tab)
 
 st.subheader("弱点一覧")
+
+if count_date < date.today():
+    st.info(f"📅 {count_date.strftime('%Y-%m-%d')} の日付でカウントします")
 
 cols = st.columns(3)
 
@@ -29,7 +41,7 @@ for i, (name, val) in enumerate(items.items()):
         st.metric("敗北数", val)
 
         if st.button("カウント", key=f"btn_{name}"):
-            count_item(data, name, current_tab)
+            count_item(data, name, current_tab, count_date)
             st.rerun()
 
 st.divider()
