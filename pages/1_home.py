@@ -37,11 +37,20 @@ cols = st.columns(3)
 for i, (name, val) in enumerate(items.items()):
     with cols[i % 3]:
         st.markdown(f"### {name}")
-        if not is_all_tab:
+
+        if is_all_tab:
+            # 全体タブ：同名アイテムの最初の画像を探す
+            item = next(
+                (v for v in data["items"].values() if v["name"] == name),
+                {}
+            )
+        else:
             item = data["items"].get(make_key(name, current_tab), {})
-            img_path = resolve_img_path(item.get("img", ""))
-            if img_path:
-                st.image(str(img_path), use_container_width=True)
+
+        img_path = resolve_img_path(item.get("img", ""))
+        if img_path:
+            st.image(str(img_path), use_container_width=True)
+
         st.metric("敗北数", val)
 
         if not is_all_tab:
