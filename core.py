@@ -49,19 +49,6 @@ def count_item(data, name, tab):
     save_data(data)
 
 
-def undo_count_from_history(data, entry):
-    key = make_key(entry["name"], entry["tab"])
-    if key not in data["items"]:
-        return
-
-    m = entry["time"][:7]
-    counts = data["items"][key]["counts"]
-    if m in counts and counts[m] > 0:
-        counts[m] -= 1
-        if counts[m] == 0:
-            del counts[m]
-
-
 def compute_points(data):
     points = {}
 

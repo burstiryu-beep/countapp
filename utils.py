@@ -1,4 +1,5 @@
 from datetime import datetime, date, timedelta
+from pathlib import Path
 
 def now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -11,6 +12,42 @@ def today():
 
 def make_key(name, tab):
     return f"{name}@@{tab}"
+
+
+def resolve_img_path(img_path):
+    if not img_path:
+        return None
+
+    p = Path(img_path)
+    if p.is_file():
+        return p
+
+    name = p.name
+    for base in (
+        Path.cwd(),
+        Path.cwd() / "images",
+        Path.home() / "countapp_dashboard" / "images",
+        Path(__file__).resolve().parent / "images",
+        Path(__file__).resolve().parent / ".data" / "images",
+    ):
+        candidate = base / name if base.name == "images" else base / img_path
+        if candidate.is_file():
+            return candidate
+
+    return None
+
+
+def undo_count_from_history(data, entry):
+    key = make_key(entry["name"], entry["tab"])
+    if key not in data["items"]:
+        return
+
+    m = entry["time"][:7]
+    counts = data["items"][key]["counts"]
+    if m in counts and counts[m] > 0:
+        counts[m] -= 1
+        if counts[m] == 0:
+            del counts[m]
 
 
 def calc_continuous_days(history):

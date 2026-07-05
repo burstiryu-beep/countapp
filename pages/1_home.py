@@ -1,9 +1,6 @@
-from pathlib import Path
-
 import streamlit as st
 from core import get_data, ensure_structure, aggregate, count_item
-from storage import resolve_img_path
-from utils import make_key
+from utils import make_key, resolve_img_path
 
 data = ensure_structure(get_data())
 

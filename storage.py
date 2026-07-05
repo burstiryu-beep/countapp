@@ -1,13 +1,37 @@
 import json
 from pathlib import Path
-from firebase_manager import load_cloud_data, save_cloud_data
 
-BASE = Path.home() / "countapp_dashboard"
-BASE.mkdir(parents=True, exist_ok=True)
+APP_DIR = Path(__file__).resolve().parent
 
+try:
+    from firebase_manager import load_cloud_data, save_cloud_data
+except Exception:
+    def load_cloud_data():
+        return None
+
+    def save_cloud_data(data):
+        pass
+
+
+def _init_dirs():
+    for base in (Path.home() / "countapp_dashboard", APP_DIR / ".data"):
+        try:
+            base.mkdir(parents=True, exist_ok=True)
+            img_dir = base / "images"
+            img_dir.mkdir(exist_ok=True)
+            return base, img_dir
+        except OSError:
+            continue
+
+    base = APP_DIR / ".data"
+    base.mkdir(parents=True, exist_ok=True)
+    img_dir = base / "images"
+    img_dir.mkdir(exist_ok=True)
+    return base, img_dir
+
+
+BASE, IMG_DIR = _init_dirs()
 DATA_FILE = BASE / "data.json"
-IMG_DIR = BASE / "images"
-IMG_DIR.mkdir(exist_ok=True)
 
 
 def load_data():
@@ -34,25 +58,6 @@ def save_data(data):
         encoding="utf-8"
     )
     save_cloud_data(data)
-
-
-def resolve_img_path(img_path):
-    if not img_path:
-        return None
-
-    p = Path(img_path)
-    if p.exists():
-        return p
-
-    alt = Path.cwd() / img_path
-    if alt.exists():
-        return alt
-
-    legacy = IMG_DIR / Path(img_path).name
-    if legacy.exists():
-        return legacy
-
-    return None
 
 
 def default_data():

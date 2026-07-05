@@ -1,6 +1,7 @@
 import streamlit as st
-from core import get_data, ensure_structure, undo_count_from_history
+from core import get_data, ensure_structure
 from storage import save_data
+from utils import undo_count_from_history
 
 data = ensure_structure(get_data())
 
