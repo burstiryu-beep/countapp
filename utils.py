@@ -1,17 +1,37 @@
 from datetime import datetime, date, timedelta
 from pathlib import Path
 
+
 def now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
 
 def month():
     return datetime.now().strftime("%Y-%m")
 
+
 def today():
     return datetime.now().strftime("%Y-%m-%d")
 
+
 def make_key(name, tab):
     return f"{name}@@{tab}"
+
+
+def valid_tab_ids(data):
+    return {t["id"] for t in data["tabs"]}
+
+
+def active_items(data):
+    tabs = valid_tab_ids(data)
+    return {
+        k: v for k, v in data["items"].items()
+        if v.get("tab") in tabs
+    }
+
+
+def registered_item_count(data):
+    return len(active_items(data))
 
 
 def resolve_img_path(img_path):
@@ -48,6 +68,121 @@ def undo_count_from_history(data, entry):
         counts[m] -= 1
         if counts[m] == 0:
             del counts[m]
+
+
+def apply_count_for_date(data, entry, count_date):
+    key = make_key(entry["name"], entry["tab"])
+    if key not in data["items"]:
+        return
+
+    m = count_date.strftime("%Y-%m")
+    counts = data["items"][key]["counts"]
+    counts[m] = counts.get(m, 0) + 1
+
+
+def change_history_date(data, index, new_date):
+    if index < 0 or index >= len(data["history"]):
+        return False
+
+    if isinstance(new_date, str):
+        new_date = datetime.strptime(new_date, "%Y-%m-%d").date()
+
+    entry = data["history"][index]
+    undo_count_from_history(data, entry)
+
+    old_time = entry["time"]
+    old_hms = old_time[11:] if len(old_time) > 10 else datetime.now().strftime("%H:%M:%S")
+    entry["time"] = f"{new_date.strftime('%Y-%m-%d')} {old_hms}"
+
+    apply_count_for_date(data, entry, new_date)
+    return True
+
+
+def delete_item(data, name, tab=None):
+    keys_to_delete = [
+        k for k, v in data["items"].items()
+        if v["name"] == name and (tab is None or v.get("tab") == tab)
+    ]
+
+    for k in keys_to_delete:
+        del data["items"][k]
+
+    data["history"] = [
+        h for h in data["history"]
+        if not (h["name"] == name and (tab is None or h["tab"] == tab))
+    ]
+
+
+def rename_item(data, old_name, tab, new_name):
+    old_key = make_key(old_name, tab)
+    if old_key not in data["items"]:
+        return False
+
+    new_key = make_key(new_name, tab)
+    if new_key in data["items"] and new_key != old_key:
+        return False
+
+    item = data["items"].pop(old_key)
+    item["name"] = new_name
+    data["items"][new_key] = item
+
+    for h in data["history"]:
+        if h["name"] == old_name and h["tab"] == tab:
+            h["name"] = new_name
+
+    return True
+
+
+def delete_tab(data, tab_id):
+    if tab_id == "all":
+        return False
+
+    data["tabs"] = [t for t in data["tabs"] if t["id"] != tab_id]
+    data["items"] = {
+        k: v for k, v in data["items"].items()
+        if v.get("tab") != tab_id
+    }
+    data["history"] = [h for h in data["history"] if h["tab"] != tab_id]
+    return True
+
+
+def rename_tab_name(data, tab_id, new_name):
+    for t in data["tabs"]:
+        if t["id"] == tab_id:
+            t["name"] = new_name
+            return True
+    return False
+
+
+def rename_tab_id(data, old_id, new_id):
+    if old_id == "all" or old_id == new_id:
+        return False
+
+    if any(t["id"] == new_id for t in data["tabs"]):
+        return False
+
+    for t in data["tabs"]:
+        if t["id"] == old_id:
+            t["id"] = new_id
+            break
+    else:
+        return False
+
+    new_items = {}
+    for k, v in data["items"].items():
+        if v.get("tab") == old_id:
+            v["tab"] = new_id
+            new_key = make_key(v["name"], new_id)
+            new_items[new_key] = v
+        else:
+            new_items[k] = v
+    data["items"] = new_items
+
+    for h in data["history"]:
+        if h["tab"] == old_id:
+            h["tab"] = new_id
+
+    return True
 
 
 def calc_continuous_days(history):

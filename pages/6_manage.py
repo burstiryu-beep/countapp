@@ -1,15 +1,14 @@
 import streamlit as st
-from core import (
-    get_data,
-    ensure_structure,
-    delete_item,
-    rename_item,
-    delete_tab,
-    rename_tab_name,
-    rename_tab_id,
-)
+from core import get_data, ensure_structure
 from storage import save_data, IMG_DIR
-from utils import make_key
+from utils import (
+    delete_item,
+    delete_tab,
+    make_key,
+    rename_item,
+    rename_tab_id,
+    rename_tab_name,
+)
 
 data = ensure_structure(get_data())
 

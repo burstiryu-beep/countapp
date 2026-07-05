@@ -1,6 +1,6 @@
 import streamlit as st
-from core import get_data, ensure_structure, compute_points, active_items, registered_item_count
-from utils import calc_continuous_days
+from core import get_data, ensure_structure, compute_points
+from utils import active_items, calc_continuous_days, registered_item_count
 
 data = ensure_structure(get_data())
 
