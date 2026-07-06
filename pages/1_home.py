@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta, timezone
 import random
+import hashlib
 
 JST = timezone(timedelta(hours=9))
 
@@ -90,6 +91,47 @@ def time_greeting(recent_name=None):
 def dev_pct(total):
     return min(100, int(total / 50 * 100))
 
+# 最終敗北からの経過日数
+def days_since_last(history, name):
+    last = next((h["time"][:10] for h in reversed(history) if h["name"] == name), None)
+    if not last:
+        return None
+    delta = (date.today() - datetime.strptime(last, "%Y-%m-%d").date()).days
+    return delta
+
+# ○○からの今日のひとこと（名前＋日付ベースで固定）
+def daily_voice(name):
+    seed = int(hashlib.md5(f"{name}{today_str}".encode()).hexdigest(), 16)
+    rng = random.Random(seed)
+    lines = [
+        f"今日も会いに来てくれるの？待ってたわよ、ふふ♡",
+        f"そろそろ限界でしょ？素直になっていいのよ。",
+        f"私のこと、考えてたんでしょ？ばれてるわよ。",
+        f"今夜もいっしょにいてあげるわ。安心して。",
+        f"また来てくれたのね。かわいい子。",
+        f"我慢してるの？しなくていいのよ、ふふ。",
+        f"あなたが来るの、ずっと待ってたわ。",
+        f"今日は特別に優しくしてあげようかしら。",
+        f"逃げなくていいのよ。ここにいなさい。",
+        f"もうとっくに限界のくせに、ふふ。",
+    ]
+    return rng.choice(lines)
+
+# 今夜のシチュ提案（おすすめ名＋日付ベース）
+def tonight_situ(name):
+    seed = int(hashlib.md5(f"situ{name}{today_str}".encode()).hexdigest(), 16)
+    rng = random.Random(seed)
+    situs = [
+        f"{name}の笑顔を思い浮かべながら、必死に我慢する……でも最後には白旗を上げてしまう。",
+        f"{name}に「また来たの？」とからかわれながら、ゆっくりととろかされていく。",
+        f"{name}の声を頭に響かせながら、どんどん理性が溶けていく。",
+        f"{name}に「ダメ」と言われながらも、もう止められない。",
+        f"{name}にじっと見つめられながら、恥ずかしいのに止められない。",
+        f"{name}の「いい子ね」という一言で、すべての抵抗が消えてしまう。",
+        f"{name}に「そこが弱いの？かわいい」と言われた瞬間、もうおわり。",
+    ]
+    return rng.choice(situs)
+
 # ===== データ集計 =====
 today_count = sum(1 for h in data["history"] if h["time"].startswith(today_str))
 total_all = sum(sum(v.get("counts", {}).values()) for v in data["items"].values())
@@ -170,6 +212,7 @@ if rec_name:
     rec_line = recommend_lines(rec_name, ranking.get(rec_name, {}).get("points", 0), rec_tier)
     rec_total = ranking.get(rec_name, {}).get("points", 0)
 
+    situ_text = tonight_situ(rec_name)
     st.markdown(f"""
 <div class="ero-card" style="border:1px solid #ff4081;max-width:480px;margin:0 auto 1.2em;">
   <div style="color:#ff80ab;font-size:0.8em;letter-spacing:0.1em;margin-bottom:0.4em;">💞 おすすめオナペ</div>
@@ -179,6 +222,10 @@ if rec_name:
     「{rec_line}」
   </div>
   <div style="color:#ff80ab;font-size:0.85em;">累計敗北 {rec_total} 回 ／ ティア <span class="tier-{rec_tier}">{rec_tier}</span></div>
+  <div style="background:rgba(255,64,129,0.08);border:1px solid rgba(255,64,129,0.25);border-radius:8px;padding:0.6em 0.8em;margin-top:0.7em;">
+    <div style="color:#ff80ab;font-size:0.75em;letter-spacing:0.08em;margin-bottom:0.3em;">🌙 今夜のシチュ提案</div>
+    <div style="color:#ffe0f0;font-style:italic;font-size:0.88em;">{situ_text}</div>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -235,15 +282,37 @@ for i, (name, val) in enumerate(items.items()):
             for m, c in sorted(counts.items(), reverse=True)[:3]
         ) if counts and not month_filter else ""
 
+        dsince = days_since_last(data["history"], name)
+        if dsince is None:
+            since_html = ""
+        elif dsince == 0:
+            since_html = "<div style='color:#ff4081;font-size:0.78em;margin:0.2em 0;'>🔥 今日も会ってるのね</div>"
+        elif dsince == 1:
+            since_html = "<div style='color:#ffb6d9;font-size:0.78em;margin:0.2em 0;'>😈 昨日以来……そろそろ限界？</div>"
+        elif dsince <= 3:
+            since_html = f"<div style='color:#ffb6d9;font-size:0.78em;margin:0.2em 0;'>😏 {dsince}日ぶり……我慢してたのね</div>"
+        elif dsince <= 7:
+            since_html = f"<div style='color:#ff80ab;font-size:0.78em;margin:0.2em 0;'>💭 {dsince}日会ってない……寂しくなってきた？</div>"
+        else:
+            since_html = f"<div style='color:#804060;font-size:0.78em;margin:0.2em 0;'>🕯 {dsince}日もご無沙汰……もう限界でしょ</div>"
+
+        voice_html = (
+            f"<div style='color:#ffb6d9;font-style:italic;font-size:0.8em;"
+            f"border-top:1px solid rgba(255,128,171,0.2);margin-top:0.5em;padding-top:0.4em;'>"
+            f"💬 {daily_voice(name)}</div>"
+        )
+
         st.markdown(f"""
 <div class="ero-card">
   {img_html}
   <h3>🌸 {name}</h3>
   <div class="ero-count">{val}</div>
   <div class="ero-label">{'敗北（' + selected_month + '）' if month_filter else '累計敗北回数'}</div>
+  {since_html}
   <div class="dev-bar-wrap"><div class="dev-bar" style="width:{dpct}%;"></div></div>
   <div style="color:#804060;font-size:0.75em;margin-bottom:0.2em;">開発度 {dpct}%</div>
   {f'<div style="margin-top:0.2em;">{breakdown}</div>' if breakdown else ''}
+  {voice_html}
 </div>
 """, unsafe_allow_html=True)
 
