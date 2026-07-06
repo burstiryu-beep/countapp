@@ -3,69 +3,89 @@ from datetime import date, datetime, timedelta, timezone
 JST = timezone(timedelta(hours=9))
 
 import streamlit as st
+import style
 from core import get_data, ensure_structure, aggregate
 from storage import save_data
 from utils import make_key, resolve_img_path
 
+style.apply()
 data = ensure_structure(get_data())
 
 tab_names = {t["id"]: t["name"] for t in data["tabs"]}
 tab_ids = list(tab_names.keys())
 
 current_tab = st.sidebar.selectbox(
-    "表示タブ",
+    "📂 カテゴリ",
     tab_ids,
     format_func=lambda x: tab_names[x]
 )
 
 _raw_date = st.sidebar.date_input(
-    "カウント日付",
+    "📅 カウント日付",
     value=date.today(),
     max_value=date.today(),
-    help="前日分などを後から記録するときに変更してください"
+    help="前日分などを後から記録するときに変更"
 )
 count_date = _raw_date if isinstance(_raw_date, date) else date.today()
 
 items = aggregate(data, current_tab)
 is_all_tab = current_tab == "all"
 
-st.subheader("弱点一覧")
+st.markdown("<h2 style='text-align:center'>💦 弱点一覧</h2>", unsafe_allow_html=True)
 
 if is_all_tab:
-    st.info("「全体」タブでは各月の合計を確認できます。カウントするにはタブを選択してください。")
+    st.markdown(
+        "<div style='text-align:center; color:#ff80ab; margin-bottom:1em;'>"
+        "「全体」では合計を確認できます。カウントするにはカテゴリを選択してください。"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 elif count_date < date.today():
-    st.info(f"📅 {count_date.strftime('%Y-%m-%d')} の日付でカウントします")
+    st.markdown(
+        f"<div style='text-align:center; color:#ff80ab; margin-bottom:0.5em;'>"
+        f"📅 {count_date.strftime('%Y-%m-%d')} の日付でカウントします"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
 
 cols = st.columns(3)
 
 for i, (name, val) in enumerate(items.items()):
     with cols[i % 3]:
-        st.markdown(f"### {name}")
-
         if is_all_tab:
-            item = next(
-                (v for v in data["items"].values() if v["name"] == name),
-                {}
-            )
+            item = next((v for v in data["items"].values() if v["name"] == name), {})
         else:
             item = data["items"].get(make_key(name, current_tab), {})
 
         img_path = resolve_img_path(item.get("img", ""))
+        img_html = ""
         if img_path:
-            st.image(str(img_path), use_container_width=True)
+            import base64
+            try:
+                with open(str(img_path), "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode()
+                ext = str(img_path).rsplit(".", 1)[-1].lower()
+                mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
+                img_html = f'<img src="data:{mime};base64,{b64}" style="width:100%;border-radius:10px;margin-bottom:0.5em;"/>'
+            except Exception:
+                pass
 
-        st.metric("敗北数", val)
+        st.markdown(f"""
+<div class="ero-card">
+  {img_html}
+  <h3>🌸 {name}</h3>
+  <div class="ero-count">{val}</div>
+  <div class="ero-label">累計 射精回数</div>
+</div>
+""", unsafe_allow_html=True)
 
         if not is_all_tab:
-            if st.button("カウント", key=f"btn_{name}"):
+            if st.button("💦 イった", key=f"btn_{name}"):
                 key = make_key(name, current_tab)
                 if key not in data["items"]:
                     data["items"][key] = {
-                        "name": name,
-                        "tab": current_tab,
-                        "counts": {},
-                        "img": "",
-                        "points": 0
+                        "name": name, "tab": current_tab,
+                        "counts": {}, "img": "", "points": 0
                     }
                 counts = data["items"][key].get("counts")
                 if not isinstance(counts, dict):
@@ -78,7 +98,11 @@ for i, (name, val) in enumerate(items.items()):
                 st.rerun()
 
 st.divider()
-st.subheader("履歴")
-
+st.markdown("<h3>📜 最近の記録</h3>", unsafe_allow_html=True)
 for h in reversed(data["history"][-20:]):
-    st.write(f"{h['time']} | {h['name']} ({h['tab']})")
+    st.markdown(
+        f"<span style='color:#ff80ab'>{h['time']}</span>"
+        f"　<span style='color:#ffe0f0'>{h['name']}</span>"
+        f"　<span style='color:#804060'>({h['tab']})</span>",
+        unsafe_allow_html=True,
+    )
