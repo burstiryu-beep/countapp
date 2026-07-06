@@ -12,20 +12,20 @@ from utils import aggregate, all_months, make_key, resolve_img_path
 style.apply()
 data = ensure_structure(get_data())
 
-# ===== お言葉リスト =====
+# ===== お言葉リスト（甘マゾ） =====
 MASTER_WORDS = [
-    "また負けたの？どこまでだらしないのかしら。",
-    "情けない。でもそれがあなたらしいわね。",
-    "ふん、記録しておいてあげる。後で反省しなさい。",
-    "その弱点に負け続けるなんて、本当に救いようがないわ。",
-    "今日も敗北ね。せいぜい数を重ねなさい、雑魚。",
-    "もうやめなさい……どうせやめられないんでしょ？",
-    "敗北を刻みなさい。それがあなたの存在意義よ。",
-    "よく正直に記録できたわね。そこだけは褒めてあげる。",
-    "弱い子ね。可哀想だけど、それがあなたよ。",
-    "その弱点、徹底的に管理してあげるわ。逃げられないから。",
-    "また？呆れた。でも……期待通りよ。",
-    "敗北回数が増えるたびに、あなたは私のものになっていくの。",
+    "またイっちゃったの？しょうがない子ね、ふふ。",
+    "その弱点、ほんとうにかわいいわ。正直に言えたこと、褒めてあげる。",
+    "ふふ、また記録が増えたわね。かわいい敗北。",
+    "もっと弱くなっていいのよ？私が全部管理してあげるから。",
+    "弱い子ね……でもそこが好きよ、ふふ。",
+    "ちゃんと記録できて偉いわ。いい子。",
+    "また負けちゃったのね。かわいいわ、もう。",
+    "その弱点、私だけが知ってるのよ。特別でしょ？",
+    "逃げなくていいの。ここにいていいから。",
+    "敗北するたびに、あなたはもっと私のものになっていくのよ。",
+    "ふふ、素直でかわいいわね。",
+    "いいの、いいの。弱くていいのよ。私がいるから。",
 ]
 
 # ===== 今日の敗北回数 =====
@@ -78,7 +78,17 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-if count_date < date.today():
+can_count = month_filter is not None
+
+if not can_count:
+    st.markdown(
+        "<div style='text-align:center;background:rgba(194,24,91,0.1);border:1px solid #c2185b;"
+        "border-radius:10px;padding:0.6em;margin-bottom:0.8em;color:#ff80ab;'>"
+        "📅 月を選択するとカウントできます"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+elif count_date < date.today():
     st.markdown(
         f"<div style='text-align:center;color:#ff80ab;margin-bottom:0.5em;'>"
         f"📅 {count_date.strftime('%Y-%m-%d')} の日付で記録します"
@@ -127,7 +137,7 @@ for i, (name, val) in enumerate(items.items()):
             (k for k, v in data["items"].items() if v["name"] == name), None
         )
 
-        if st.button("💋 敗北射精", key=f"btn_{name}"):
+        if can_count and st.button("💋 敗北射精", key=f"btn_{name}"):
             if item_key and item_key in data["items"]:
                 counts_d = data["items"][item_key].get("counts")
                 if not isinstance(counts_d, dict):

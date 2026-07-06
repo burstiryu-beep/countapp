@@ -8,7 +8,7 @@ data = ensure_structure(get_data())
 st.markdown("<h2 style='text-align:center'>🏆 敗北ランキング</h2>", unsafe_allow_html=True)
 st.markdown(
     "<p style='text-align:center;color:#ff80ab;margin-bottom:1.5em;'>"
-    "あなたが最も惨敗し続けた弱点はどこ？逃げられないわよ。"
+    "あなたが一番とろけた弱点はどこかしら？ふふ。"
     "</p>",
     unsafe_allow_html=True,
 )
@@ -17,12 +17,12 @@ ranking = compute_points(data)
 sorted_rank = sorted(ranking.items(), key=lambda x: -x[1]["points"])
 
 tier_info = {
-    "SS": ("👑", "#ffd700", "完全雌堕ち確定。逃げ場なし"),
-    "S":  ("🔥", "#ff4081", "惨敗級の弱点。触れられるだけで終わる"),
-    "A":  ("💋", "#ff80ab", "敗北必至。かなり危険"),
-    "B":  ("🌸", "#ce93d8", "じわじわ負ける弱点"),
-    "C":  ("💜", "#b39ddb", "まだ抵抗できる……かも"),
-    "D":  ("🖤", "#888",    "未開拓。これから敗北が刻まれる"),
+    "SS": ("👑", "#ffd700", "最愛の弱点。触れるだけでとろけちゃうのね"),
+    "S":  ("🔥", "#ff4081", "すごく敏感。かわいいくらい弱いわ"),
+    "A":  ("💋", "#ff80ab", "かなり危険。集中されると負けちゃうのね"),
+    "B":  ("🌸", "#ce93d8", "じわじわ効いてくる弱点"),
+    "C":  ("💜", "#b39ddb", "まだ粘れる……でもいつか負けるわ"),
+    "D":  ("🖤", "#888",    "未開拓。これから一緒に育てましょ"),
 }
 
 for rank, (name, info) in enumerate(sorted_rank, 1):
