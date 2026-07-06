@@ -1,7 +1,8 @@
-from datetime import date
+from datetime import date, datetime
 
 import streamlit as st
-from core import get_data, ensure_structure, aggregate, count_item
+from core import get_data, ensure_structure, aggregate
+from storage import save_data
 from utils import make_key, resolve_img_path
 
 data = ensure_structure(get_data())
@@ -40,7 +41,6 @@ for i, (name, val) in enumerate(items.items()):
         st.markdown(f"### {name}")
 
         if is_all_tab:
-            # 全体タブ：同名アイテムの最初の画像を探す
             item = next(
                 (v for v in data["items"].values() if v["name"] == name),
                 {}
@@ -56,11 +56,24 @@ for i, (name, val) in enumerate(items.items()):
 
         if not is_all_tab:
             if st.button("カウント", key=f"btn_{name}"):
-                try:
-                    count_item(data, name, current_tab, count_date)
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"エラー詳細: {type(e).__name__}: {e}")
+                key = make_key(name, current_tab)
+                if key not in data["items"]:
+                    data["items"][key] = {
+                        "name": name,
+                        "tab": current_tab,
+                        "counts": {},
+                        "img": "",
+                        "points": 0
+                    }
+                counts = data["items"][key].get("counts")
+                if not isinstance(counts, dict):
+                    data["items"][key]["counts"] = {}
+                m = count_date.strftime("%Y-%m")
+                data["items"][key]["counts"][m] = data["items"][key]["counts"].get(m, 0) + 1
+                time_str = datetime.combine(count_date, datetime.now().time()).strftime("%Y-%m-%d %H:%M:%S")
+                data["history"].append({"name": name, "tab": current_tab, "time": time_str})
+                save_data(data)
+                st.rerun()
 
 st.divider()
 st.subheader("履歴")
