@@ -56,8 +56,11 @@ for i, (name, val) in enumerate(items.items()):
 
         if not is_all_tab:
             if st.button("カウント", key=f"btn_{name}"):
-                count_item(data, name, current_tab, count_date)
-                st.rerun()
+                try:
+                    count_item(data, name, current_tab, count_date)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"エラー詳細: {type(e).__name__}: {e}")
 
 st.divider()
 st.subheader("履歴")
