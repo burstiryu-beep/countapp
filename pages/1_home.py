@@ -138,17 +138,17 @@ def card_danger(count):
     if count <= 5:
         return (
             "border:1px solid rgba(180,100,140,0.5);box-shadow:0 0 6px rgba(180,100,140,0.15);",
-            "💭", "感じはじめてる", "#ce93d8",
+            "💭", "なんかエロいかも…", "#ce93d8",
         )
     elif count <= 15:
         return (
             "border:1px solid rgba(245,124,0,0.85);box-shadow:0 0 12px rgba(245,124,0,0.3);",
-            "💋", "弱点確定", "#ffb74d",
+            "😳", "これ弱いやつだ", "#ffb74d",
         )
     else:
         return (
             "border:2px solid #ff4081;box-shadow:0 0 20px rgba(255,64,129,0.5);animation:pulse-glow 2s infinite;",
-            "🔥", "骨抜き完了", "#ff4081",
+            "🔥", "完全に俺の弱点", "#ff4081",
         )
 
 # 月間カレンダーヒートマップ（画像付き）
