@@ -55,6 +55,21 @@ def registered_item_count(data):
     return len(active_items(data))
 
 
+def img_to_html(img_path, style="width:100%;border-radius:12px;margin-bottom:0.6em;"):
+    p = resolve_img_path(img_path)
+    if not p:
+        return ""
+    try:
+        import base64
+        with open(str(p), "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        ext = str(p).rsplit(".", 1)[-1].lower()
+        mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
+        return f'<img src="data:{mime};base64,{b64}" style="{style}"/>'
+    except Exception:
+        return ""
+
+
 def resolve_img_path(img_path):
     if not img_path:
         return None

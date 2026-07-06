@@ -1,6 +1,7 @@
 import streamlit as st
 import style
 from core import get_data, ensure_structure, compute_points
+from utils import img_to_html
 
 style.apply()
 data = ensure_structure(get_data())
@@ -9,7 +10,7 @@ ranking = compute_points(data)
 st.markdown("<h2 style='text-align:center'>🧠 弱点診断書</h2>", unsafe_allow_html=True)
 st.markdown(
     "<p style='text-align:center;color:#ff80ab;margin-bottom:1.5em;'>"
-    "あなたの弱点を徹底分析します。"
+    "あなたの弱点を、お姉さんが徹底的に分析してあげるわ。"
     "</p>",
     unsafe_allow_html=True,
 )
@@ -23,6 +24,12 @@ selected = st.selectbox(
 if selected:
     pts = ranking[selected]["points"]
     tier = ranking[selected]["tier"]
+
+    item = next((v for v in data["items"].values() if v["name"] == selected), {})
+    img_html = img_to_html(
+        item.get("img", ""),
+        style="width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-bottom:0.8em;"
+    )
 
     tier_comment = {
         "SS": "最愛の弱点ね。触れるだけでとろけちゃうでしょ？ふふ。",
@@ -38,9 +45,9 @@ if selected:
     kyomu     = min(10, 2 + pts // 15)
     star = lambda n: "★" * n + "☆" * (5 - n)
 
-    kari    = min(5, pts // 15)
-    nyodo   = min(5, pts // 12)
-    tama    = min(5, pts // 20)
+    kari        = min(5, pts // 15)
+    nyodo       = min(5, pts // 12)
+    tama        = min(5, pts // 20)
     sakibashiri = min(5, pts // 10)
 
     overall = (
@@ -52,6 +59,7 @@ if selected:
 
     st.markdown(f"""
 <div class="ero-card" style="padding:1.6em 2em; max-width:600px; margin:0 auto;">
+  {img_html}
   <h2 style="text-align:center; margin-bottom:0.2em;">【 {selected} 】</h2>
   <div style="text-align:center; margin-bottom:1em;">
     <span class="tier-{tier}" style="font-size:2.5em;">{tier}</span>
@@ -84,16 +92,16 @@ if selected:
   <div style="margin-bottom:0.8em;">
     <div style="color:#ff80ab; font-size:0.9em; margin-bottom:0.4em; font-weight:600;">🔬 感度詳細</div>
     <table style="width:100%; border-collapse:collapse; color:#ffe0f0;">
-      <tr><td style="padding:0.25em 0;">カリ</td><td style="color:#ffd700; font-size:1.1em;">{star(kari)}</td></tr>
-      <tr><td style="padding:0.25em 0;">尿道</td><td style="color:#ffd700; font-size:1.1em;">{star(nyodo)}</td></tr>
-      <tr><td style="padding:0.25em 0;">玉</td><td style="color:#ffd700; font-size:1.1em;">{star(tama)}</td></tr>
-      <tr><td style="padding:0.25em 0;">先走り</td><td style="color:#ffd700; font-size:1.1em;">{star(sakibashiri)}</td></tr>
+      <tr><td style="padding:0.3em 0;">カリ</td><td style="color:#ffd700; font-size:1.1em;">{star(kari)}</td></tr>
+      <tr><td style="padding:0.3em 0;">尿道</td><td style="color:#ffd700; font-size:1.1em;">{star(nyodo)}</td></tr>
+      <tr><td style="padding:0.3em 0;">玉</td><td style="color:#ffd700; font-size:1.1em;">{star(tama)}</td></tr>
+      <tr><td style="padding:0.3em 0;">先走り</td><td style="color:#ffd700; font-size:1.1em;">{star(sakibashiri)}</td></tr>
     </table>
   </div>
 
   <hr style="border-color:#c2185b; opacity:0.3; margin:0.8em 0;"/>
 
-  <div style="text-align:center; font-size:1.15em; font-weight:700; color:#ff80ab;">
+  <div style="text-align:center; font-size:1.1em; font-weight:700; color:#ff80ab; padding:0.4em;">
     {overall}
   </div>
 </div>

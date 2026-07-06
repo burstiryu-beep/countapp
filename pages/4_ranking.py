@@ -1,6 +1,7 @@
 import streamlit as st
 import style
 from core import get_data, ensure_structure, compute_points
+from utils import img_to_html
 
 style.apply()
 data = ensure_structure(get_data())
@@ -25,25 +26,27 @@ tier_info = {
     "D":  ("🖤", "#888",    "未開拓。これから一緒に育てましょ"),
 }
 
+cols = st.columns(2)
+
 for rank, (name, info) in enumerate(sorted_rank, 1):
     t = info["tier"]
     icon, color, label = tier_info.get(t, ("", "#fff", ""))
     pts = info["points"]
 
-    st.markdown(f"""
-<div class="ero-card" style="text-align:left; padding:1em 1.4em;">
-  <div style="display:flex; align-items:center; gap:0.8em;">
-    <span style="font-size:1.8em; min-width:1.8em; text-align:center;">{icon}</span>
-    <div style="flex:1;">
-      <div style="font-size:1.2em; font-weight:700; color:#ffe0f0;">
-        #{rank}　{name}
-      </div>
-      <div style="font-size:0.85em; color:{color}; margin-top:0.1em;">{label}</div>
-    </div>
-    <div style="text-align:right;">
-      <div class="tier-{t}" style="font-size:1.6em;">{t}</div>
-      <div style="color:#ff80ab; font-weight:700; font-size:1.1em;">{pts} 敗北</div>
-    </div>
+    item = next((v for v in data["items"].values() if v["name"] == name), {})
+    img_html = img_to_html(item.get("img", ""), style="width:100%;border-radius:10px;margin-bottom:0.6em;object-fit:cover;max-height:200px;")
+
+    with cols[(rank - 1) % 2]:
+        st.markdown(f"""
+<div class="ero-card" style="text-align:center;">
+  {img_html}
+  <div style="font-size:0.85em;color:#804060;margin-bottom:0.2em;">#{rank}</div>
+  <h3 style="margin:0.1em 0;">🌸 {name}</h3>
+  <div style="margin:0.3em 0;">
+    <span class="tier-{t}" style="font-size:2em;">{t}</span>
+    <span style="font-size:1.2em;">　{icon}</span>
   </div>
+  <div style="color:{color};font-size:0.85em;font-style:italic;margin-bottom:0.4em;">{label}</div>
+  <div style="color:#ff80ab;font-weight:700;font-size:1.2em;">{pts} 敗北</div>
 </div>
 """, unsafe_allow_html=True)

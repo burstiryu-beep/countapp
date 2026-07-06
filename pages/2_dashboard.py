@@ -1,7 +1,7 @@
 import streamlit as st
 import style
 from core import get_data, ensure_structure, compute_points
-from utils import active_items, calc_continuous_days, registered_item_count
+from utils import active_items, calc_continuous_days, registered_item_count, img_to_html
 
 style.apply()
 data = ensure_structure(get_data())
@@ -32,12 +32,18 @@ tier_icon = {"SS": "👑", "S": "🥇", "A": "🥈", "B": "🥉", "C": "💜", "
 for rank, (name, info) in enumerate(sorted_rank[:5], 1):
     t = info["tier"]
     icon = tier_icon.get(t, "")
+    item = next((v for v in data["items"].values() if v["name"] == name), {})
+    thumb = img_to_html(
+        item.get("img", ""),
+        style="width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0;"
+    )
+    img_block = f"<div>{thumb}</div>" if thumb else f"<span style='font-size:1.6em;min-width:2em;text-align:center;'>{icon}</span>"
     st.markdown(
         f"<div class='ero-card' style='display:flex;align-items:center;gap:1em;text-align:left;padding:0.6em 1em;'>"
-        f"<span style='font-size:1.6em;min-width:2em;text-align:center;'>{icon}</span>"
-        f"<span style='flex:1;font-size:1.1em;color:#ffe0f0;font-weight:600;'>{name}</span>"
-        f"<span class='tier-{t}' style='margin-right:0.5em;'>{t}</span>"
-        f"<span style='color:#ff80ab;font-weight:700;'>{info['points']} 回</span>"
+        f"{img_block}"
+        f"<span style='flex:1;font-size:1.1em;color:#ffe0f0;font-weight:600;'>#{rank}　{name}</span>"
+        f"<span class='tier-{t}' style='margin-right:0.5em;font-size:1.3em;'>{t}</span>"
+        f"<span style='color:#ff80ab;font-weight:700;'>{info['points']} 敗北</span>"
         f"</div>",
         unsafe_allow_html=True,
     )
