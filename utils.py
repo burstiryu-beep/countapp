@@ -20,6 +20,13 @@ def make_key(name, tab):
     return f"{name}@@{tab}"
 
 
+def all_months(data):
+    months = set()
+    for v in active_items(data).values():
+        months.update(v.get("counts", {}).keys())
+    return sorted(months, reverse=True)
+
+
 def valid_tab_ids(data):
     return {t["id"] for t in data["tabs"]}
 

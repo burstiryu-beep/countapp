@@ -4,9 +4,9 @@ JST = timezone(timedelta(hours=9))
 
 import streamlit as st
 import style
-from core import get_data, ensure_structure, aggregate, all_months
+from core import get_data, ensure_structure, aggregate
 from storage import save_data
-from utils import make_key, resolve_img_path
+from utils import all_months, make_key, resolve_img_path
 
 style.apply()
 data = ensure_structure(get_data())
@@ -107,7 +107,7 @@ for i, (name, val) in enumerate(items.items()):
 """, unsafe_allow_html=True)
 
         if not is_all_tab:
-            if st.button("💦 イった", key=f"btn_{name}"):
+            if st.button("💋 イった", key=f"btn_{name}"):
                 key = make_key(name, current_tab)
                 if key not in data["items"]:
                     data["items"][key] = {
