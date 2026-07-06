@@ -245,6 +245,94 @@ def render_calendar(history, year, month, items_data):
         f"</div></div>"
     )
 
+# 欲求蓄積度ゲージ（禁欲日数ベース）
+def desire_gauge(days):
+    if days is None:
+        return 0, "#555", "まだ記録がないわ"
+    if days == 0:
+        return 10, "#f48fb1", "今日は既に一回負けてるわ♡"
+    elif days == 1:
+        return 36, "#f06292", "少し溜まってきたわよ？"
+    elif days == 2:
+        return 60, "#ffb74d", "だいぶ溜まってきてるわね"
+    elif days == 3:
+        return 80, "#ff7043", "もうかなり限界に近いわ♡"
+    elif days <= 5:
+        return 93, "#f44336", "もう抑えられないでしょ💞"
+    else:
+        return 99, "#c2185b", f"{days}日分……もう爆発寸前よ💋"
+
+# 週間危険予報
+def weekly_danger_html(history, today):
+    wd_counts = {i: 0 for i in range(7)}
+    for h in history:
+        try:
+            dt = datetime.strptime(h["time"], "%Y-%m-%d %H:%M:%S")
+            wd_counts[dt.weekday()] += 1
+        except Exception:
+            pass
+    max_c = max(wd_counts.values()) or 1
+    monday = today - timedelta(days=today.weekday())
+    day_labels = ["月", "火", "水", "木", "金", "土", "日"]
+    cells = ""
+    for i in range(7):
+        d = monday + timedelta(days=i)
+        c = wd_counts[i]
+        pct = int(c / max_c * 100)
+        if pct >= 75:
+            bg, bdr, icon, lbl, col = "rgba(194,24,91,0.45)", "2px solid #ff4081", "🔥", "危険", "#ff4081"
+        elif pct >= 40:
+            bg, bdr, icon, lbl, col = "rgba(245,124,0,0.28)", "1px solid rgba(245,124,0,0.6)", "⚠️", "注意", "#ffb74d"
+        else:
+            bg, bdr, icon, lbl, col = "rgba(40,40,40,0.35)", "1px solid rgba(100,100,100,0.25)", "💤", "安全", "#555"
+        is_today = (d == today)
+        if is_today:
+            bdr = "2px solid #ff80ab"
+        cells += (
+            f"<div style='flex:1;background:{bg};border:{bdr};border-radius:8px;"
+            f"text-align:center;padding:0.45em 0.2em;'>"
+            f"<div style='color:#ff80ab;font-size:0.72em;font-weight:700;'>{day_labels[i]}</div>"
+            f"<div style='color:#666;font-size:0.62em;'>{d.month}/{d.day}</div>"
+            f"<div style='font-size:1em;margin:2px 0;'>{icon}</div>"
+            f"<div style='color:{col};font-size:0.65em;font-weight:700;'>{lbl}</div>"
+            f"</div>"
+        )
+    peak = max(range(7), key=lambda i: wd_counts[i])
+    comment = f"「{day_labels[peak]}曜日が最も危険な日ね。気をつけて……できれば、だけど♡」"
+    return (
+        f"<div style='background:rgba(15,0,10,0.6);border:1px solid rgba(194,24,91,0.3);"
+        f"border-radius:12px;padding:0.8em;margin-bottom:1em;'>"
+        f"<div style='color:#ff80ab;font-size:0.85em;font-weight:700;text-align:center;"
+        f"margin-bottom:0.55em;'>📅 今週の危険予報</div>"
+        f"<div style='display:flex;gap:4px;'>{cells}</div>"
+        f"<div style='color:#ffb6d9;font-style:italic;font-size:0.82em;text-align:center;"
+        f"margin-top:0.55em;'>{comment}</div>"
+        f"</div>"
+    )
+
+# 敗北日記1行生成（シード固定）
+def diary_line(h, month_count):
+    name = h["name"]
+    ts = h["time"]
+    seed = int(hashlib.md5(ts.encode()).hexdigest(), 16)
+    rng = random.Random(seed)
+    try:
+        dt = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+        date_lbl = f"{dt.month}月{dt.day}日（{'月火水木金土日'[dt.weekday()]}）"
+        time_lbl = dt.strftime("%H:%M")
+        hr = dt.hour
+        tod = "深夜" if hr < 5 else ("朝" if hr < 11 else ("昼間" if hr < 17 else "夜"))
+    except Exception:
+        date_lbl, time_lbl, tod = ts[:10], ts[11:16], ""
+    lines = [
+        f"{tod}、また{name}に負けたのね。今月{month_count}回目よ。",
+        f"{name}に{tod}から呼ばれたの？かわいいわ。",
+        f"また{name}ね。{tod}でも我慢できなかったの。しょうがない子。",
+        f"{tod}に{name}との闘いに完敗。素直でかわいい。",
+        f"ふふ、{tod}に{name}ね。どうせ最初から負けるつもりだったでしょ。",
+    ]
+    return date_lbl, time_lbl, rng.choice(lines)
+
 # ===== データ集計 =====
 today_count = sum(1 for h in data["history"] if h["time"].startswith(today_str))
 total_all = sum(sum(v.get("counts", {}).values()) for v in data["items"].values())
@@ -323,6 +411,24 @@ if ab_days is not None:
         unsafe_allow_html=True,
     )
 
+# 欲求蓄積度ゲージ
+d_pct, d_color, d_msg = desire_gauge(ab_days)
+st.sidebar.markdown(
+    f"<div style='padding:0.5em;background:rgba(80,0,40,0.2);"
+    f"border:1px solid rgba(194,24,91,0.35);border-radius:8px;margin-bottom:0.8em;'>"
+    f"<div style='display:flex;justify-content:space-between;margin-bottom:0.3em;'>"
+    f"<span style='color:#ff80ab;font-size:0.75em;'>🌡 欲求蓄積度</span>"
+    f"<span style='color:{d_color};font-size:0.8em;font-weight:900;'>{d_pct}%</span>"
+    f"</div>"
+    f"<div style='background:rgba(30,0,20,0.6);border-radius:4px;height:8px;'>"
+    f"<div style='width:{d_pct}%;height:100%;border-radius:4px;"
+    f"background:linear-gradient(90deg,{d_color}88,{d_color});transition:width 0.5s;'></div>"
+    f"</div>"
+    f"<div style='color:#ffb6d9;font-style:italic;font-size:0.75em;margin-top:0.3em;'>{d_msg}</div>"
+    f"</div>",
+    unsafe_allow_html=True,
+)
+
 months = all_months(data)
 month_options = ["全月"] + months
 selected_month = st.sidebar.selectbox("📅 月フィルター", month_options)
@@ -393,6 +499,9 @@ if rec_name:
         st.rerun()
 
 st.divider()
+
+# ===== 週間危険予報 =====
+st.markdown(weekly_danger_html(data["history"], date.today()), unsafe_allow_html=True)
 
 # ===== 弱点一覧 =====
 month_label = f"【{selected_month}】" if month_filter else "【全月合計】"
@@ -574,10 +683,43 @@ else:
     cal_year, cal_month = now_jst.year, now_jst.month
 st.markdown(render_calendar(data["history"], cal_year, cal_month, data["items"]), unsafe_allow_html=True)
 
-st.markdown("<h3>📜 敗北の記録</h3>", unsafe_allow_html=True)
-for h in reversed(data["history"][-20:]):
+st.markdown("<h3>📖 敗北日記</h3>", unsafe_allow_html=True)
+
+# 月ごとのカウントを計算（日記コメント用）
+month_running = {}
+history_ordered = list(data["history"])
+for h in history_ordered:
+    m = h["time"][:7]
+    month_running[m] = month_running.get(m, 0) + 1
+
+# 月ごとの累計を逆算するため、各エントリに「その月で何回目か」を付ける
+month_idx = {}
+history_with_idx = []
+for h in history_ordered:
+    m = h["time"][:7]
+    month_idx[m] = month_idx.get(m, 0) + 1
+    history_with_idx.append((h, month_idx[m]))
+
+diary_html = ""
+for h, m_count in reversed(history_with_idx[-20:]):
+    date_lbl, time_lbl, comment = diary_line(h, m_count)
+    diary_html += (
+        f"<div style='border-left:2px solid rgba(194,24,91,0.4);padding:0.4em 0.8em;"
+        f"margin-bottom:0.5em;'>"
+        f"<div style='display:flex;gap:0.8em;align-items:baseline;'>"
+        f"<span style='color:#ff80ab;font-size:0.8em;font-weight:700;'>{date_lbl}</span>"
+        f"<span style='color:#804060;font-size:0.72em;'>{time_lbl}</span>"
+        f"</div>"
+        f"<div style='color:#ffb6d9;font-style:italic;font-size:0.85em;margin-top:0.15em;'>"
+        f"「{comment}」</div>"
+        f"</div>"
+    )
+if diary_html:
     st.markdown(
-        f"<span style='color:#ff80ab'>{h['time']}</span>"
-        f"　<span style='color:#ffe0f0'>{h['name']}</span>",
+        f"<div style='background:rgba(15,0,10,0.5);border:1px solid rgba(194,24,91,0.25);"
+        f"border-radius:12px;padding:0.8em;max-height:360px;overflow-y:auto;'>"
+        f"{diary_html}</div>",
         unsafe_allow_html=True,
     )
+else:
+    st.markdown("<div style='color:#555;font-style:italic;'>まだ記録がないわ。</div>", unsafe_allow_html=True)
