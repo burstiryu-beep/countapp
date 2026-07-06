@@ -1,6 +1,5 @@
 from datetime import date, datetime, timedelta, timezone
 import random
-import hashlib
 
 JST = timezone(timedelta(hours=9))
 
@@ -8,7 +7,7 @@ import streamlit as st
 import style
 from core import get_data, ensure_structure
 from storage import save_data
-from utils import aggregate, all_months, make_key, resolve_img_path, img_to_html
+from utils import aggregate, all_months, make_key, img_to_html
 
 style.apply()
 data = ensure_structure(get_data())
@@ -33,15 +32,46 @@ MASTER_WORDS = [
     "いいの、いいの。弱くていいのよ。私がいるから。",
 ]
 
-# 節目メッセージ（累計カウント数 → メッセージ）
+# 節目メッセージ
 MILESTONES = {
     10:  ("🎀", "10回目の敗北ね。これからもずっと負け続けるのよ、かわいい子。"),
     30:  ("💋", "30回……本当に弱い子。でもそこが愛おしいわ。"),
-    50:  ("🔥", "50敗北達成。半人前の弱さから、立派な敗北者になったわね。"),
+    50:  ("🔥", "50回敗北達成。立派な敗北者になったわね。"),
     100: ("👑", "100回の敗北……おめでとう。あなたはもう完全に私のものよ。"),
     200: ("💎", "200回……もはや言葉もないわ。最高の弱さね、ふふ。"),
     365: ("🌹", "365回、1年分の敗北。あなたとの記録、大切にしてあげる。"),
 }
+
+# おすすめセリフ（弱点別 × 段階別）
+def recommend_lines(name, total, tier):
+    lines_by_tier = {
+        "SS": [
+            f"ねえ、また{name}で負けてみない？あなた絶対我慢できないでしょ💞",
+            f"{name}……思い出しただけでもう反応してるんじゃない？ふふ。",
+            f"この弱点、最強ね。また{name}でとろけさせてあげようか？",
+        ],
+        "S": [
+            f"{name}、まだいけるんじゃない？もう一回くらい♡",
+            f"また{name}で遊んであげようか。絶対気持ちいいから。",
+            f"{name}には勝てないでしょ、正直に認めなさい。",
+        ],
+        "A": [
+            f"{name}、まだ余裕あるの？試してみたら？",
+            f"もう一回{name}で負けてみたくなってきたんじゃない？",
+            f"{name}はね、集中して責めると特別に気持ちいいのよ。",
+        ],
+        "B": [
+            f"{name}、じわじわ効いてくるのよ。今すぐ確かめてみて？",
+            f"ゆっくり{name}を責めたら……きっとイっちゃうわよ。",
+            f"{name}はまだまだ開発できるわ。続けてみなさい。",
+        ],
+    }
+    default = [
+        f"{name}……まだ本当の感度を知らないんじゃない？",
+        f"{name}の気持ちよさ、まだ半分も引き出せてないわよ。",
+        f"{name}を今すぐ試してみて。きっと驚くから。",
+    ]
+    return random.choice(lines_by_tier.get(tier, default))
 
 # 時間帯挨拶
 def time_greeting():
@@ -54,29 +84,35 @@ def time_greeting():
     else:
         return "こんな時間に……本当に弱い子ね。"
 
-# 今日のミッション（日付ベースのシード で固定）
-def daily_mission(items_list):
-    if not items_list:
-        return None, 0
-    seed = int(hashlib.md5(today_str.encode()).hexdigest(), 16)
-    rng = random.Random(seed)
-    target = rng.choice(items_list)
-    count = rng.choice([1, 2, 3])
-    return target, count
-
-# 開発度（累計カウント → 0〜100%）
+# 開発度
 def dev_pct(total):
-    return min(100, int(total / max(1, 50) * 100))
+    return min(100, int(total / 50 * 100))
 
 # ===== データ集計 =====
 today_count = sum(1 for h in data["history"] if h["time"].startswith(today_str))
-all_items = list({v["name"] for v in data["items"].values()})
 total_all = sum(sum(v.get("counts", {}).values()) for v in data["items"].values())
 
+# おすすめオナペ候補（上位3件からランダム選出）
+from core import compute_points
+ranking = compute_points(data)
+sorted_rank = sorted(ranking.items(), key=lambda x: -x[1]["points"])
+top_items = sorted_rank[:min(3, len(sorted_rank))]
+
+# セッションごとに1つ選ぶ
+if "recommend_name" not in st.session_state or st.session_state.get("recommend_refresh"):
+    if top_items:
+        pick = random.choice(top_items)
+        st.session_state.recommend_name = pick[0]
+        st.session_state.recommend_tier = pick[1]["tier"]
+    st.session_state.recommend_refresh = False
+
+rec_name = st.session_state.get("recommend_name")
+rec_tier = st.session_state.get("recommend_tier", "B")
+
 # 節目チェック
-milestone_msg = None
 if "last_milestone_shown" not in st.session_state:
     st.session_state.last_milestone_shown = 0
+milestone_msg = None
 for m_count, (m_icon, m_text) in sorted(MILESTONES.items()):
     if total_all >= m_count > st.session_state.last_milestone_shown:
         milestone_msg = (m_icon, m_text)
@@ -119,31 +155,43 @@ if st.session_state.get("master_word"):
 # 節目メッセージ
 if milestone_msg:
     icon, text = milestone_msg
-    st.markdown(
-        f"<div class='milestone-msg'>{icon} {text}</div>",
-        unsafe_allow_html=True,
-    )
+    st.markdown(f"<div class='milestone-msg'>{icon} {text}</div>", unsafe_allow_html=True)
 
-# ===== 今日のミッション =====
-mission_name, mission_count = daily_mission(all_items)
-if mission_name:
-    done = sum(1 for h in data["history"]
-               if h["time"].startswith(today_str) and h["name"] == mission_name)
-    bar = min(100, int(done / mission_count * 100))
-    clear = done >= mission_count
-    clear_txt = "　✅ クリア！お姉さんも満足よ。" if clear else ""
+# ===== おすすめオナペ =====
+if rec_name:
+    rec_item = next((v for v in data["items"].values() if v["name"] == rec_name), {})
+    rec_img = img_to_html(
+        rec_item.get("img", ""),
+        style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-bottom:0.7em;"
+    )
+    rec_line = recommend_lines(rec_name, ranking.get(rec_name, {}).get("points", 0), rec_tier)
+    rec_total = ranking.get(rec_name, {}).get("points", 0)
+
     st.markdown(f"""
-<div class="mission-box">
-  <div style="color:#ff80ab;font-size:0.8em;letter-spacing:0.1em;">📋 今日のミッション</div>
-  <div style="font-size:1.1em;color:#ffe0f0;font-weight:700;margin:0.3em 0;">
-    「{mission_name}」で <span style="color:#ff4081;font-size:1.3em;">{mission_count}</span> 回 敗北射精しなさい{clear_txt}
+<div class="ero-card" style="border:1px solid #ff4081;max-width:480px;margin:0 auto 1.2em;">
+  <div style="color:#ff80ab;font-size:0.8em;letter-spacing:0.1em;margin-bottom:0.4em;">💞 おすすめオナペ</div>
+  {rec_img}
+  <h3 style="margin:0.2em 0;">🌸 {rec_name}</h3>
+  <div style="color:#ffb6d9;font-style:italic;font-size:0.95em;margin:0.4em 0 0.6em;">
+    「{rec_line}」
   </div>
-  <div class="dev-bar-wrap"><div class="dev-bar" style="width:{bar}%;"></div></div>
-  <div style="color:#804060;font-size:0.8em;">{done} / {mission_count} 回</div>
+  <div style="color:#ff80ab;font-size:0.85em;">累計敗北 {rec_total} 回 ／ ティア <span class="tier-{rec_tier}">{rec_tier}</span></div>
 </div>
 """, unsafe_allow_html=True)
 
-# ===== メイン =====
+    if st.button("🔀 別のオナペを見る", key="shuffle_rec"):
+        st.session_state.recommend_refresh = True
+        remaining = [n for n, _ in top_items if n != rec_name]
+        if remaining:
+            new_pick = random.choice(remaining)
+            new_tier = next((info["tier"] for n, info in top_items if n == new_pick), "B")
+            st.session_state.recommend_name = new_pick
+            st.session_state.recommend_tier = new_tier
+        st.rerun()
+
+st.divider()
+
+# ===== 弱点一覧 =====
 month_label = f"【{selected_month}】" if month_filter else "【全月合計】"
 st.markdown(
     f"<h2 style='text-align:center'>🌸 弱点一覧　<span style='font-size:0.6em;color:#ff80ab;'>{month_label}</span></h2>",
@@ -176,7 +224,6 @@ for i, (name, val) in enumerate(items.items()):
             item.get("img", ""),
             style="width:100%;border-radius:10px;margin-bottom:0.5em;object-fit:cover;max-height:180px;"
         )
-
         total_item = sum(item.get("counts", {}).values())
         dpct = dev_pct(total_item)
         counts = item.get("counts", {})
@@ -185,13 +232,10 @@ for i, (name, val) in enumerate(items.items()):
             for m, c in sorted(counts.items(), reverse=True)[:3]
         ) if counts and not month_filter else ""
 
-        is_mission = (name == mission_name)
-        border_style = "border:2px solid #ffd700;box-shadow:0 0 16px rgba(255,215,0,0.4);" if is_mission else ""
-
         st.markdown(f"""
-<div class="ero-card" style="{border_style}">
+<div class="ero-card">
   {img_html}
-  <h3>{'⭐ ' if is_mission else '🌸 '}{name}</h3>
+  <h3>🌸 {name}</h3>
   <div class="ero-count">{val}</div>
   <div class="ero-label">{'敗北（' + selected_month + '）' if month_filter else '累計敗北回数'}</div>
   <div class="dev-bar-wrap"><div class="dev-bar" style="width:{dpct}%;"></div></div>
