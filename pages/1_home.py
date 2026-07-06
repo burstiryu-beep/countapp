@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta, timezone
 import random
+import hashlib
 
 JST = timezone(timedelta(hours=9))
 
@@ -7,10 +8,14 @@ import streamlit as st
 import style
 from core import get_data, ensure_structure
 from storage import save_data
-from utils import aggregate, all_months, make_key, resolve_img_path
+from utils import aggregate, all_months, make_key, resolve_img_path, img_to_html
 
 style.apply()
 data = ensure_structure(get_data())
+
+now_jst = datetime.now(JST)
+today_str = now_jst.strftime("%Y-%m-%d")
+hour = now_jst.hour
 
 # ===== お言葉リスト（甘マゾ） =====
 MASTER_WORDS = [
@@ -28,48 +33,115 @@ MASTER_WORDS = [
     "いいの、いいの。弱くていいのよ。私がいるから。",
 ]
 
-# ===== 今日の敗北回数 =====
-today_str = datetime.now(JST).strftime("%Y-%m-%d")
+# 節目メッセージ（累計カウント数 → メッセージ）
+MILESTONES = {
+    10:  ("🎀", "10回目の敗北ね。これからもずっと負け続けるのよ、かわいい子。"),
+    30:  ("💋", "30回……本当に弱い子。でもそこが愛おしいわ。"),
+    50:  ("🔥", "50敗北達成。半人前の弱さから、立派な敗北者になったわね。"),
+    100: ("👑", "100回の敗北……おめでとう。あなたはもう完全に私のものよ。"),
+    200: ("💎", "200回……もはや言葉もないわ。最高の弱さね、ふふ。"),
+    365: ("🌹", "365回、1年分の敗北。あなたとの記録、大切にしてあげる。"),
+}
+
+# 時間帯挨拶
+def time_greeting():
+    if 5 <= hour < 11:
+        return "おはよう。今日も負けるの？ふふ。"
+    elif 11 <= hour < 17:
+        return "お昼でも欲求が抑えられないのね。かわいい。"
+    elif 17 <= hour < 22:
+        return "夜になったら我慢できなくなるのね。"
+    else:
+        return "こんな時間に……本当に弱い子ね。"
+
+# 今日のミッション（日付ベースのシード で固定）
+def daily_mission(items_list):
+    if not items_list:
+        return None, 0
+    seed = int(hashlib.md5(today_str.encode()).hexdigest(), 16)
+    rng = random.Random(seed)
+    target = rng.choice(items_list)
+    count = rng.choice([1, 2, 3])
+    return target, count
+
+# 開発度（累計カウント → 0〜100%）
+def dev_pct(total):
+    return min(100, int(total / max(1, 50) * 100))
+
+# ===== データ集計 =====
 today_count = sum(1 for h in data["history"] if h["time"].startswith(today_str))
+all_items = list({v["name"] for v in data["items"].values()})
+total_all = sum(sum(v.get("counts", {}).values()) for v in data["items"].values())
+
+# 節目チェック
+milestone_msg = None
+if "last_milestone_shown" not in st.session_state:
+    st.session_state.last_milestone_shown = 0
+for m_count, (m_icon, m_text) in sorted(MILESTONES.items()):
+    if total_all >= m_count > st.session_state.last_milestone_shown:
+        milestone_msg = (m_icon, m_text)
+        st.session_state.last_milestone_shown = m_count
 
 # ===== サイドバー =====
 st.sidebar.markdown(
     f"<div style='text-align:center;padding:0.8em;background:rgba(194,24,91,0.15);"
-    f"border:1px solid #c2185b;border-radius:10px;margin-bottom:1em;'>"
+    f"border:1px solid #c2185b;border-radius:10px;margin-bottom:0.8em;'>"
+    f"<div style='color:#ffb6d9;font-style:italic;font-size:0.9em;margin-bottom:0.4em;'>💬 {time_greeting()}</div>"
     f"<div style='color:#ff80ab;font-size:0.8em;'>今日の敗北回数</div>"
     f"<div style='font-size:2em;font-weight:900;color:#fff;'>{today_count} 回</div>"
+    f"<div style='color:#804060;font-size:0.75em;'>累計 {total_all} 回</div>"
     f"</div>",
     unsafe_allow_html=True,
 )
 
 months = all_months(data)
 month_options = ["全月"] + months
-selected_month = st.sidebar.selectbox(
-    "📅 月フィルター",
-    month_options,
-    help="特定の月の敗北回数を表示"
-)
+selected_month = st.sidebar.selectbox("📅 月フィルター", month_options)
 month_filter = None if selected_month == "全月" else selected_month
 
 _raw_date = st.sidebar.date_input(
-    "🗓 カウント日付",
-    value=date.today(),
-    max_value=date.today(),
+    "🗓 カウント日付", value=date.today(), max_value=date.today(),
     help="前日分を記録するときに変更"
 )
 count_date = _raw_date if isinstance(_raw_date, date) else date.today()
 
-# ===== お言葉表示 =====
+# ===== お言葉 =====
 if st.session_state.get("master_word"):
     st.markdown(
         f"<div style='background:rgba(194,24,91,0.2);border:1px solid #c2185b;"
-        f"border-radius:12px;padding:0.8em 1.2em;margin-bottom:1em;text-align:center;"
+        f"border-radius:12px;padding:0.8em 1.2em;margin-bottom:0.8em;text-align:center;"
         f"color:#ffb6d9;font-style:italic;font-size:1.05em;'>"
-        f"💬 {st.session_state.master_word}"
-        f"</div>",
+        f"💬 {st.session_state.master_word}</div>",
         unsafe_allow_html=True,
     )
     st.session_state.master_word = None
+
+# 節目メッセージ
+if milestone_msg:
+    icon, text = milestone_msg
+    st.markdown(
+        f"<div class='milestone-msg'>{icon} {text}</div>",
+        unsafe_allow_html=True,
+    )
+
+# ===== 今日のミッション =====
+mission_name, mission_count = daily_mission(all_items)
+if mission_name:
+    done = sum(1 for h in data["history"]
+               if h["time"].startswith(today_str) and h["name"] == mission_name)
+    bar = min(100, int(done / mission_count * 100))
+    clear = done >= mission_count
+    clear_txt = "　✅ クリア！お姉さんも満足よ。" if clear else ""
+    st.markdown(f"""
+<div class="mission-box">
+  <div style="color:#ff80ab;font-size:0.8em;letter-spacing:0.1em;">📋 今日のミッション</div>
+  <div style="font-size:1.1em;color:#ffe0f0;font-weight:700;margin:0.3em 0;">
+    「{mission_name}」で <span style="color:#ff4081;font-size:1.3em;">{mission_count}</span> 回 敗北射精しなさい{clear_txt}
+  </div>
+  <div class="dev-bar-wrap"><div class="dev-bar" style="width:{bar}%;"></div></div>
+  <div style="color:#804060;font-size:0.8em;">{done} / {mission_count} 回</div>
+</div>
+""", unsafe_allow_html=True)
 
 # ===== メイン =====
 month_label = f"【{selected_month}】" if month_filter else "【全月合計】"
@@ -79,7 +151,6 @@ st.markdown(
 )
 
 can_count = month_filter is not None
-
 if not can_count:
     st.markdown(
         "<div style='text-align:center;background:rgba(194,24,91,0.1);border:1px solid #c2185b;"
@@ -91,73 +162,72 @@ if not can_count:
 elif count_date < date.today():
     st.markdown(
         f"<div style='text-align:center;color:#ff80ab;margin-bottom:0.5em;'>"
-        f"📅 {count_date.strftime('%Y-%m-%d')} の日付で記録します"
-        f"</div>",
+        f"📅 {count_date.strftime('%Y-%m-%d')} の日付で記録します</div>",
         unsafe_allow_html=True,
     )
 
 items = aggregate(data, "all", month_filter)
-
 cols = st.columns(3)
 
 for i, (name, val) in enumerate(items.items()):
     with cols[i % 3]:
         item = next((v for v in data["items"].values() if v["name"] == name), {})
+        img_html = img_to_html(
+            item.get("img", ""),
+            style="width:100%;border-radius:10px;margin-bottom:0.5em;object-fit:cover;max-height:180px;"
+        )
 
-        img_path = resolve_img_path(item.get("img", ""))
-        img_html = ""
-        if img_path:
-            import base64
-            try:
-                with open(str(img_path), "rb") as f:
-                    b64 = base64.b64encode(f.read()).decode()
-                ext = str(img_path).rsplit(".", 1)[-1].lower()
-                mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
-                img_html = f'<img src="data:{mime};base64,{b64}" style="width:100%;border-radius:10px;margin-bottom:0.5em;"/>'
-            except Exception:
-                pass
-
+        total_item = sum(item.get("counts", {}).values())
+        dpct = dev_pct(total_item)
         counts = item.get("counts", {})
         breakdown = "　".join(
             f"<span style='color:#ff4081;font-size:0.75em;'>{m}: {c}回</span>"
             for m, c in sorted(counts.items(), reverse=True)[:3]
         ) if counts and not month_filter else ""
 
+        is_mission = (name == mission_name)
+        border_style = "border:2px solid #ffd700;box-shadow:0 0 16px rgba(255,215,0,0.4);" if is_mission else ""
+
         st.markdown(f"""
-<div class="ero-card">
+<div class="ero-card" style="{border_style}">
   {img_html}
-  <h3>🌸 {name}</h3>
+  <h3>{'⭐ ' if is_mission else '🌸 '}{name}</h3>
   <div class="ero-count">{val}</div>
   <div class="ero-label">{'敗北（' + selected_month + '）' if month_filter else '累計敗北回数'}</div>
-  {f'<div style="margin-top:0.4em;">{breakdown}</div>' if breakdown else ''}
+  <div class="dev-bar-wrap"><div class="dev-bar" style="width:{dpct}%;"></div></div>
+  <div style="color:#804060;font-size:0.75em;margin-bottom:0.2em;">開発度 {dpct}%</div>
+  {f'<div style="margin-top:0.2em;">{breakdown}</div>' if breakdown else ''}
 </div>
 """, unsafe_allow_html=True)
 
-        item_key = item.get("_key") or next(
-            (k for k, v in data["items"].items() if v["name"] == name), None
-        )
+        if can_count:
+            if st.button("💋 敗北射精", key=f"btn_{name}"):
+                item_key = next((k for k, v in data["items"].items() if v["name"] == name), None)
+                if item_key:
+                    counts_d = data["items"][item_key].get("counts")
+                    if not isinstance(counts_d, dict):
+                        data["items"][item_key]["counts"] = {}
+                    m = count_date.strftime("%Y-%m")
+                    data["items"][item_key]["counts"][m] = data["items"][item_key]["counts"].get(m, 0) + 1
+                    tab = data["items"][item_key].get("tab", "all")
+                else:
+                    item_key = make_key(name, "all")
+                    data["items"][item_key] = {"name": name, "tab": "all", "counts": {}, "img": "", "points": 0}
+                    m = count_date.strftime("%Y-%m")
+                    data["items"][item_key]["counts"][m] = 1
+                    tab = "all"
 
-        if can_count and st.button("💋 敗北射精", key=f"btn_{name}"):
-            if item_key and item_key in data["items"]:
-                counts_d = data["items"][item_key].get("counts")
-                if not isinstance(counts_d, dict):
-                    data["items"][item_key]["counts"] = {}
-                m = count_date.strftime("%Y-%m")
-                data["items"][item_key]["counts"][m] = data["items"][item_key]["counts"].get(m, 0) + 1
-                tab = data["items"][item_key].get("tab", "all")
-            else:
-                # 新規（念のため）
-                item_key = make_key(name, "all")
-                data["items"][item_key] = {"name": name, "tab": "all", "counts": {}, "img": "", "points": 0}
-                m = count_date.strftime("%Y-%m")
-                data["items"][item_key]["counts"][m] = 1
-                tab = "all"
+                time_str = datetime.combine(count_date, now_jst.time()).strftime("%Y-%m-%d %H:%M:%S")
+                data["history"].append({"name": name, "tab": tab, "time": time_str})
+                save_data(data)
 
-            time_str = datetime.combine(count_date, datetime.now(JST).time()).strftime("%Y-%m-%d %H:%M:%S")
-            data["history"].append({"name": name, "tab": tab, "time": time_str})
-            save_data(data)
-            st.session_state.master_word = random.choice(MASTER_WORDS)
-            st.rerun()
+                new_total = sum(sum(v.get("counts", {}).values()) for v in data["items"].values())
+                special = next(
+                    (f"{ic} {tx}" for mc, (ic, tx) in MILESTONES.items() if new_total == mc),
+                    None
+                )
+                st.session_state.master_word = special if special else random.choice(MASTER_WORDS)
+                st.rerun()
 
 st.divider()
 st.markdown("<h3>📜 敗北の記録</h3>", unsafe_allow_html=True)

@@ -123,6 +123,59 @@ hr {
 .tier-C  { color: #b39ddb; }
 .tier-D  { color: #888; }
 
+/* ===== ボタン脈動アニメーション ===== */
+@keyframes pulse-glow {
+    0%   { box-shadow: 0 0 10px rgba(255,64,129,0.5); }
+    50%  { box-shadow: 0 0 28px rgba(255,64,129,0.95), 0 0 6px rgba(255,192,203,0.6); }
+    100% { box-shadow: 0 0 10px rgba(255,64,129,0.5); }
+}
+.stButton > button {
+    animation: pulse-glow 2s ease-in-out infinite !important;
+}
+
+/* ===== 開発度ゲージ ===== */
+.dev-bar-wrap {
+    background: rgba(255,64,129,0.15);
+    border-radius: 6px;
+    height: 8px;
+    margin: 0.4em 0 0.2em;
+    overflow: hidden;
+}
+.dev-bar {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #c2185b, #ff80ab);
+    transition: width 0.6s ease;
+}
+
+/* ===== ミッションボックス ===== */
+.mission-box {
+    background: linear-gradient(135deg, rgba(194,24,91,0.2), rgba(80,0,40,0.4));
+    border: 1px solid #ff4081;
+    border-radius: 14px;
+    padding: 0.9em 1.3em;
+    margin-bottom: 1em;
+    text-align: center;
+}
+
+/* ===== マイルストーン ===== */
+@keyframes milestone-flash {
+    0%,100% { opacity:1; }
+    50%      { opacity:0.5; }
+}
+.milestone-msg {
+    animation: milestone-flash 1s ease-in-out 3;
+    background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(194,24,91,0.2));
+    border: 1px solid gold;
+    border-radius: 14px;
+    padding: 0.8em 1.2em;
+    text-align: center;
+    color: #ffd700;
+    font-weight: 700;
+    font-size: 1.05em;
+    margin-bottom: 1em;
+}
+
 /* ===== スクロールバー ===== */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #120008; }
