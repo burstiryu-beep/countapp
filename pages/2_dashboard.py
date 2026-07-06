@@ -1,3 +1,4 @@
+from datetime import datetime
 import streamlit as st
 import style
 from core import get_data, ensure_structure, compute_points
@@ -65,5 +66,110 @@ for m, c in sorted(month_map.items(), reverse=True):
         f"<div style='height:18px;width:{bar_len}px;background:linear-gradient(90deg,#c2185b,#ff4081);border-radius:9px;'></div>"
         f"<span style='color:#ffe0f0;font-weight:700;'>{c} 回</span>"
         f"</div>",
+        unsafe_allow_html=True,
+    )
+
+st.divider()
+
+# ===== 時間帯別 & 曜日別分析 =====
+time_labels = ["深夜\n(0-4時)", "朝\n(5-10時)", "昼\n(11-16時)", "夜\n(17-23時)"]
+time_keys   = ["深夜", "朝", "昼", "夜"]
+time_counts = {k: 0 for k in time_keys}
+weekday_labels = ["月", "火", "水", "木", "金", "土", "日"]
+weekday_counts = {d: 0 for d in weekday_labels}
+
+for h in data["history"]:
+    try:
+        dt = datetime.strptime(h["time"], "%Y-%m-%d %H:%M:%S")
+        hr = dt.hour
+        if hr < 5:
+            time_counts["深夜"] += 1
+        elif hr < 11:
+            time_counts["朝"] += 1
+        elif hr < 17:
+            time_counts["昼"] += 1
+        else:
+            time_counts["夜"] += 1
+        weekday_counts[weekday_labels[dt.weekday()]] += 1
+    except Exception:
+        pass
+
+time_total = sum(time_counts.values()) or 1
+weekday_total = sum(weekday_counts.values()) or 1
+
+peak_time = max(time_counts, key=time_counts.get) if time_total > 1 else None
+peak_day  = max(weekday_counts, key=weekday_counts.get) if weekday_total > 1 else None
+
+time_comments = {
+    "深夜": "深夜の衝動が一番強いのね……ふふ。",
+    "朝":   "朝から溜まってるなんて、かわいい子。",
+    "昼":   "昼間っから……我慢できないのね。",
+    "夜":   "夜になると弱くなるのね。わかりやすい。",
+}
+
+st.markdown("<h3>⏰ 時間帯別 敗北パターン</h3>", unsafe_allow_html=True)
+
+time_icons = {"深夜": "🌙", "朝": "🌅", "昼": "☀️", "夜": "🌆"}
+max_time_c = max(time_counts.values()) or 1
+time_row = ""
+for k in time_keys:
+    c = time_counts[k]
+    pct = round(c / time_total * 100)
+    bar_w = int(c / max_time_c * 140)
+    is_peak = (k == peak_time)
+    highlight = "background:rgba(194,24,91,0.2);border:1px solid #ff4081;" if is_peak else "background:rgba(30,0,20,0.4);border:1px solid rgba(194,24,91,0.2);"
+    peak_mark = " 👑" if is_peak else ""
+    time_row += (
+        f"<div style='flex:1;{highlight}border-radius:10px;padding:0.6em;text-align:center;'>"
+        f"<div style='font-size:1.4em;'>{time_icons[k]}</div>"
+        f"<div style='color:#ffb6d9;font-size:0.78em;white-space:pre-line;'>{k}{peak_mark}</div>"
+        f"<div style='color:#fff;font-size:1.2em;font-weight:900;'>{c}</div>"
+        f"<div style='color:#804060;font-size:0.72em;'>{pct}%</div>"
+        f"</div>"
+    )
+st.markdown(
+    f"<div style='display:flex;gap:0.5em;margin-bottom:0.8em;'>{time_row}</div>",
+    unsafe_allow_html=True,
+)
+if peak_time:
+    st.markdown(
+        f"<div style='color:#ffb6d9;font-style:italic;font-size:0.9em;text-align:center;"
+        f"background:rgba(194,24,91,0.1);border-radius:8px;padding:0.5em;margin-bottom:0.8em;'>"
+        f"💬 {time_comments[peak_time]}</div>",
+        unsafe_allow_html=True,
+    )
+
+st.divider()
+st.markdown("<h3>📆 曜日別 危険度</h3>", unsafe_allow_html=True)
+
+max_day_c = max(weekday_counts.values()) or 1
+day_row = ""
+for d in weekday_labels:
+    c = weekday_counts[d]
+    pct = round(c / weekday_total * 100)
+    bar_h = int(c / max_day_c * 70) + 10
+    is_peak = (d == peak_day)
+    color = "#ff4081" if is_peak else "#c2185b"
+    border = "border:2px solid #ff4081;" if is_peak else "border:1px solid rgba(194,24,91,0.3);"
+    peak_mark = "👑" if is_peak else ""
+    day_row += (
+        f"<div style='flex:1;text-align:center;'>"
+        f"<div style='height:{bar_h}px;background:linear-gradient(180deg,{color},{color}88);"
+        f"border-radius:4px 4px 0 0;{border}border-bottom:none;'></div>"
+        f"<div style='background:rgba(30,0,20,0.6);{border}border-top:none;"
+        f"border-radius:0 0 4px 4px;padding:2px 0;'>"
+        f"<div style='color:#ff80ab;font-size:0.78em;font-weight:700;'>{d}{peak_mark}</div>"
+        f"<div style='color:#ffe0f0;font-size:0.75em;'>{c}回</div>"
+        f"</div></div>"
+    )
+st.markdown(
+    f"<div style='display:flex;gap:4px;align-items:flex-end;margin-bottom:0.8em;'>{day_row}</div>",
+    unsafe_allow_html=True,
+)
+if peak_day:
+    st.markdown(
+        f"<div style='color:#ffb6d9;font-style:italic;font-size:0.9em;text-align:center;"
+        f"background:rgba(194,24,91,0.1);border-radius:8px;padding:0.5em;'>"
+        f"💬 {peak_day}曜日が一番危険な日ね。自分でもわかってるでしょ？</div>",
         unsafe_allow_html=True,
     )

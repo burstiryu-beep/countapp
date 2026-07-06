@@ -1,6 +1,7 @@
 from datetime import date, datetime, timedelta, timezone
 import random
 import hashlib
+import calendar as cal_mod
 
 JST = timezone(timedelta(hours=9))
 
@@ -132,6 +133,90 @@ def tonight_situ(name):
     ]
     return rng.choice(situs)
 
+# カード色分け（月カウント or 累計ベース）
+def card_danger(count):
+    if count <= 5:
+        return (
+            "border:1px solid rgba(56,142,60,0.7);box-shadow:0 0 8px rgba(56,142,60,0.2);",
+            "🟢", "安全圏", "#81c784",
+        )
+    elif count <= 15:
+        return (
+            "border:1px solid rgba(245,124,0,0.8);box-shadow:0 0 10px rgba(245,124,0,0.25);",
+            "🟡", "警戒ゾーン", "#ffb74d",
+        )
+    else:
+        return (
+            "border:2px solid #ff4081;box-shadow:0 0 18px rgba(255,64,129,0.45);animation:pulse-glow 2s infinite;",
+            "🔴", "完全支配", "#ff4081",
+        )
+
+# 月間カレンダーヒートマップ
+def render_calendar(history, year, month):
+    days_in_month = cal_mod.monthrange(year, month)[1]
+    first_weekday = cal_mod.monthrange(year, month)[0]
+    month_str = f"{year}-{month:02d}"
+    day_counts = {}
+    for h in history:
+        if h["time"].startswith(month_str):
+            try:
+                d = int(h["time"][8:10])
+                day_counts[d] = day_counts.get(d, 0) + 1
+            except Exception:
+                pass
+
+    def cell_bg(c):
+        if c == 0:
+            return "rgba(40,40,40,0.5)", "#555", ""
+        elif c <= 5:
+            return "rgba(56,142,60,0.3)", "#81c784", str(c)
+        elif c <= 15:
+            return "rgba(245,124,0,0.4)", "#ffb74d", str(c)
+        else:
+            return "rgba(194,24,91,0.65)", "#ff80ab", str(c)
+
+    headers = ["月", "火", "水", "木", "金", "土", "日"]
+    header_row = "".join(
+        f"<div style='text-align:center;color:#ff80ab;font-size:0.72em;"
+        f"padding:3px 0;font-weight:700;'>{h}</div>"
+        for h in headers
+    )
+    cells = ""
+    for _ in range(first_weekday):
+        cells += "<div></div>"
+    today = date.today()
+    for d in range(1, days_in_month + 1):
+        c = day_counts.get(d, 0)
+        bg, color, label = cell_bg(c)
+        is_today = (date(year, month, d) == today)
+        border = "border:1.5px solid #ff4081;" if is_today else "border:1px solid transparent;"
+        cells += (
+            f"<div style='background:{bg};border-radius:6px;{border}"
+            f"text-align:center;padding:3px 1px;min-height:38px;'>"
+            f"<div style='color:#666;font-size:0.68em;line-height:1.2;'>{d}</div>"
+            f"<div style='color:{color};font-size:0.82em;font-weight:700;line-height:1.2;'>{label}</div>"
+            f"</div>"
+        )
+    pad = (7 - (first_weekday + days_in_month) % 7) % 7
+    for _ in range(pad):
+        cells += "<div></div>"
+
+    return (
+        f"<div style='background:rgba(15,0,10,0.7);border:1px solid rgba(194,24,91,0.3);"
+        f"border-radius:14px;padding:1em;margin-bottom:1em;'>"
+        f"<div style='color:#ff80ab;font-size:0.88em;text-align:center;font-weight:700;"
+        f"margin-bottom:0.6em;'>📅 {year}年{month}月 敗北カレンダー</div>"
+        f"<div style='display:grid;grid-template-columns:repeat(7,1fr);gap:3px;'>"
+        f"{header_row}{cells}</div>"
+        f"<div style='display:flex;gap:1em;justify-content:center;margin-top:0.7em;"
+        f"font-size:0.7em;color:#666;flex-wrap:wrap;'>"
+        f"<span>⬛ 0回</span>"
+        f"<span style='color:#81c784;'>🟩 1-5回</span>"
+        f"<span style='color:#ffb74d;'>🟧 6-15回</span>"
+        f"<span style='color:#ff4081;'>🟥 16回+</span>"
+        f"</div></div>"
+    )
+
 # ===== データ集計 =====
 today_count = sum(1 for h in data["history"] if h["time"].startswith(today_str))
 total_all = sum(sum(v.get("counts", {}).values()) for v in data["items"].values())
@@ -214,6 +299,11 @@ months = all_months(data)
 month_options = ["全月"] + months
 selected_month = st.sidebar.selectbox("📅 月フィルター", month_options)
 month_filter = None if selected_month == "全月" else selected_month
+
+sort_key = st.sidebar.selectbox(
+    "🔀 並び替え",
+    ["累計多い順", "今月多い順", "最近負けた順", "禁欲が長い順"],
+)
 
 _raw_date = st.sidebar.date_input(
     "🗓 カウント日付", value=date.today(), max_value=date.today(),
@@ -301,6 +391,21 @@ elif count_date < date.today():
 
 items = aggregate(data, "all", month_filter)
 
+# 並び替え
+def _item_total(name):
+    return sum(next((v for v in data["items"].values() if v["name"] == name), {}).get("counts", {}).values())
+
+item_list = list(items.items())
+if sort_key == "累計多い順":
+    item_list.sort(key=lambda x: -_item_total(x[0]))
+elif sort_key == "今月多い順":
+    item_list.sort(key=lambda x: -x[1])
+elif sort_key == "最近負けた順":
+    item_list.sort(key=lambda x: days_since_last(data["history"], x[0]) if days_since_last(data["history"], x[0]) is not None else 9999)
+elif sort_key == "禁欲が長い順":
+    item_list.sort(key=lambda x: -(days_since_last(data["history"], x[0]) or 0))
+items = dict(item_list)
+
 # ===== 弱点ガチャ =====
 all_names = list(items.keys())
 if all_names:
@@ -360,6 +465,8 @@ for i, (name, val) in enumerate(items.items()):
         ) if counts and not month_filter else ""
 
         dominance = round(total_item / total_all * 100, 1) if total_all > 0 else 0
+        display_count = val if month_filter else total_item
+        card_style, danger_icon, danger_label, danger_color = card_danger(display_count)
 
         dsince = days_since_last(data["history"], name)
         if dsince is None:
@@ -382,9 +489,12 @@ for i, (name, val) in enumerate(items.items()):
         )
 
         st.markdown(f"""
-<div class="ero-card">
+<div class="ero-card" style="{card_style}">
   {img_html}
-  <h3>🌸 {name}</h3>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2em;">
+    <h3 style="margin:0;">🌸 {name}</h3>
+    <span style="font-size:0.8em;font-weight:700;color:{danger_color};">{danger_icon} {danger_label}</span>
+  </div>
   <div class="ero-count">{val}</div>
   <div class="ero-label">{'敗北（' + selected_month + '）' if month_filter else '累計敗北回数'}</div>
   {since_html}
@@ -428,6 +538,14 @@ for i, (name, val) in enumerate(items.items()):
                 st.rerun()
 
 st.divider()
+
+# ===== 月間カレンダー =====
+if month_filter:
+    cal_year, cal_month = int(month_filter[:4]), int(month_filter[5:7])
+else:
+    cal_year, cal_month = now_jst.year, now_jst.month
+st.markdown(render_calendar(data["history"], cal_year, cal_month), unsafe_allow_html=True)
+
 st.markdown("<h3>📜 敗北の記録</h3>", unsafe_allow_html=True)
 for h in reversed(data["history"][-20:]):
     st.markdown(
