@@ -138,7 +138,7 @@ def card_danger(count):
     if count <= 5:
         return (
             "border:1px solid rgba(180,100,140,0.5);box-shadow:0 0 6px rgba(180,100,140,0.15);",
-            "💭", "意識してる", "#ce93d8",
+            "💭", "感じはじめてる", "#ce93d8",
         )
     elif count <= 15:
         return (
@@ -157,7 +157,7 @@ def render_calendar(history, year, month, items_data):
     first_weekday = cal_mod.monthrange(year, month)[0]
     month_str = f"{year}-{month:02d}"
 
-    # name → base64 src をキャッシュ（小サイズ）
+    # name → base64 src をキャッシュ（ホバー拡大クラス付き）
     _img_cache = {}
     def _thumb(name):
         if name in _img_cache:
@@ -165,9 +165,11 @@ def render_calendar(history, year, month, items_data):
         item = next((v for v in items_data.values() if v["name"] == name), {})
         tag = img_to_html(
             item.get("img", ""),
-            style="width:22px;height:22px;object-fit:cover;border-radius:50%;display:inline-block;",
+            style="width:26px;height:26px;object-fit:cover;border-radius:50%;",
             face_detect=False,
         )
+        # class="cal-t" を付与してホバー拡大を有効化
+        tag = tag.replace("<img ", '<img class="cal-t" ')
         _img_cache[name] = tag
         return tag
 
@@ -217,7 +219,7 @@ def render_calendar(history, year, month, items_data):
         count_label = f"<div style='color:#ddd;font-size:0.7em;font-weight:700;'>{c}回</div>" if c > 0 else ""
         cells += (
             f"<div style='background:{bg};border-radius:6px;{bdr}"
-            f"text-align:center;padding:3px 2px;min-height:46px;'>"
+            f"text-align:center;padding:4px 2px;min-height:56px;overflow:visible;'>"
             f"<div style='color:#666;font-size:0.65em;'>{d}</div>"
             f"<div style='display:flex;flex-wrap:wrap;justify-content:center;gap:1px;margin:2px 0;'>{imgs_html}</div>"
             f"{count_label}"
@@ -232,7 +234,7 @@ def render_calendar(history, year, month, items_data):
         f"border-radius:14px;padding:1em;margin-bottom:1em;'>"
         f"<div style='color:#ff80ab;font-size:0.88em;text-align:center;font-weight:700;"
         f"margin-bottom:0.6em;'>📅 {year}年{month}月 敗北カレンダー</div>"
-        f"<div style='display:grid;grid-template-columns:repeat(7,1fr);gap:4px;'>"
+        f"<div style='display:grid;grid-template-columns:repeat(7,1fr);gap:4px;overflow:visible;'>"
         f"{header_row}{cells}</div>"
         f"<div style='display:flex;gap:1em;justify-content:center;margin-top:0.7em;"
         f"font-size:0.7em;color:#666;flex-wrap:wrap;'>"

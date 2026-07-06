@@ -176,6 +176,24 @@ hr {
     margin-bottom: 1em;
 }
 
+/* ===== カレンダーサムネイル ホバー拡大 ===== */
+img.cal-t {
+    width: 26px;
+    height: 26px;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-radius 0.22s ease;
+    cursor: zoom-in;
+    position: relative;
+    z-index: 1;
+}
+img.cal-t:hover {
+    transform: scale(5);
+    z-index: 9999;
+    border-radius: 6px !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.9), 0 0 12px rgba(255,64,129,0.6);
+}
+
 /* ===== スクロールバー ===== */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #120008; }
