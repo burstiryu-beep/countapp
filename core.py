@@ -22,16 +22,28 @@ def ensure_structure(data):
     return data
 
 
-def aggregate(data, tab_id):
+def aggregate(data, tab_id, month=None):
     result = {}
 
     for k, v in active_items(data).items():
         if tab_id != "all" and v.get("tab") != tab_id:
             continue
         name = v["name"]
-        result[name] = result.get(name, 0) + sum(v.get("counts", {}).values())
+        counts = v.get("counts", {})
+        if month and month != "all":
+            total = counts.get(month, 0)
+        else:
+            total = sum(counts.values())
+        result[name] = result.get(name, 0) + total
 
     return result
+
+
+def all_months(data):
+    months = set()
+    for v in active_items(data).values():
+        months.update(v.get("counts", {}).keys())
+    return sorted(months, reverse=True)
 
 
 def count_item(data, name, tab, count_date=None):
