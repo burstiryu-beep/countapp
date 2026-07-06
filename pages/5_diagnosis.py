@@ -28,7 +28,7 @@ if selected:
     item = next((v for v in data["items"].values() if v["name"] == selected), {})
     img_html = img_to_html(
         item.get("img", ""),
-        style="width:100%;max-height:260px;object-fit:cover;object-position:top;border-radius:12px;margin-bottom:0.8em;"
+        style="width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-bottom:0.8em;"
     )
 
     tier_comment = {

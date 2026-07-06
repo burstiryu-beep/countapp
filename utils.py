@@ -55,7 +55,44 @@ def registered_item_count(data):
     return len(active_items(data))
 
 
-def img_to_html(img_path, style="width:100%;border-radius:12px;margin-bottom:0.6em;"):
+_face_pos_cache: dict = {}
+
+
+def detect_face_position(img_path: str) -> str:
+    """顔を検出してCSS object-position文字列を返す。検出失敗時は上部寄りを返す。"""
+    if img_path in _face_pos_cache:
+        return _face_pos_cache[img_path]
+
+    default = "center 15%"
+    try:
+        import cv2
+
+        img = cv2.imread(str(img_path))
+        if img is None:
+            return default
+
+        h, w = img.shape[:2]
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        cascade = cv2.CascadeClassifier(cascade_path)
+        faces = cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(30, 30))
+
+        if len(faces) == 0:
+            result = default
+        else:
+            fx, fy, fw, fh = max(faces, key=lambda f: f[2] * f[3])
+            cx = int((fx + fw / 2) / w * 100)
+            cy = int((fy + fh / 2) / h * 100)
+            result = f"{cx}% {cy}%"
+
+    except Exception:
+        result = default
+
+    _face_pos_cache[img_path] = result
+    return result
+
+
+def img_to_html(img_path, style="width:100%;border-radius:12px;margin-bottom:0.6em;", face_detect=True):
     p = resolve_img_path(img_path)
     if not p:
         return ""
@@ -65,6 +102,11 @@ def img_to_html(img_path, style="width:100%;border-radius:12px;margin-bottom:0.6
             b64 = base64.b64encode(f.read()).decode()
         ext = str(p).rsplit(".", 1)[-1].lower()
         mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
+
+        if face_detect and "object-position" not in style:
+            pos = detect_face_position(str(p))
+            style = style.rstrip(";") + f";object-position:{pos};"
+
         return f'<img src="data:{mime};base64,{b64}" style="{style}"/>'
     except Exception:
         return ""
