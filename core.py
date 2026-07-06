@@ -1,4 +1,6 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
+
+JST = timezone(timedelta(hours=9))
 
 from storage import load_data, save_data
 from utils import active_items, make_key, tier
@@ -56,7 +58,7 @@ def count_item(data, name, tab, count_date=None):
 
     time_str = datetime.combine(
         count_date,
-        datetime.now().time()
+        datetime.now(JST).time()
     ).strftime("%Y-%m-%d %H:%M:%S")
 
     data["history"].append({

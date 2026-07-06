@@ -1,17 +1,19 @@
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 from pathlib import Path
+
+JST = timezone(timedelta(hours=9))
 
 
 def now():
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def month():
-    return datetime.now().strftime("%Y-%m")
+    return datetime.now(JST).strftime("%Y-%m")
 
 
 def today():
-    return datetime.now().strftime("%Y-%m-%d")
+    return datetime.now(JST).strftime("%Y-%m-%d")
 
 
 def make_key(name, tab):

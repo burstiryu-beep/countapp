@@ -1,4 +1,6 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
+
+JST = timezone(timedelta(hours=9))
 
 import streamlit as st
 from core import get_data, ensure_structure, aggregate
@@ -70,7 +72,7 @@ for i, (name, val) in enumerate(items.items()):
                     data["items"][key]["counts"] = {}
                 m = count_date.strftime("%Y-%m")
                 data["items"][key]["counts"][m] = data["items"][key]["counts"].get(m, 0) + 1
-                time_str = datetime.combine(count_date, datetime.now().time()).strftime("%Y-%m-%d %H:%M:%S")
+                time_str = datetime.combine(count_date, datetime.now(JST).time()).strftime("%Y-%m-%d %H:%M:%S")
                 data["history"].append({"name": name, "tab": current_tab, "time": time_str})
                 save_data(data)
                 st.rerun()
