@@ -44,10 +44,10 @@ if selected:
     sakibashiri = min(5, pts // 10)
 
     overall = (
-        "💀 射精不可避の最強弱点" if pts >= 80 else
-        "🔥 S+級の超弱点"         if pts >= 50 else
-        "💋 A級の優秀な弱点"       if pts >= 30 else
-        "🌸 B級の弱点。まだまだ成長余地あり"
+        "💀 逃げ場なし。完全雌堕ち確定の最強弱点" if pts >= 80 else
+        "🔥 惨敗必至。触れられたら即終わり"       if pts >= 50 else
+        "💋 かなり危険。集中攻撃されると敗北確定"  if pts >= 30 else
+        "🌸 まだ抵抗できる……でもいつか必ず負ける"
     )
 
     st.markdown(f"""
@@ -62,7 +62,7 @@ if selected:
 
   <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6em; margin-bottom:1em;">
     <div style="background:rgba(255,64,129,0.1); border-radius:10px; padding:0.6em; text-align:center;">
-      <div style="color:#ff80ab; font-size:0.8em;">💦 累計射精</div>
+      <div style="color:#ff80ab; font-size:0.8em;">💋 累計敗北回数</div>
       <div style="font-size:1.8em; font-weight:900; color:#fff;">{pts} 回</div>
     </div>
     <div style="background:rgba(255,64,129,0.1); border-radius:10px; padding:0.6em; text-align:center;">

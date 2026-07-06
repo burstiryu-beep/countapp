@@ -14,15 +14,15 @@ streak = calc_continuous_days(data["history"])
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.metric("💦 総射精回数", total_counts)
+    st.metric("💋 累計敗北回数", total_counts)
 with col2:
     st.metric("🌸 登録弱点数", registered_item_count(data))
 with col3:
-    st.metric("🔥 連続記録日数", f"{streak} 日")
+    st.metric("🔥 連続敗北日数", f"{streak} 日")
 
 st.divider()
 
-st.markdown("<h3>🏆 感度ランキング Top 5</h3>", unsafe_allow_html=True)
+st.markdown("<h3>🏆 敗北ランキング Top 5</h3>", unsafe_allow_html=True)
 
 ranking = compute_points(data)
 sorted_rank = sorted(ranking.items(), key=lambda x: -x[1]["points"])
@@ -44,7 +44,7 @@ for rank, (name, info) in enumerate(sorted_rank[:5], 1):
 
 st.divider()
 
-st.markdown("<h3>📅 月別 射精回数</h3>", unsafe_allow_html=True)
+st.markdown("<h3>📅 月別 敗北回数</h3>", unsafe_allow_html=True)
 
 month_map = {}
 for v in items.values():
