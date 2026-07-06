@@ -148,7 +148,7 @@ def card_danger(count):
     else:
         return (
             "border:2px solid #ff4081;box-shadow:0 0 20px rgba(255,64,129,0.5);animation:pulse-glow 2s infinite;",
-            "💋", "逃げられないわよ", "#ff4081",
+            "💋", "もう抵抗もできないね💞", "#ff4081",
         )
 
 # 月間カレンダーヒートマップ（画像付き）
