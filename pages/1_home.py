@@ -137,6 +137,13 @@ today_count = sum(1 for h in data["history"] if h["time"].startswith(today_str))
 total_all = sum(sum(v.get("counts", {}).values()) for v in data["items"].values())
 recent_name = next((h["name"] for h in reversed(data["history"])), None)
 
+# 禁欲連続日数（最後のカウントから今日まで）
+def abstinence_days(history):
+    last = next((h["time"][:10] for h in reversed(history)), None)
+    if not last:
+        return None
+    return (date.today() - datetime.strptime(last, "%Y-%m-%d").date()).days
+
 # おすすめオナペ候補（上位3件からランダム選出）
 from core import compute_points
 ranking = compute_points(data)
@@ -174,6 +181,34 @@ st.sidebar.markdown(
     f"</div>",
     unsafe_allow_html=True,
 )
+
+# 禁欲日数サイドバー
+ab_days = abstinence_days(data["history"])
+if ab_days is not None:
+    if ab_days == 0:
+        ab_label = "今日も既に負けてるわ"
+        ab_color = "#ff4081"
+    elif ab_days == 1:
+        ab_label = "昨日以来……そろそろ限界でしょ"
+        ab_color = "#ff80ab"
+    elif ab_days <= 3:
+        ab_label = f"{ab_days}日間の禁欲中……えらいわ、でも"
+        ab_color = "#ffb6d9"
+    elif ab_days <= 7:
+        ab_label = f"{ab_days}日間も我慢してるの？ふふ"
+        ab_color = "#ffe0f0"
+    else:
+        ab_label = f"{ab_days}日間……本当に大丈夫？"
+        ab_color = "#fff"
+    st.sidebar.markdown(
+        f"<div style='text-align:center;padding:0.5em;background:rgba(100,0,50,0.2);"
+        f"border:1px solid rgba(194,24,91,0.4);border-radius:8px;margin-bottom:0.8em;'>"
+        f"<div style='color:#ff80ab;font-size:0.75em;'>🕊 禁欲連続日数</div>"
+        f"<div style='font-size:1.8em;font-weight:900;color:{ab_color};'>{ab_days} 日</div>"
+        f"<div style='color:#ffb6d9;font-style:italic;font-size:0.78em;'>{ab_label}</div>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
 
 months = all_months(data)
 month_options = ["全月"] + months
@@ -265,6 +300,48 @@ elif count_date < date.today():
     )
 
 items = aggregate(data, "all", month_filter)
+
+# ===== 弱点ガチャ =====
+all_names = list(items.keys())
+if all_names:
+    gacha_col1, gacha_col2 = st.columns([2, 1])
+    with gacha_col1:
+        if st.button("🎰 今日の弱点ガチャ", key="gacha_btn", use_container_width=True):
+            st.session_state.gacha_result = random.choice(all_names)
+            st.session_state.gacha_new = True
+    with gacha_col2:
+        if st.button("✖ 閉じる", key="gacha_close", use_container_width=True):
+            st.session_state.gacha_result = None
+
+    if st.session_state.get("gacha_result"):
+        g_name = st.session_state.gacha_result
+        g_item = next((v for v in data["items"].values() if v["name"] == g_name), {})
+        g_img = img_to_html(
+            g_item.get("img", ""),
+            style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:0.6em;"
+        )
+        g_total = sum(g_item.get("counts", {}).values())
+        gacha_msgs = [
+            f"今日の弱点は……「{g_name}」！もう逃げられないわ。",
+            f"運命が決まったわ。今日は「{g_name}」にとろかされなさい。",
+            f"「{g_name}」があなたを選んだわ。素直に従うのよ。",
+            f"ふふ、「{g_name}」ね。抵抗しても無駄よ。",
+        ]
+        seed_g = int(hashlib.md5(f"gacha{g_name}{today_str}".encode()).hexdigest(), 16)
+        gacha_msg = random.Random(seed_g).choice(gacha_msgs)
+        st.markdown(f"""
+<div style="background:linear-gradient(135deg,rgba(194,24,91,0.25),rgba(100,0,60,0.3));
+  border:2px solid #ff4081;border-radius:16px;padding:1em;margin-bottom:1em;text-align:center;
+  box-shadow:0 0 20px rgba(255,64,129,0.3);">
+  <div style="color:#ff80ab;font-size:0.8em;letter-spacing:0.12em;margin-bottom:0.5em;">🎰 今日の弱点</div>
+  {g_img}
+  <h2 style="color:#ffe0f0;margin:0.3em 0;">💋 {g_name}</h2>
+  <div style="color:#ffb6d9;font-style:italic;font-size:0.95em;margin-top:0.4em;">「{gacha_msg}」</div>
+  <div style="color:#804060;font-size:0.8em;margin-top:0.5em;">累計敗北 {g_total} 回</div>
+</div>
+""", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+
 cols = st.columns(3)
 
 for i, (name, val) in enumerate(items.items()):
@@ -281,6 +358,8 @@ for i, (name, val) in enumerate(items.items()):
             f"<span style='color:#ff4081;font-size:0.75em;'>{m}: {c}回</span>"
             for m, c in sorted(counts.items(), reverse=True)[:3]
         ) if counts and not month_filter else ""
+
+        dominance = round(total_item / total_all * 100, 1) if total_all > 0 else 0
 
         dsince = days_since_last(data["history"], name)
         if dsince is None:
@@ -310,7 +389,10 @@ for i, (name, val) in enumerate(items.items()):
   <div class="ero-label">{'敗北（' + selected_month + '）' if month_filter else '累計敗北回数'}</div>
   {since_html}
   <div class="dev-bar-wrap"><div class="dev-bar" style="width:{dpct}%;"></div></div>
-  <div style="color:#804060;font-size:0.75em;margin-bottom:0.2em;">開発度 {dpct}%</div>
+  <div style="color:#804060;font-size:0.75em;margin-bottom:0.3em;">開発度 {dpct}%</div>
+  <div style="color:#ff4081;font-size:0.78em;font-weight:700;margin-bottom:0.2em;">
+    👑 全敗北の {dominance}% があなたのせい
+  </div>
   {f'<div style="margin-top:0.2em;">{breakdown}</div>' if breakdown else ''}
   {voice_html}
 </div>
