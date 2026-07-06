@@ -34,7 +34,7 @@ for rank, (name, info) in enumerate(sorted_rank, 1):
     pts = info["points"]
 
     item = next((v for v in data["items"].values() if v["name"] == name), {})
-    img_html = img_to_html(item.get("img", ""), style="width:100%;border-radius:10px;margin-bottom:0.6em;object-fit:cover;max-height:200px;")
+    img_html = img_to_html(item.get("img", ""), style="width:100%;border-radius:10px;margin-bottom:0.6em;object-fit:cover;object-position:top;max-height:200px;")
 
     with cols[(rank - 1) % 2]:
         st.markdown(f"""
