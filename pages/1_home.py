@@ -16,21 +16,22 @@ now_jst = datetime.now(JST)
 today_str = now_jst.strftime("%Y-%m-%d")
 hour = now_jst.hour
 
-# ===== お言葉リスト（甘マゾ） =====
-MASTER_WORDS = [
-    "またイっちゃったの？しょうがない子ね、ふふ。",
-    "その弱点、ほんとうにかわいいわ。正直に言えたこと、褒めてあげる。",
-    "ふふ、また記録が増えたわね。かわいい敗北。",
-    "もっと弱くなっていいのよ？私が全部管理してあげるから。",
-    "弱い子ね……でもそこが好きよ、ふふ。",
-    "ちゃんと記録できて偉いわ。いい子。",
-    "また負けちゃったのね。かわいいわ、もう。",
-    "その弱点、私だけが知ってるのよ。特別でしょ？",
-    "逃げなくていいの。ここにいていいから。",
-    "敗北するたびに、あなたはもっと私のものになっていくのよ。",
-    "ふふ、素直でかわいいわね。",
-    "いいの、いいの。弱くていいのよ。私がいるから。",
-]
+def master_word(name):
+    lines = [
+        f"また{name}に負けちゃったのね。しょうがない子、ふふ。",
+        f"{name}には勝てないでしょ？正直でかわいいわ。",
+        f"ふふ、{name}で記録が増えたわね。かわいい敗北。",
+        f"{name}のこと、そんなに好きなの？もっと弱くなっていいのよ。",
+        f"また{name}にとろけたのね……でもそこが好きよ。",
+        f"{name}でちゃんと記録できて偉いわ。いい子。",
+        f"また{name}に負けちゃったの。かわいいわ、もう。",
+        f"{name}のこと、私だけが知ってるのよ。特別でしょ？",
+        f"{name}から逃げなくていいの。ここにいていいから。",
+        f"{name}に敗北するたびに、あなたはもっと私のものになっていくのよ。",
+        f"ふふ、{name}に素直でかわいいわね。",
+        f"{name}には弱くていいのよ。私がいるから。",
+    ]
+    return random.choice(lines)
 
 # 節目メッセージ
 MILESTONES = {
@@ -42,47 +43,48 @@ MILESTONES = {
     365: ("🌹", "365回、1年分の敗北。あなたとの記録、大切にしてあげる。"),
 }
 
-# おすすめセリフ（弱点別 × 段階別）
-def recommend_lines(name, total, tier):
+def recommend_lines(name, total, t):
     lines_by_tier = {
         "SS": [
-            f"ねえ、また{name}で負けてみない？あなた絶対我慢できないでしょ💞",
-            f"{name}……思い出しただけでもう反応してるんじゃない？ふふ。",
-            f"この弱点、最強ね。また{name}でとろけさせてあげようか？",
+            f"ねえ、また{name}に会いたくなってきたんじゃない？絶対我慢できないでしょ💞",
+            f"{name}のこと、思い出しただけでもう反応してるんじゃない？ふふ。",
+            f"{name}にはどうせ勝てないんだから、素直に負けてきなさい。",
+            f"また{name}にとろけさせてもらいなさい。あなたにはそれがお似合いよ。",
         ],
         "S": [
-            f"{name}、まだいけるんじゃない？もう一回くらい♡",
-            f"また{name}で遊んであげようか。絶対気持ちいいから。",
-            f"{name}には勝てないでしょ、正直に認めなさい。",
+            f"{name}、まだあなたのことを待ってるわよ？もう一回くらい♡",
+            f"また{name}にお世話になりたくなってきたんじゃない？",
+            f"{name}には勝てないでしょ。正直に会いに行きなさい。",
         ],
         "A": [
             f"{name}、まだ余裕あるの？試してみたら？",
-            f"もう一回{name}で負けてみたくなってきたんじゃない？",
-            f"{name}はね、集中して責めると特別に気持ちいいのよ。",
+            f"もう一回{name}に負けてみたくなってきたんじゃない？",
+            f"{name}ともっと仲良くなってみなさい。気持ちいいから。",
         ],
         "B": [
-            f"{name}、じわじわ効いてくるのよ。今すぐ確かめてみて？",
-            f"ゆっくり{name}を責めたら……きっとイっちゃうわよ。",
-            f"{name}はまだまだ開発できるわ。続けてみなさい。",
+            f"{name}、じわじわ効いてくるのよ。今すぐ会いに行ってみて？",
+            f"{name}のことをゆっくり感じたら……きっとイっちゃうわよ。",
+            f"{name}との記録、まだまだ伸ばせるわ。続けてみなさい。",
         ],
     }
     default = [
-        f"{name}……まだ本当の感度を知らないんじゃない？",
-        f"{name}の気持ちよさ、まだ半分も引き出せてないわよ。",
-        f"{name}を今すぐ試してみて。きっと驚くから。",
+        f"{name}……まだ本当の魅力を引き出せてないんじゃない？",
+        f"{name}の気持ちよさ、まだ半分も知らないわよ。",
+        f"{name}に今すぐ会いに行ってみて。きっと驚くから。",
     ]
-    return random.choice(lines_by_tier.get(tier, default))
+    return random.choice(lines_by_tier.get(t, default))
 
-# 時間帯挨拶
-def time_greeting():
+# 時間帯挨拶（直近のオナペ名を使う）
+def time_greeting(recent_name=None):
+    n = f"「{recent_name}」に" if recent_name else "また"
     if 5 <= hour < 11:
-        return "おはよう。今日も負けるの？ふふ。"
+        return f"おはよう。今日も{n}負けるの？ふふ。"
     elif 11 <= hour < 17:
-        return "お昼でも欲求が抑えられないのね。かわいい。"
+        return f"お昼でも{n}会いたくなるのね。かわいい。"
     elif 17 <= hour < 22:
-        return "夜になったら我慢できなくなるのね。"
+        return f"夜になったら{n}我慢できなくなるのね。"
     else:
-        return "こんな時間に……本当に弱い子ね。"
+        return f"こんな時間に{n}……本当に弱い子ね。"
 
 # 開発度
 def dev_pct(total):
@@ -91,6 +93,7 @@ def dev_pct(total):
 # ===== データ集計 =====
 today_count = sum(1 for h in data["history"] if h["time"].startswith(today_str))
 total_all = sum(sum(v.get("counts", {}).values()) for v in data["items"].values())
+recent_name = next((h["name"] for h in reversed(data["history"])), None)
 
 # おすすめオナペ候補（上位3件からランダム選出）
 from core import compute_points
@@ -122,7 +125,7 @@ for m_count, (m_icon, m_text) in sorted(MILESTONES.items()):
 st.sidebar.markdown(
     f"<div style='text-align:center;padding:0.8em;background:rgba(194,24,91,0.15);"
     f"border:1px solid #c2185b;border-radius:10px;margin-bottom:0.8em;'>"
-    f"<div style='color:#ffb6d9;font-style:italic;font-size:0.9em;margin-bottom:0.4em;'>💬 {time_greeting()}</div>"
+    f"<div style='color:#ffb6d9;font-style:italic;font-size:0.9em;margin-bottom:0.4em;'>💬 {time_greeting(recent_name)}</div>"
     f"<div style='color:#ff80ab;font-size:0.8em;'>今日の敗北回数</div>"
     f"<div style='font-size:2em;font-weight:900;color:#fff;'>{today_count} 回</div>"
     f"<div style='color:#804060;font-size:0.75em;'>累計 {total_all} 回</div>"
@@ -270,7 +273,7 @@ for i, (name, val) in enumerate(items.items()):
                     (f"{ic} {tx}" for mc, (ic, tx) in MILESTONES.items() if new_total == mc),
                     None
                 )
-                st.session_state.master_word = special if special else random.choice(MASTER_WORDS)
+                st.session_state.master_word = special if special else master_word(name)
                 st.rerun()
 
 st.divider()
