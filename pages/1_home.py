@@ -15,7 +15,8 @@ style.apply()
 data = ensure_structure(get_data())
 
 now_jst = datetime.now(JST)
-today_str = now_jst.strftime("%Y-%m-%d")
+today_jst = now_jst.date()          # UTC対策：常にJST日付を使う
+today_str = today_jst.strftime("%Y-%m-%d")
 hour = now_jst.hour
 
 def master_word(name):
@@ -97,7 +98,7 @@ def days_since_last(history, name):
     last = next((h["time"][:10] for h in reversed(history) if h["name"] == name), None)
     if not last:
         return None
-    delta = (date.today() - datetime.strptime(last, "%Y-%m-%d").date()).days
+    delta = (today_jst - datetime.strptime(last, "%Y-%m-%d").date()).days
     return delta
 
 # ○○からの今日のひとこと（名前＋日付ベースで固定）
@@ -202,12 +203,11 @@ def render_calendar(history, year, month, items_data):
     cells = ""
     for _ in range(first_weekday):
         cells += "<div></div>"
-    today = date.today()
     for d in range(1, days_in_month + 1):
         entries = day_entries.get(d, [])
         c = len(entries)
         bg, bdr = cell_style(c)
-        is_today = (date(year, month, d) == today)
+        is_today = (date(year, month, d) == today_jst)
         if is_today:
             bdr = "border:1.5px solid #ff4081;"
         # 画像：最大3枚まで（重複含む）
@@ -343,7 +343,7 @@ def abstinence_days(history):
     last = next((h["time"][:10] for h in reversed(history)), None)
     if not last:
         return None
-    return (date.today() - datetime.strptime(last, "%Y-%m-%d").date()).days
+    return (today_jst - datetime.strptime(last, "%Y-%m-%d").date()).days
 
 # おすすめオナペ候補（上位3件からランダム選出）
 from core import compute_points
@@ -440,10 +440,10 @@ sort_key = st.sidebar.selectbox(
 )
 
 _raw_date = st.sidebar.date_input(
-    "🗓 カウント日付", value=date.today(), max_value=date.today(),
+    "🗓 カウント日付", value=today_jst, max_value=today_jst,
     help="前日分を記録するときに変更"
 )
-count_date = _raw_date if isinstance(_raw_date, date) else date.today()
+count_date = _raw_date if isinstance(_raw_date, date) else today_jst
 
 # ===== お言葉 =====
 if st.session_state.get("master_word"):
@@ -501,7 +501,7 @@ if rec_name:
 st.divider()
 
 # ===== 週間危険予報 =====
-st.markdown(weekly_danger_html(data["history"], date.today()), unsafe_allow_html=True)
+st.markdown(weekly_danger_html(data["history"], today_jst), unsafe_allow_html=True)
 
 # ===== 弱点一覧 =====
 month_label = f"【{selected_month}】" if month_filter else "【全月合計】"
@@ -519,7 +519,7 @@ if not can_count:
         "</div>",
         unsafe_allow_html=True,
     )
-elif count_date < date.today():
+elif count_date < today_jst:
     st.markdown(
         f"<div style='text-align:center;color:#ff80ab;margin-bottom:0.5em;'>"
         f"📅 {count_date.strftime('%Y-%m-%d')} の日付で記録します</div>",
