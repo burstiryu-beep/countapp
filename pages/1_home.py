@@ -137,43 +137,59 @@ def tonight_situ(name):
 def card_danger(count):
     if count <= 5:
         return (
-            "border:1px solid rgba(56,142,60,0.7);box-shadow:0 0 8px rgba(56,142,60,0.2);",
-            "🟢", "安全圏", "#81c784",
+            "border:1px solid rgba(180,100,140,0.5);box-shadow:0 0 6px rgba(180,100,140,0.15);",
+            "💭", "意識してる", "#ce93d8",
         )
     elif count <= 15:
         return (
-            "border:1px solid rgba(245,124,0,0.8);box-shadow:0 0 10px rgba(245,124,0,0.25);",
-            "🟡", "警戒ゾーン", "#ffb74d",
+            "border:1px solid rgba(245,124,0,0.85);box-shadow:0 0 12px rgba(245,124,0,0.3);",
+            "💋", "弱点確定", "#ffb74d",
         )
     else:
         return (
-            "border:2px solid #ff4081;box-shadow:0 0 18px rgba(255,64,129,0.45);animation:pulse-glow 2s infinite;",
-            "🔴", "完全支配", "#ff4081",
+            "border:2px solid #ff4081;box-shadow:0 0 20px rgba(255,64,129,0.5);animation:pulse-glow 2s infinite;",
+            "🔥", "骨抜き完了", "#ff4081",
         )
 
-# 月間カレンダーヒートマップ
-def render_calendar(history, year, month):
+# 月間カレンダーヒートマップ（画像付き）
+def render_calendar(history, year, month, items_data):
     days_in_month = cal_mod.monthrange(year, month)[1]
     first_weekday = cal_mod.monthrange(year, month)[0]
     month_str = f"{year}-{month:02d}"
-    day_counts = {}
+
+    # name → base64 src をキャッシュ（小サイズ）
+    _img_cache = {}
+    def _thumb(name):
+        if name in _img_cache:
+            return _img_cache[name]
+        item = next((v for v in items_data.values() if v["name"] == name), {})
+        tag = img_to_html(
+            item.get("img", ""),
+            style="width:22px;height:22px;object-fit:cover;border-radius:50%;display:inline-block;",
+            face_detect=False,
+        )
+        _img_cache[name] = tag
+        return tag
+
+    # day → list of names（重複あり）
+    day_entries: dict = {}
     for h in history:
         if h["time"].startswith(month_str):
             try:
                 d = int(h["time"][8:10])
-                day_counts[d] = day_counts.get(d, 0) + 1
+                day_entries.setdefault(d, []).append(h["name"])
             except Exception:
                 pass
 
-    def cell_bg(c):
+    def cell_style(c):
         if c == 0:
-            return "rgba(40,40,40,0.5)", "#555", ""
-        elif c <= 5:
-            return "rgba(56,142,60,0.3)", "#81c784", str(c)
-        elif c <= 15:
-            return "rgba(245,124,0,0.4)", "#ffb74d", str(c)
+            return "rgba(35,35,35,0.5)", "border:1px solid transparent;"
+        elif c == 1:
+            return "rgba(56,142,60,0.28)", "border:1px solid rgba(56,142,60,0.5);"
+        elif c == 2:
+            return "rgba(245,124,0,0.32)", "border:1px solid rgba(245,124,0,0.6);"
         else:
-            return "rgba(194,24,91,0.65)", "#ff80ab", str(c)
+            return "rgba(194,24,91,0.55)", "border:1px solid rgba(255,64,129,0.8);"
 
     headers = ["月", "火", "水", "木", "金", "土", "日"]
     header_row = "".join(
@@ -186,15 +202,25 @@ def render_calendar(history, year, month):
         cells += "<div></div>"
     today = date.today()
     for d in range(1, days_in_month + 1):
-        c = day_counts.get(d, 0)
-        bg, color, label = cell_bg(c)
+        entries = day_entries.get(d, [])
+        c = len(entries)
+        bg, bdr = cell_style(c)
         is_today = (date(year, month, d) == today)
-        border = "border:1.5px solid #ff4081;" if is_today else "border:1px solid transparent;"
+        if is_today:
+            bdr = "border:1.5px solid #ff4081;"
+        # 画像：最大3枚まで（重複含む）
+        shown = entries[:3]
+        extra = c - 3 if c > 3 else 0
+        imgs_html = "".join(_thumb(n) for n in shown)
+        if extra:
+            imgs_html += f"<span style='color:#ff80ab;font-size:0.65em;'>+{extra}</span>"
+        count_label = f"<div style='color:#ddd;font-size:0.7em;font-weight:700;'>{c}回</div>" if c > 0 else ""
         cells += (
-            f"<div style='background:{bg};border-radius:6px;{border}"
-            f"text-align:center;padding:3px 1px;min-height:38px;'>"
-            f"<div style='color:#666;font-size:0.68em;line-height:1.2;'>{d}</div>"
-            f"<div style='color:{color};font-size:0.82em;font-weight:700;line-height:1.2;'>{label}</div>"
+            f"<div style='background:{bg};border-radius:6px;{bdr}"
+            f"text-align:center;padding:3px 2px;min-height:46px;'>"
+            f"<div style='color:#666;font-size:0.65em;'>{d}</div>"
+            f"<div style='display:flex;flex-wrap:wrap;justify-content:center;gap:1px;margin:2px 0;'>{imgs_html}</div>"
+            f"{count_label}"
             f"</div>"
         )
     pad = (7 - (first_weekday + days_in_month) % 7) % 7
@@ -206,14 +232,14 @@ def render_calendar(history, year, month):
         f"border-radius:14px;padding:1em;margin-bottom:1em;'>"
         f"<div style='color:#ff80ab;font-size:0.88em;text-align:center;font-weight:700;"
         f"margin-bottom:0.6em;'>📅 {year}年{month}月 敗北カレンダー</div>"
-        f"<div style='display:grid;grid-template-columns:repeat(7,1fr);gap:3px;'>"
+        f"<div style='display:grid;grid-template-columns:repeat(7,1fr);gap:4px;'>"
         f"{header_row}{cells}</div>"
         f"<div style='display:flex;gap:1em;justify-content:center;margin-top:0.7em;"
         f"font-size:0.7em;color:#666;flex-wrap:wrap;'>"
         f"<span>⬛ 0回</span>"
-        f"<span style='color:#81c784;'>🟩 1-5回</span>"
-        f"<span style='color:#ffb74d;'>🟧 6-15回</span>"
-        f"<span style='color:#ff4081;'>🟥 16回+</span>"
+        f"<span style='color:#81c784;'>🟩 1回</span>"
+        f"<span style='color:#ffb74d;'>🟧 2回</span>"
+        f"<span style='color:#ff80ab;'>🟥 3回+</span>"
         f"</div></div>"
     )
 
@@ -544,7 +570,7 @@ if month_filter:
     cal_year, cal_month = int(month_filter[:4]), int(month_filter[5:7])
 else:
     cal_year, cal_month = now_jst.year, now_jst.month
-st.markdown(render_calendar(data["history"], cal_year, cal_month), unsafe_allow_html=True)
+st.markdown(render_calendar(data["history"], cal_year, cal_month, data["items"]), unsafe_allow_html=True)
 
 st.markdown("<h3>📜 敗北の記録</h3>", unsafe_allow_html=True)
 for h in reversed(data["history"][-20:]):
