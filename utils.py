@@ -27,6 +27,18 @@ def all_months(data):
     return sorted(months, reverse=True)
 
 
+def aggregate(data, tab_id, month=None):
+    result = {}
+    for v in active_items(data).values():
+        if tab_id != "all" and v.get("tab") != tab_id:
+            continue
+        name = v["name"]
+        counts = v.get("counts", {})
+        total = counts.get(month, 0) if (month and month != "all") else sum(counts.values())
+        result[name] = result.get(name, 0) + total
+    return result
+
+
 def valid_tab_ids(data):
     return {t["id"] for t in data["tabs"]}
 

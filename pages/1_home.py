@@ -4,9 +4,9 @@ JST = timezone(timedelta(hours=9))
 
 import streamlit as st
 import style
-from core import get_data, ensure_structure, aggregate
+from core import get_data, ensure_structure
 from storage import save_data
-from utils import all_months, make_key, resolve_img_path
+from utils import aggregate, all_months, make_key, resolve_img_path
 
 style.apply()
 data = ensure_structure(get_data())
