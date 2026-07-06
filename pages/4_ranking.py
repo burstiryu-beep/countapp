@@ -49,8 +49,9 @@ tier_info = {
 }
 
 if not ranked:
+    no_data_msg = "選択した月の記録がまだありません" if month_filter else "記録がまだありません"
     st.markdown(
-        f"<p style='text-align:center;color:#804060;'>{"選択した月の記録がまだありません" if month_filter else "記録がまだありません"}</p>",
+        f"<p style='text-align:center;color:#804060;'>{no_data_msg}</p>",
         unsafe_allow_html=True,
     )
 else:
