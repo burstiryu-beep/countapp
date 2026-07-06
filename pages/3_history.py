@@ -18,7 +18,6 @@ for h in reversed(data["history"]):
         f"<div style='padding:0.3em 0; border-bottom:1px solid rgba(194,24,91,0.2);'>"
         f"<span style='color:#ff80ab;'>{h['time']}</span>"
         f"　<span style='color:#ffe0f0; font-weight:600;'>{h['name']}</span>"
-        f"　<span style='color:#804060;'>({h['tab']})</span>"
         f"</div>",
         unsafe_allow_html=True,
     )
@@ -31,7 +30,7 @@ if data["history"]:
 
     def history_label(i):
         h = data["history"][i]
-        return f"{h['time']} | {h['name']} ({h['tab']})"
+        return f"{h['time']} | {h['name']}"
 
     sel = st.selectbox("対象を選択", index_map, format_func=history_label, key="edit_sel")
 
