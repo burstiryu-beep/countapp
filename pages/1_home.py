@@ -430,8 +430,11 @@ st.sidebar.markdown(
 )
 
 months = all_months(data)
+current_month = now_jst.strftime("%Y-%m")
+if current_month not in months:
+    months = [current_month] + months
 month_options = ["全月"] + months
-selected_month = st.sidebar.selectbox("📅 月フィルター", month_options)
+selected_month = st.sidebar.selectbox("📅 月フィルター", month_options, index=1)
 month_filter = None if selected_month == "全月" else selected_month
 
 sort_key = st.sidebar.selectbox(

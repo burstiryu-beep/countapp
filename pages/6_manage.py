@@ -1,8 +1,11 @@
+from datetime import datetime, timedelta, timezone
 import streamlit as st
 import style
 from core import get_data, ensure_structure
 from storage import save_data, IMG_DIR
 from utils import delete_item, make_key, rename_item
+
+JST = timezone(timedelta(hours=9))
 
 style.apply()
 data = ensure_structure(get_data())
@@ -58,6 +61,39 @@ if item_names:
                 st.rerun()
             else:
                 st.error("その名前は既に使われています")
+else:
+    st.caption("登録されている弱点がありません")
+
+st.divider()
+
+# ===== 月別カウント一括入力（データ復元用）=====
+st.markdown("<h3>📥 月別カウントを直接入力</h3>", unsafe_allow_html=True)
+st.caption("データが消えたときの復元用。指定した月のカウント数を直接上書きします。")
+
+if item_names:
+    now_jst = datetime.now(JST)
+    # 過去12ヶ月の選択肢を生成
+    month_choices = []
+    for i in range(12):
+        m = now_jst.replace(day=1) - timedelta(days=i * 28)
+        month_choices.append(m.strftime("%Y-%m"))
+    month_choices = sorted(set(month_choices), reverse=True)
+
+    with st.form("bulk_count"):
+        bulk_name = st.selectbox("弱点", sorted(item_names), key="bulk_name")
+        bulk_month = st.selectbox("月", month_choices, key="bulk_month")
+        bulk_count = st.number_input("回数", min_value=0, max_value=9999, step=1, key="bulk_count")
+        bulk_ok = st.form_submit_button("💾 セットする")
+
+        if bulk_ok:
+            item_key = next((k for k, v in data["items"].items() if v["name"] == bulk_name), None)
+            if item_key:
+                if not isinstance(data["items"][item_key].get("counts"), dict):
+                    data["items"][item_key]["counts"] = {}
+                data["items"][item_key]["counts"][bulk_month] = int(bulk_count)
+                save_data(data)
+                st.success(f"✅ {bulk_name} の {bulk_month} を {bulk_count} 回にセットしました")
+                st.rerun()
 else:
     st.caption("登録されている弱点がありません")
 
