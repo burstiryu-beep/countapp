@@ -1,9 +1,22 @@
 from datetime import datetime, timedelta, timezone
+import base64, io
 import streamlit as st
 import style
+from PIL import Image
 from core import get_data, ensure_structure
 from storage import save_data, IMG_DIR
 from utils import delete_item, make_key, rename_item
+
+
+def encode_image(uploaded_file, max_size=700, quality=78):
+    """アップロード画像をリサイズ→JPEG→base64 data URI に変換"""
+    pil = Image.open(uploaded_file).convert("RGB")
+    if max(pil.size) > max_size:
+        pil.thumbnail((max_size, max_size), Image.LANCZOS)
+    buf = io.BytesIO()
+    pil.save(buf, format="JPEG", quality=quality)
+    b64 = base64.b64encode(buf.getvalue()).decode()
+    return f"data:image/jpeg;base64,{b64}"
 
 JST = timezone(timedelta(hours=9))
 
@@ -32,12 +45,31 @@ with st.form("add"):
                 "counts": {}, "img": "", "points": 0
             }
             if img:
-                path = IMG_DIR / img.name
-                path.write_bytes(img.read())
-                data["items"][key]["img"] = str(path)
+                data["items"][key]["img"] = encode_image(img)
             save_data(data)
             st.success("追加しました！")
             st.rerun()
+
+st.divider()
+
+# ===== 画像を変更 =====
+st.markdown("<h3>🖼 画像を変更</h3>", unsafe_allow_html=True)
+
+if item_names:
+    sel_img = st.selectbox("対象の弱点", sorted(item_names), key="img_sel")
+    new_img = st.file_uploader("新しい画像", key="img_upload")
+    if st.button("画像をセット", key="img_btn"):
+        if new_img:
+            item_key = next((k for k, v in data["items"].items() if v["name"] == sel_img), None)
+            if item_key:
+                data["items"][item_key]["img"] = encode_image(new_img)
+                save_data(data)
+                st.success("画像を更新しました！")
+                st.rerun()
+        else:
+            st.warning("画像を選択してください")
+else:
+    st.caption("登録されている弱点がありません")
 
 st.divider()
 

@@ -93,6 +93,14 @@ def detect_face_position(img_path: str) -> str:
 
 
 def img_to_html(img_path, style="width:100%;border-radius:12px;margin-bottom:0.6em;", face_detect=True):
+    if not img_path:
+        return ""
+
+    # base64 data URI がそのまま渡された場合（Firebase保存済み画像）
+    if img_path.startswith("data:"):
+        return f'<img src="{img_path}" style="{style}"/>'
+
+    # ファイルパスの場合（ローカル開発 / 旧形式）
     p = resolve_img_path(img_path)
     if not p:
         return ""
