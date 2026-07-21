@@ -14,11 +14,18 @@ def ensure_structure(data):
     data.setdefault("items", {})
     data.setdefault("history", [])
     data.setdefault("tabs", [{"id": "all", "name": "全体"}])
+
+    tab_ids = {t.get("id") for t in data["tabs"] if isinstance(t, dict)}
+    if "all" not in tab_ids:
+        data["tabs"].insert(0, {"id": "all", "name": "全体"})
+
     for v in data["items"].values():
         if not isinstance(v.get("counts"), dict):
             v["counts"] = {}
         if not isinstance(v.get("img"), str):
             v["img"] = ""
+        if not v.get("tab"):
+            v["tab"] = "all"
     return data
 
 

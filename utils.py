@@ -34,8 +34,11 @@ def aggregate(data, tab_id, month=None):
             continue
         name = v["name"]
         counts = v.get("counts", {})
-        total = counts.get(month, 0) if (month and month != "all") else sum(counts.values())
-        result[name] = result.get(name, 0) + total
+        if month and month != "all":
+            total = counts.get(month, 0)
+        else:
+            total = sum(counts.values())
+        result[name] = total
     return result
 
 

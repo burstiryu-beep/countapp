@@ -23,6 +23,16 @@ JST = timezone(timedelta(hours=9))
 style.apply()
 data = ensure_structure(get_data())
 
+
+def _save_and_notify(data, success_msg):
+    ok, err = save_data(data)
+    if ok:
+        st.success(success_msg)
+        st.rerun()
+    else:
+        st.error(f"保存に失敗しました: {err}")
+        st.warning("ローカルには保存済みですが、Firebaseへの反映に失敗しています。")
+
 st.markdown("<h2 style='text-align:center'>⚙️ 管理</h2>", unsafe_allow_html=True)
 
 item_names = list({v["name"] for v in data["items"].values()})
@@ -46,9 +56,7 @@ with st.form("add"):
             }
             if img:
                 data["items"][key]["img"] = encode_image(img)
-            save_data(data)
-            st.success("追加しました！")
-            st.rerun()
+            _save_and_notify(data, "追加しました！")
 
 st.divider()
 
@@ -63,9 +71,7 @@ if item_names:
             item_key = next((k for k, v in data["items"].items() if v["name"] == sel_img), None)
             if item_key:
                 data["items"][item_key]["img"] = encode_image(new_img)
-                save_data(data)
-                st.success("画像を更新しました！")
-                st.rerun()
+                _save_and_notify(data, "画像を更新しました！")
         else:
             st.warning("画像を選択してください")
 else:
@@ -88,9 +94,7 @@ if item_names:
         else:
             item_key = next((k for k, v in data["items"].items() if v["name"] == sel_rename), None)
             if item_key and rename_item(data, sel_rename, data["items"][item_key]["tab"], new_name.strip()):
-                save_data(data)
-                st.success("変更しました")
-                st.rerun()
+                _save_and_notify(data, "変更しました")
             else:
                 st.error("その名前は既に使われています")
 else:
@@ -123,9 +127,7 @@ if item_names:
                 if not isinstance(data["items"][item_key].get("counts"), dict):
                     data["items"][item_key]["counts"] = {}
                 data["items"][item_key]["counts"][bulk_month] = int(bulk_count)
-                save_data(data)
-                st.success(f"✅ {bulk_name} の {bulk_month} を {bulk_count} 回にセットしました")
-                st.rerun()
+                _save_and_notify(data, f"✅ {bulk_name} の {bulk_month} を {bulk_count} 回にセットしました")
 else:
     st.caption("登録されている弱点がありません")
 
@@ -140,8 +142,6 @@ if item_names:
         item_key = next((k for k, v in data["items"].items() if v["name"] == sel_del), None)
         if item_key:
             delete_item(data, sel_del, data["items"][item_key]["tab"])
-            save_data(data)
-            st.success("削除しました")
-            st.rerun()
+            _save_and_notify(data, "削除しました")
 else:
     st.caption("登録されている弱点がありません")
