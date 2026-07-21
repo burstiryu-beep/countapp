@@ -99,7 +99,15 @@ def img_to_html(img_path, style="width:100%;border-radius:12px;margin-bottom:0.6
     if not img_path:
         return ""
 
-    # base64 data URI がそのまま渡された場合（Firebase保存済み画像）
+    if img_path.startswith("cloud:"):
+        try:
+            from firebase_manager import fetch_image
+            img_path = fetch_image(img_path)
+        except Exception:
+            img_path = ""
+        if not img_path:
+            return ""
+
     if img_path.startswith("data:"):
         return f'<img src="{img_path}" style="{style}"/>'
 

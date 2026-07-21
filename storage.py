@@ -52,6 +52,20 @@ def _load_local():
         return None
 
 
+def _prefer_img(local_img, cloud_img):
+    local_img = local_img or ""
+    cloud_img = cloud_img or ""
+    if local_img.startswith("data:"):
+        if cloud_img.startswith("data:"):
+            return local_img if len(local_img) >= len(cloud_img) else cloud_img
+        return local_img
+    if cloud_img.startswith("data:"):
+        return cloud_img
+    if local_img and not cloud_img:
+        return local_img
+    return cloud_img or local_img
+
+
 def _merge_data(cloud, local):
     if not cloud:
         return local
@@ -73,8 +87,7 @@ def _merge_data(cloud, local):
         for month, count in local_counts.items():
             cloud_counts[month] = max(int(cloud_counts.get(month, 0)), int(count))
         cloud_item["counts"] = cloud_counts
-        if item.get("img") and not cloud_item.get("img"):
-            cloud_item["img"] = item["img"]
+        cloud_item["img"] = _prefer_img(item.get("img", ""), cloud_item.get("img", ""))
         if item.get("name"):
             cloud_item["name"] = item["name"]
 
@@ -90,7 +103,23 @@ def _merge_data(cloud, local):
 def load_data():
     local = _load_local()
     cloud = load_cloud_data()
-    return _merge_data(cloud, local) or cloud or local or default_data()
+    data = _merge_data(cloud, local) or cloud or local or default_data()
+    return _repair_images(data)
+
+
+def _repair_images(data):
+    try:
+        from firebase_manager import fetch_image
+    except Exception:
+        return data
+
+    for item in data.get("items", {}).values():
+        img = item.get("img", "")
+        if isinstance(img, str) and img.startswith("cloud:"):
+            resolved = fetch_image(img)
+            if resolved:
+                item["img"] = resolved
+    return data
 
 
 def save_data(data):

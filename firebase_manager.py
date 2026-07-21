@@ -45,6 +45,29 @@ def init_firebase():
     return None
 
 
+def fetch_image(img_value: str) -> str:
+    """cloud:参照を実際の data URI に解決する"""
+    if not img_value or not isinstance(img_value, str):
+        return ""
+    if img_value.startswith("data:"):
+        return img_value
+    if not img_value.startswith("cloud:"):
+        return img_value
+
+    doc_id = img_value.split(":", 1)[1]
+    db = init_firebase()
+    if not db:
+        return ""
+
+    try:
+        snap = _images_collection(db).document(doc_id).get()
+        if snap.exists:
+            return (snap.to_dict() or {}).get("img", "")
+    except Exception:
+        pass
+    return ""
+
+
 def _extract_images(data):
     images = {}
     payload = copy.deepcopy(data)
@@ -73,9 +96,6 @@ def _merge_images(data):
             doc_id = img.split(":", 1)[1]
             refs.append(_images_collection(db).document(doc_id))
             key_by_doc[doc_id] = key
-        elif not img:
-            refs.append(_images_collection(db).document(_item_doc_id(key)))
-            key_by_doc[_item_doc_id(key)] = key
 
     if not refs:
         return data
@@ -114,12 +134,17 @@ def save_cloud_data(data):
     if not db:
         return False, "Firebase未接続"
 
-    payload, images = _extract_images(data)
+    payload_inline = copy.deepcopy(data)
 
+    # まずインライン画像のまま保存（従来形式・互換性優先）
     try:
-        db.collection("countapp").document("data").set(payload)
-    except Exception as e:
-        return False, f"データ保存失敗: {e}"
+        db.collection("countapp").document("data").set(payload_inline)
+        return True, ""
+    except Exception:
+        pass
+
+    # サイズ超過時のみ画像を分離（画像を先に保存してから本体）
+    payload, images = _extract_images(data)
 
     for item_key, img in images.items():
         doc_id = _item_doc_id(item_key)
@@ -130,5 +155,10 @@ def save_cloud_data(data):
             })
         except Exception as e:
             return False, f"画像保存失敗 ({item_key}): {e}"
+
+    try:
+        db.collection("countapp").document("data").set(payload)
+    except Exception as e:
+        return False, f"データ保存失敗: {e}"
 
     return True, ""
