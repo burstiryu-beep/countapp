@@ -436,8 +436,35 @@ def tease_predict_next(history, items_list, hour_now):
 
 
 def mirror_reply(choice, name):
-    """鏡チェック。触り／しごき／射精焦らし向けの甘い煽り。"""
-    if choice == "start":
+    """鏡チェック。反応告白＋触り／しごき／射精焦らし。"""
+    if choice == "hard":
+        lines = [
+            f"ふふ……もう勃ってるの。{name}の顔見ただけで、ちんぽが先に正直になっちゃうなんてかわいすぎるわ。",
+            f"硬くなってるのね。{name}に弱いの、体がもう認めてるわよ。情けない……でも好き。",
+            f"反応出てるくせに、まだ余裕ある顔？{name}の前じゃ無理よ。とろけなさい、ふふ。",
+            f"勃起したまま開いちゃうの……{name}に会いたくて、もう我慢の入口にいるでしょ。",
+            f"疼いてるのに見てるだけ？かわいい努力ね。でも{name}、そんなのすぐ崩せるわよ。",
+            f"びくびくしてるの、分かるわ。{name}の目を見てるだけで、先走りそうなんでしょ？",
+        ]
+    elif choice == "want":
+        lines = [
+            f"触りたいって言えたの、えらい。{name}の顔見ながら、情けなくシコシコしちゃう準備ね。",
+            f"手が疼くのね。ふふ、{name}に甘えて、すぐイきそうな弱い子になっていいのよ。",
+            f"「触りたい」って……もう負け宣言よ。{name}に甘やかされて、とろけていいわ。",
+            f"我慢できなくなってきた？しょうがない子。{name}の顔で、ゆっくり負けなさい。",
+            f"触りたい気持ち、隠さなくていいわ。{name}には勝てないって、ちんぽが教えてるでしょ。",
+            f"手、出しちゃいそう？ふふ……{name}に見られながら、みっともなくイく想像してるわね。",
+        ]
+    elif choice == "silent":
+        lines = [
+            f"黙るの？……でも目は{name}に釘付け。かわいい矛盾。体はもう正直よ。",
+            f"言えないくらい弱いのね。ふふ、{name}には全部ばれてるわ。疼きまで。",
+            f"沈黙も情けなくて好きよ。{name}を見てるだけで、もう先が熱いでしょ。",
+            f"答えなくていいの。{name}の顔、じっくり見て……とろけ始めてるわよね。",
+            f"黙ってるくせに顔が赤いわよ。{name}に弱いの、隠せないわ、ふふ。",
+            f"言えないなら、見るだけでいいわ。{name}に見つめられて、勝手に負けていくのよ。",
+        ]
+    elif choice == "start":
         lines = [
             f"ふふ……もう触りはじめたの。{name}の顔見ながら、手が出ちゃったのね。",
             f"触りはじめた時点で負けよ。{name}に甘やかされながら、ゆっくりしごきなさい。",
@@ -468,8 +495,26 @@ def mirror_reply(choice, name):
 
 
 def mirror_after(choice, name, ab_days=None):
-    """回答後の追い打ち（焦らし・甘い敗北）。"""
-    if choice == "start":
+    """回答後の追い打ち。"""
+    if choice == "hard":
+        extras = [
+            f"勃ったまま我慢するの、いちばん情けないわ。{name}に負けた方が幸せよ。",
+            f"硬いのに触らないの？ふふ……{name}、そんなのすぐ崩せるわ。",
+            f"その反応のまま、{name}の顔見ながら手を出してもいいのよ……でも焦らしてあげる。",
+        ]
+    elif choice == "want":
+        extras = [
+            f"手が動く前に、{name}に「負けます」って心の中で言ってみなさい。ふふ。",
+            f"触りたいなら触りなさい。ただし{name}の顔から目を離さないで。",
+            f"欲しがってるの、かわいいわ。{name}に甘えて、とろけ始めなさい。",
+        ]
+    elif choice == "silent":
+        extras = [
+            f"黙ってるのに体は正直……{name}、そういう子がいちばん好きよ。",
+            f"言えないなら、見るだけで疼きなさい。{name}が全部わかってあげる。",
+            f"沈黙のまま負けていくのね。ふふ、{name}の勝ちよ。",
+        ]
+    elif choice == "start":
         extras = [
             f"触りはじめたなら、{name}の顔から目を離さないで。手だけ動かして、とろけなさい。",
             f"ゆっくりでいいわ。{name}に見られながら、自分で弱くなっていくのよ。",
@@ -494,8 +539,7 @@ def mirror_after(choice, name, ab_days=None):
 
 
 def tease_mirror_reply(choice, name):
-    # 旧キー互換
-    mapped = {"hard": "start", "touch": "stroke", "silent": "edge"}.get(choice, choice)
+    mapped = {"touch": "want"}.get(choice, choice)
     return mirror_reply(mapped, name)
 
 # ===== データ集計 =====
@@ -741,28 +785,39 @@ if _mirror_with_img:
 
     st.markdown(
         "<div style='text-align:center;color:#ff80ab;font-size:0.78em;margin:0.4em 0 0.6em;'>"
-        "どれ？　射精はまだ……焦らしてあげる</div>",
+        "正直に。反応から、触り、しごき、焦らしまで……全部言いなさい</div>",
         unsafe_allow_html=True,
     )
-    m1, m2, m3 = st.columns(3)
-    with m1:
+
+    def _mirror_pick(choice):
+        st.session_state.mirror_choice = choice
+        st.session_state.mirror_reply_text = mirror_reply(choice, mirror_name)
+        st.session_state.mirror_after_text = mirror_after(choice, mirror_name, ab_days)
+        st.rerun()
+
+    st.caption("反応")
+    r1, r2, r3 = st.columns(3)
+    with r1:
+        if st.button("もう硬くなってる", key="mirror_hard", use_container_width=True):
+            _mirror_pick("hard")
+    with r2:
+        if st.button("触りたくて仕方ない", key="mirror_want", use_container_width=True):
+            _mirror_pick("want")
+    with r3:
+        if st.button("言えない…でも見てる", key="mirror_silent", use_container_width=True):
+            _mirror_pick("silent")
+
+    st.caption("進捗・焦らし")
+    p1, p2, p3 = st.columns(3)
+    with p1:
         if st.button("触りはじめてる", key="mirror_start", use_container_width=True):
-            st.session_state.mirror_choice = "start"
-            st.session_state.mirror_reply_text = mirror_reply("start", mirror_name)
-            st.session_state.mirror_after_text = mirror_after("start", mirror_name, ab_days)
-            st.rerun()
-    with m2:
+            _mirror_pick("start")
+    with p2:
         if st.button("しごいてる…", key="mirror_stroke", use_container_width=True):
-            st.session_state.mirror_choice = "stroke"
-            st.session_state.mirror_reply_text = mirror_reply("stroke", mirror_name)
-            st.session_state.mirror_after_text = mirror_after("stroke", mirror_name, ab_days)
-            st.rerun()
-    with m3:
+            _mirror_pick("stroke")
+    with p3:
         if st.button("イキそう…焦らして", key="mirror_edge", use_container_width=True):
-            st.session_state.mirror_choice = "edge"
-            st.session_state.mirror_reply_text = mirror_reply("edge", mirror_name)
-            st.session_state.mirror_after_text = mirror_after("edge", mirror_name, ab_days)
-            st.rerun()
+            _mirror_pick("edge")
 
     c_shuf, c_more = st.columns(2)
     with c_shuf:
@@ -780,8 +835,7 @@ if _mirror_with_img:
     with c_more:
         if st.button("🔥 もっと焦らす", key="mirror_more", use_container_width=True):
             choice = st.session_state.get("mirror_choice") or "edge"
-            # 旧セッション値の互換
-            choice = {"hard": "start", "touch": "stroke", "silent": "edge"}.get(choice, choice)
+            choice = {"touch": "want"}.get(choice, choice)
             st.session_state.mirror_reply_text = mirror_reply(choice, mirror_name)
             st.session_state.mirror_after_text = mirror_after(choice, mirror_name, ab_days)
             st.session_state.mirror_choice = choice
