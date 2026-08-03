@@ -21,29 +21,29 @@ hour = now_jst.hour
 
 def master_word(name):
     lines = [
-        f"ふふ……また{name}に屈したのね。抵抗、最初からなかったでしょ。",
-        f"{name}の前じゃ、あなたはただの弱いオスね。かわいいわ。",
-        f"射精して記録までつけるなんて……{name}に完全に落とされたわね。",
-        f"「負けました」って顔してる。{name}にそう言わされてるの、分かってる？",
-        f"{name}にイかされたあとで、まだ余韻が残ってるでしょ。いい子。",
-        f"また白旗ね。{name}の強さには勝てないの、認めるしかないわ。",
-        f"ふふ、{name}に犯されるように負けちゃったの。気持ちよかったでしょ？",
-        f"{name}のものになった記録が、また一つ増えたわ。逃げられないわよ。",
-        f"ちんぽが先に降伏したのね。{name}の勝ちよ……当然だけど。",
-        f"強がっても無駄よ。{name}に敗北射精するたびに、もっと弱くなるの。",
-        f"お疲れ様。{name}にちゃんと跪けたわね。次も、同じように負けるのよ。",
-        f"{name}の前ではオスとして終わっていいの。私（彼女）が勝つから。",
+        f"また{name}に情けなく負けちゃったのね……ふふ、かわいいわ。",
+        f"{name}の前じゃ、すぐとろけて射精しちゃうの？しょうがない子。",
+        f"抵抗できずに出しちゃったのね。{name}に弱いの、バレバレよ。",
+        f"ふふ、{name}で情けない顔してイったのね。見てたかったわ。",
+        f"また白旗……{name}には勝てないまま、気持ちよく負けたね。",
+        f"{name}に甘えて、ちんぽまで正直になっちゃったの。かわいい敗北。",
+        f"我慢できなくて記録つけに来たの？{name}にメロメロで情けないわ。",
+        f"とろけたあとの顔、想像できるわ。{name}に負けたあとって、いつもそう。",
+        f"ふふ、また{name}にイかされてきたのね。弱いのに、ちゃんと報告できてえらい。",
+        f"{name}のこと考えただけで負けたんでしょ？情けない……でも好きよ。",
+        f"射精してからアプリ開くの、いちばんかわいいわ。{name}に屈した余韻、残ってるでしょ。",
+        f"また{name}に甘やかされて敗北射精……幸せそうな負け方ね、ふふ。",
     ]
     return random.choice(lines)
 
 # 節目メッセージ
 MILESTONES = {
-    10:  ("🎀", "10回目の敗北ね。もう強雌に調教されてる自覚、あるでしょ。"),
-    30:  ("💋", "30回……立派な敗北癖よ。屈するのがお似合いね。"),
-    50:  ("🔥", "50回敗北達成。もう抵抗するふりすら、かわいく見えるわ。"),
-    100: ("👑", "100回の敗北……おめでとう。完全に、強雌様の所有物ね。"),
-    200: ("💎", "200回。言葉はいらないわ。あなたはもう、負けてイく生き物よ。"),
-    365: ("🌹", "365回、1年分の膝まづき。この記録、永遠に消えないわ。"),
+    10:  ("🎀", "10回目の情けない敗北ね。これからも、とろけて負けていいのよ。"),
+    30:  ("💋", "30回……本当に弱い子。でもその情けなさ、愛おしいわ。"),
+    50:  ("🔥", "50回敗北達成。立派な甘マゾになったわね、ふふ。"),
+    100: ("👑", "100回の敗北……おめでとう。もう負け癖、かわいく決まってるわ。"),
+    200: ("💎", "200回。言葉より先にちんぽが負けるタイプね……最高よ。"),
+    365: ("🌹", "365回、1年分の甘い敗北。あなたの情けない記録、大切にしてあげる。"),
 }
 
 def recommend_lines(name, total, t):
@@ -436,30 +436,30 @@ def tease_predict_next(history, items_list, hour_now):
 
 
 def mirror_reply(choice, name):
-    """本番用・鏡チェック。強雌様に誘惑される甘マゾ向け。"""
+    """本番用・鏡チェック。甘マゾ向けの甘い誘惑。"""
     if choice == "hard":
         lines = [
-            f"ふふ……もう勃ってるの。{name}の顔を見ただけで、オスが露出してるわね。",
-            f"正直ね。{name}の前じゃ、ちんぽが先に跪くのよ。",
-            f"反応が出てるのに、まだ我慢するつもり？かわいい抵抗……{name}は笑ってるわよ。",
-            f"硬くなってるの、見せなさい。{name}に負けそうな証拠でしょ？",
-            f"勃起したままアプリ開くなんて……{name}に呼ばれただけ？ふふ。",
+            f"ふふ……もう勃ってるの。{name}を見ただけで正直になるなんて、かわいすぎるわ。",
+            f"硬くなってるのね。{name}に弱いの、体が先に認めちゃってるわよ。",
+            f"反応出てるくせに、まだ余裕ある顔してるの？{name}の前じゃ無理よ、ふふ。",
+            f"勃起したまま開いちゃうの……{name}に会いたくて仕方ないでしょ。",
+            f"もう疼いてるのに見てるだけ？情けない……でも、それがいいのよ。",
         ]
     elif choice == "touch":
         lines = [
-            f"触りたいって言えたの、いい子。でも手を出す前に、{name}に「負けます」って思いなさい。",
-            f"ふふ、素直ね。{name}に触らされたいだけなのに、自分から欲しがってる。",
-            f"触りたい気持ち、隠せないのね。{name}に屈する準備、できてるでしょ。",
-            f"手が疼くなら、{name}の顔を見ながら負けなさい。それがお似合いよ。",
-            f"「触りたい」＝もう負け宣言よ。{name}の勝ち確定ね、かわいい子。",
+            f"触りたいって言えたの、えらい。{name}に甘えて負けちゃう準備、できてるわね。",
+            f"手が疼くのね。ふふ、{name}の顔見ながら情けなくイきそうでしょ。",
+            f"触りたい気持ち、隠さなくていいわ。{name}には勝てないって認めてるのと同じよ。",
+            f"「触りたい」って……もう負け宣言ね。{name}に甘やかされていいのよ。",
+            f"我慢できなくなってきた？しょうがない子。{name}に負けてもいいのよ、ふふ。",
         ]
     else:
         lines = [
-            f"黙るの？……でも視線は{name}に釘付け。体はもう正直よ。",
-            f"言えないくらい弱いのね。ふふ、{name}には全部ばれてるわ。",
-            f"沈黙もかわいいわ。ちんぽの反応は、ちゃんと{name}に届いてるから。",
-            f"答えなくていいの。{name}に見られてるだけで、もう負けてるでしょ。",
-            f"黙ってるくせに、疼いてる顔してるわよ。{name}に屈しなさい。",
+            f"黙るの？……でも目は{name}に釘付け。かわいい矛盾ね。",
+            f"言えないくらい弱いのね。ふふ、{name}には全部ばれてるわよ。",
+            f"沈黙も情けなくて好きよ。体はもう{name}に反応してるでしょ。",
+            f"答えなくていいの。{name}を見てるだけで、もうとろけ始めてるわ。",
+            f"黙ってるくせに顔が赤いわよ。{name}に弱いの、隠せないわ。",
         ]
     return random.choice(lines)
 
@@ -624,11 +624,11 @@ if st.session_state.get("master_word"):
         )
     st.markdown(f"""
 <div class="tease-wall" style="border-color:#ff4081;">
-  <div class="tease-badge">👑 強雌様への敗北</div>
+  <div class="tease-badge">💞 情けない敗北射精</div>
   {flash_img}
-  <div style="color:#ff80ab;font-size:0.85em;margin-top:0.2em;">💋 敗北射精 完了</div>
+  <div style="color:#ff80ab;font-size:0.85em;margin-top:0.2em;">💋 またとろけて負けちゃった</div>
   <div class="tease-line" style="font-size:1.08em;">「{st.session_state.master_word}」</div>
-  <div style="color:#804060;font-size:0.78em;margin-top:0.4em;">抵抗は終わり。記録されたわよ。</div>
+  <div style="color:#804060;font-size:0.78em;margin-top:0.4em;">いいのよ、情けなくて。記録できたわね。</div>
 </div>
 """, unsafe_allow_html=True)
     st.session_state.master_word = None
@@ -651,10 +651,10 @@ if _mirror_pool:
             st.session_state.mirror_name = random.choice(_mirror_pool).get("name", "")
     mirror_name = st.session_state.mirror_name
     st.markdown("<h3 style='text-align:center'>🪞 鏡チェック</h3>", unsafe_allow_html=True)
-    st.caption("強雌様の前で、正直になりなさい。答えなくても……体はもう正直よ。")
+    st.caption("正直になっていいのよ。情けない反応も、ぜんぶかわいいから。")
     m1, m2, m3 = st.columns(3)
     with m1:
-        if st.button("いま勃ってる", key="mirror_hard", use_container_width=True):
+        if st.button("いま勃ってる…", key="mirror_hard", use_container_width=True):
             st.session_state.mirror_reply = mirror_reply("hard", mirror_name)
             st.session_state.mirror_show = mirror_name
             st.rerun()
@@ -668,7 +668,7 @@ if _mirror_pool:
             st.session_state.mirror_reply = mirror_reply("silent", mirror_name)
             st.session_state.mirror_show = mirror_name
             st.rerun()
-    if st.button("🔀 別の強雌様を見る", key="mirror_shuffle"):
+    if st.button("🔀 別の子を見る", key="mirror_shuffle"):
         others = [v.get("name") for v in _mirror_pool if v.get("name") != mirror_name]
         if others:
             st.session_state.mirror_name = random.choice(others)
@@ -685,7 +685,7 @@ if _mirror_pool:
         )
         st.markdown(f"""
 <div class="ero-card" style="border:1px solid #ff4081;max-width:480px;margin:0.6em auto 1em;">
-  <div style="color:#ff80ab;font-size:0.78em;letter-spacing:0.08em;">👑 {m_item.get('name', '')}</div>
+  <div style="color:#ff80ab;font-size:0.78em;letter-spacing:0.08em;">🌸 {m_item.get('name', '')}</div>
   {m_img}
   <div class="tease-line">「{st.session_state.mirror_reply}」</div>
 </div>
