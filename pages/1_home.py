@@ -439,29 +439,51 @@ def mirror_reply(choice, name):
     """本番用・鏡チェック。甘マゾ向けの甘い誘惑。"""
     if choice == "hard":
         lines = [
-            f"ふふ……もう勃ってるの。{name}を見ただけで正直になるなんて、かわいすぎるわ。",
-            f"硬くなってるのね。{name}に弱いの、体が先に認めちゃってるわよ。",
-            f"反応出てるくせに、まだ余裕ある顔してるの？{name}の前じゃ無理よ、ふふ。",
-            f"勃起したまま開いちゃうの……{name}に会いたくて仕方ないでしょ。",
-            f"もう疼いてるのに見てるだけ？情けない……でも、それがいいのよ。",
+            f"ふふ……もう勃ってるの。{name}の顔見ただけで、ちんぽが先に正直になっちゃうなんてかわいすぎるわ。",
+            f"硬くなってるのね。{name}に弱いの、体がもう認めてるわよ。情けない……でも好き。",
+            f"反応出てるくせに、まだ余裕ある顔？{name}の前じゃ無理よ。とろけなさい、ふふ。",
+            f"勃起したまま開いちゃうの……{name}に会いたくて、もう我慢の入口にいるでしょ。",
+            f"疼いてるのに見てるだけ？かわいい努力ね。でも{name}、そんなのすぐ崩せるわよ。",
+            f"びくびくしてるの、分かるわ。{name}の目を見てるだけで、先走りそうなんでしょ？",
         ]
     elif choice == "touch":
         lines = [
-            f"触りたいって言えたの、えらい。{name}に甘えて負けちゃう準備、できてるわね。",
-            f"手が疼くのね。ふふ、{name}の顔見ながら情けなくイきそうでしょ。",
-            f"触りたい気持ち、隠さなくていいわ。{name}には勝てないって認めてるのと同じよ。",
-            f"「触りたい」って……もう負け宣言ね。{name}に甘やかされていいのよ。",
-            f"我慢できなくなってきた？しょうがない子。{name}に負けてもいいのよ、ふふ。",
+            f"触りたいって言えたの、えらい。{name}の顔見ながら、情けなくシコシコしちゃう準備ね。",
+            f"手が疼くのね。ふふ、{name}に甘えて、すぐイきそうな弱い子になっていいのよ。",
+            f"「触りたい」って……もう負け宣言よ。{name}に甘やかされて、とろけていいわ。",
+            f"我慢できなくなってきた？しょうがない子。{name}の顔で、ゆっくり負けなさい。",
+            f"触りたい気持ち、隠さなくていいわ。{name}には勝てないって、ちんぽが教えてるでしょ。",
+            f"手、出しちゃいそう？ふふ……{name}に見られながら、みっともなくイく想像してるわね。",
         ]
     else:
         lines = [
-            f"黙るの？……でも目は{name}に釘付け。かわいい矛盾ね。",
-            f"言えないくらい弱いのね。ふふ、{name}には全部ばれてるわよ。",
-            f"沈黙も情けなくて好きよ。体はもう{name}に反応してるでしょ。",
-            f"答えなくていいの。{name}を見てるだけで、もうとろけ始めてるわ。",
-            f"黙ってるくせに顔が赤いわよ。{name}に弱いの、隠せないわ。",
+            f"黙るの？……でも目は{name}に釘付け。かわいい矛盾。体はもう正直よ。",
+            f"言えないくらい弱いのね。ふふ、{name}には全部ばれてるわ。疼きまで。",
+            f"沈黙も情けなくて好きよ。{name}を見てるだけで、もう先が熱いでしょ。",
+            f"答えなくていいの。{name}の顔、じっくり見て……とろけ始めてるわよね。",
+            f"黙ってるくせに顔が赤いわよ。{name}に弱いの、隠せないわ、ふふ。",
+            f"言えないなら、見るだけでいいわ。{name}に見つめられて、勝手に負けていくのよ。",
         ]
     return random.choice(lines)
+
+
+def mirror_after(choice, name, ab_days=None):
+    """回答後の追い打ち（甘い・情けない）。"""
+    extras = [
+        f"その顔のまま、{name}に負けにいきなさい。記録するとき、いちばんかわいいわよ。",
+        f"ふふ、もう余裕ないでしょ。{name}のせいだって認めながら、情けなくイきなさい。",
+        f"{name}に甘えていいの。抵抗しないで、とろけたまま敗北射精してきなさい。",
+        f"見てるだけでここまで弱いなら……触ったらすぐ終わるわね。かわいい。",
+    ]
+    if choice == "hard":
+        extras.append(f"勃ったまま我慢するの、いちばん情けないわ。{name}に負けた方が幸せよ。")
+    if choice == "touch":
+        extras.append(f"手が動く前に、{name}に「負けます」って心の中で言ってみなさい。ふふ。")
+    if choice == "silent":
+        extras.append(f"黙ってるのに体は正直……{name}、そういう子がいちばん好きよ。")
+    if ab_days and ab_days >= 2:
+        extras.append(f"{ab_days}日溜めて{name}を見てるの？……もう限界でしょ。情けなく出していいわ。")
+    return random.choice(extras)
 
 
 def tease_mirror_reply(choice, name):
@@ -652,7 +674,6 @@ def _mirror_pick_item(pool, prefer_name=None):
 _mirror_pool = [v for v in data["items"].values() if v.get("name")]
 _mirror_with_img = [v for v in _mirror_pool if v.get("img")]
 if _mirror_with_img:
-    # 表示対象をセッションで固定（画像付きのみ）
     if "mirror_name" not in st.session_state or not any(
         v.get("name") == st.session_state.mirror_name and v.get("img") for v in _mirror_with_img
     ):
@@ -661,7 +682,6 @@ if _mirror_with_img:
         st.session_state.mirror_img = picked.get("img", "")
 
     mirror_name = st.session_state.mirror_name
-    # 最新データから画像を取り直す（cloud参照の復元後など）
     mirror_item = next(
         (v for v in _mirror_with_img if v.get("name") == mirror_name),
         _mirror_with_img[0],
@@ -671,65 +691,108 @@ if _mirror_with_img:
 
     mirror_img_html = img_to_html(
         st.session_state.mirror_img,
-        style="width:100%;max-height:280px;object-fit:cover;border-radius:12px;",
+        style="width:100%;max-height:360px;object-fit:cover;border-radius:14px;",
     )
+    # 開いた瞬間のささやき（回答前）
+    if "mirror_open_line" not in st.session_state or st.session_state.get("mirror_open_for") != mirror_name:
+        open_lines = [
+            f"{mirror_name}の顔、じっと見てみなさい。……もう反応、出てるでしょ？",
+            f"ふふ、また{mirror_name}を見に来たのね。見るだけで負けそうな顔してるわよ。",
+            f"カウントしなくていいわ。まずは{mirror_name}に、ちんぽを見せてあげなさい。",
+            f"{mirror_name}に見つめられてるつもりで……正直なところ、どこまで疼いてる？",
+        ]
+        if ab_days and ab_days >= 2:
+            open_lines.append(f"{ab_days}日ぶりの{mirror_name}ね。溜まってるのに、まだ見るだけ？かわいいわ。")
+        st.session_state.mirror_open_line = random.choice(open_lines)
+        st.session_state.mirror_open_for = mirror_name
 
     st.markdown("<h3 style='text-align:center'>🪞 鏡チェック</h3>", unsafe_allow_html=True)
-    st.caption("正直になっていいのよ。情けない反応も、ぜんぶかわいいから。")
     st.markdown(
-        f"<div style='color:#ff80ab;font-size:0.85em;text-align:center;"
-        f"letter-spacing:0.08em;margin-bottom:0.3em;'>🌸 {mirror_name}</div>",
+        "<div style='text-align:center;color:#ffb6d9;font-style:italic;font-size:0.9em;"
+        "margin-bottom:0.6em;'>彼女の顔を見ながら、情けない本音を言いなさい</div>",
         unsafe_allow_html=True,
     )
-    if mirror_img_html:
-        st.markdown(
-            f"<div style='max-width:480px;margin:0 auto 0.8em;'>{mirror_img_html}</div>",
-            unsafe_allow_html=True,
-        )
-    else:
-        # HTML埋め込み失敗時のフォールバック
+
+    st.markdown(f"""
+<div class="tease-wall" style="max-width:520px;margin:0 auto 0.8em;">
+  <div class="tease-badge">💋 {mirror_name} が見てるわよ</div>
+  {mirror_img_html if mirror_img_html else ''}
+  <div class="tease-line" style="margin-top:0.6em;">「{st.session_state.mirror_open_line}」</div>
+</div>
+""", unsafe_allow_html=True)
+    if not mirror_img_html:
         raw = st.session_state.mirror_img or ""
-        shown = False
         if raw.startswith("data:") and "," in raw:
             try:
                 import base64
                 from io import BytesIO
-                b64 = raw.split(",", 1)[1]
-                st.image(BytesIO(base64.b64decode(b64)), use_container_width=True)
-                shown = True
+                st.image(BytesIO(base64.b64decode(raw.split(",", 1)[1])), use_container_width=True)
             except Exception:
-                shown = False
-        if not shown:
-            st.caption("画像を読み込めなかったわ……別の子を見てみて")
+                st.caption("画像を読み込めなかったわ……別の子を見てみて")
 
+    st.markdown(
+        "<div style='text-align:center;color:#ff80ab;font-size:0.78em;margin:0.4em 0 0.6em;'>"
+        "どれがいちばん近い？　嘘つかなくていいのよ</div>",
+        unsafe_allow_html=True,
+    )
     m1, m2, m3 = st.columns(3)
     with m1:
-        if st.button("いま勃ってる…", key="mirror_hard", use_container_width=True):
+        if st.button("もう硬くなってる", key="mirror_hard", use_container_width=True):
+            st.session_state.mirror_choice = "hard"
             st.session_state.mirror_reply_text = mirror_reply("hard", mirror_name)
+            st.session_state.mirror_after_text = mirror_after("hard", mirror_name, ab_days)
             st.rerun()
     with m2:
-        if st.button("触りたい……", key="mirror_touch", use_container_width=True):
+        if st.button("触りたくて仕方ない", key="mirror_touch", use_container_width=True):
+            st.session_state.mirror_choice = "touch"
             st.session_state.mirror_reply_text = mirror_reply("touch", mirror_name)
+            st.session_state.mirror_after_text = mirror_after("touch", mirror_name, ab_days)
             st.rerun()
     with m3:
-        if st.button("……黙る", key="mirror_silent", use_container_width=True):
+        if st.button("言えない…でも見てる", key="mirror_silent", use_container_width=True):
+            st.session_state.mirror_choice = "silent"
             st.session_state.mirror_reply_text = mirror_reply("silent", mirror_name)
+            st.session_state.mirror_after_text = mirror_after("silent", mirror_name, ab_days)
             st.rerun()
-    if st.button("🔀 別の子を見る", key="mirror_shuffle"):
-        others = [v for v in _mirror_with_img if v.get("name") != mirror_name]
-        if others:
-            nxt = random.choice(others)
-            st.session_state.mirror_name = nxt.get("name", "")
-            st.session_state.mirror_img = nxt.get("img", "")
-            st.session_state.mirror_reply_text = None
+
+    c_shuf, c_more = st.columns(2)
+    with c_shuf:
+        if st.button("🔀 別の子を見る", key="mirror_shuffle", use_container_width=True):
+            others = [v for v in _mirror_with_img if v.get("name") != mirror_name]
+            if others:
+                nxt = random.choice(others)
+                st.session_state.mirror_name = nxt.get("name", "")
+                st.session_state.mirror_img = nxt.get("img", "")
+                st.session_state.mirror_reply_text = None
+                st.session_state.mirror_after_text = None
+                st.session_state.mirror_choice = None
+                st.session_state.pop("mirror_open_line", None)
+                st.rerun()
+    with c_more:
+        if st.button("💦 もう一言聞いてしまう", key="mirror_more", use_container_width=True):
+            choice = st.session_state.get("mirror_choice") or random.choice(["hard", "touch", "silent"])
+            st.session_state.mirror_reply_text = mirror_reply(choice, mirror_name)
+            st.session_state.mirror_after_text = mirror_after(choice, mirror_name, ab_days)
+            st.session_state.mirror_choice = choice
             st.rerun()
+
     if st.session_state.get("mirror_reply_text"):
+        after = st.session_state.get("mirror_after_text") or ""
         st.markdown(f"""
-<div style="max-width:480px;margin:0.4em auto 1em;text-align:center;
-  color:#ffb6d9;font-style:italic;font-size:1.02em;
-  background:rgba(194,24,91,0.12);border:1px solid rgba(255,64,129,0.35);
-  border-radius:12px;padding:0.8em 1em;">
-  「{st.session_state.mirror_reply_text}」
+<div style="max-width:520px;margin:0.6em auto 0.4em;
+  background:linear-gradient(160deg,rgba(194,24,91,0.22),rgba(40,0,25,0.55));
+  border:1px solid #ff4081;border-radius:14px;padding:1em;text-align:center;
+  box-shadow:0 0 18px rgba(255,64,129,0.25);">
+  <div style="color:#ff80ab;font-size:0.75em;letter-spacing:0.1em;margin-bottom:0.45em;">💞 甘い敗北予告</div>
+  <div style="color:#ffb6d9;font-style:italic;font-size:1.05em;margin-bottom:0.55em;">
+    「{st.session_state.mirror_reply_text}」
+  </div>
+  <div style="color:#ffe0f0;font-style:italic;font-size:0.92em;opacity:0.95;">
+    「{after}」
+  </div>
+  <div style="color:#804060;font-size:0.75em;margin-top:0.7em;">
+    下の弱点一覧で「💋 敗北射精」……{mirror_name}に、情けなく負けてきなさい
+  </div>
 </div>
 """, unsafe_allow_html=True)
 elif _mirror_pool:
