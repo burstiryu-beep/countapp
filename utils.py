@@ -61,37 +61,90 @@ def registered_item_count(data):
 _face_pos_cache: dict = {}
 
 
-def detect_face_position(img_path: str) -> str:
-    """顔を検出してCSS object-position文字列を返す。検出失敗時は上部寄りを返す。"""
-    if img_path in _face_pos_cache:
-        return _face_pos_cache[img_path]
+def _face_cache_key(src: str) -> str:
+    """巨大な data URI をキャッシュキーにしないための短縮キー。"""
+    if not src:
+        return ""
+    if src.startswith("data:"):
+        import hashlib
+        return "data:" + hashlib.md5(src.encode("utf-8", errors="ignore")).hexdigest()
+    return src
 
-    default = "center 15%"
+
+def _load_bgr_image(src: str):
+    """ファイルパス / data URI から OpenCV BGR 画像を読む。"""
+    import base64
+    import numpy as np
+    import cv2
+
+    if isinstance(src, str) and src.startswith("data:"):
+        try:
+            b64 = src.split(",", 1)[1]
+            raw = base64.b64decode(b64)
+            arr = np.frombuffer(raw, dtype=np.uint8)
+            return cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        except Exception:
+            return None
+
+    p = resolve_img_path(src) if not Path(str(src)).is_file() else Path(str(src))
+    if not p:
+        return None
+    return cv2.imread(str(p))
+
+
+def detect_face_position(src: str) -> str:
+    """顔を検出して CSS object-position を返す。検出失敗時は上部寄り。"""
+    cache_key = _face_cache_key(src)
+    if cache_key in _face_pos_cache:
+        return _face_pos_cache[cache_key]
+
+    # ポートレート想定のデフォルト（中央だと顔が切れやすい）
+    default = "center 18%"
+    result = default
     try:
         import cv2
 
-        img = cv2.imread(str(img_path))
+        img = _load_bgr_image(src)
         if img is None:
+            _face_pos_cache[cache_key] = default
             return default
 
         h, w = img.shape[:2]
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-        cascade = cv2.CascadeClassifier(cascade_path)
-        faces = cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(30, 30))
+        gray = cv2.equalizeHist(gray)
 
-        if len(faces) == 0:
-            result = default
-        else:
+        min_side = max(24, int(min(w, h) * 0.08))
+        faces = []
+        for name in (
+            "haarcascade_frontalface_default.xml",
+            "haarcascade_frontalface_alt2.xml",
+            "haarcascade_profileface.xml",
+        ):
+            cascade = cv2.CascadeClassifier(cv2.data.haarcascades + name)
+            if cascade.empty():
+                continue
+            found = cascade.detectMultiScale(
+                gray,
+                scaleFactor=1.08,
+                minNeighbors=3,
+                minSize=(min_side, min_side),
+            )
+            if len(found):
+                faces.extend(found)
+                break
+
+        if len(faces):
             fx, fy, fw, fh = max(faces, key=lambda f: f[2] * f[3])
+            # 顔の少し上寄りを中心に（額〜目線が映りやすい）
             cx = int((fx + fw / 2) / w * 100)
-            cy = int((fy + fh / 2) / h * 100)
+            cy = int((fy + fh * 0.35) / h * 100)
+            cx = max(5, min(95, cx))
+            cy = max(5, min(70, cy))
             result = f"{cx}% {cy}%"
-
     except Exception:
         result = default
 
-    _face_pos_cache[img_path] = result
+    _face_pos_cache[cache_key] = result
     return result
 
 
@@ -108,6 +161,10 @@ def img_to_html(img_path, style="width:100%;border-radius:12px;margin-bottom:0.6
         if not img_path:
             return ""
 
+    if face_detect and "object-position" not in style:
+        pos = detect_face_position(img_path)
+        style = style.rstrip(";") + f";object-position:{pos};"
+
     if img_path.startswith("data:"):
         return f'<img src="{img_path}" style="{style}"/>'
 
@@ -121,11 +178,6 @@ def img_to_html(img_path, style="width:100%;border-radius:12px;margin-bottom:0.6
             b64 = base64.b64encode(f.read()).decode()
         ext = str(p).rsplit(".", 1)[-1].lower()
         mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
-
-        if face_detect and "object-position" not in style:
-            pos = detect_face_position(str(p))
-            style = style.rstrip(";") + f";object-position:{pos};"
-
         return f'<img src="data:{mime};base64,{b64}" style="{style}"/>'
     except Exception:
         return ""
