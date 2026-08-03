@@ -760,24 +760,71 @@ def _mirror_pick_item(pool, prefer_name=None):
         hit = next((v for v in pool if v.get("name") == prefer_name and v.get("img")), None)
         if hit:
             return hit
+        hit = next((v for v in pool if v.get("name") == prefer_name), None)
+        if hit:
+            return hit
     with_img = [v for v in pool if v.get("img")]
     return random.choice(with_img or pool)
 
 
+_MIRROR_FINISHERS = [
+    ("kiss", "フェラ＋亀頭キスでイかせて"),
+    ("glans", "亀頭キスで溶かして"),
+    ("mouth", "口で堕として"),
+]
+_MIRROR_FINISHER_LABELS = [label for _, label in _MIRROR_FINISHERS]
+_MIRROR_FINISHER_KEY = {label: key for key, label in _MIRROR_FINISHERS}
+
+
+def _mirror_switch_to(name, pool, sync_select=True):
+    hit = next((v for v in pool if v.get("name") == name), None)
+    if not hit:
+        return False
+    st.session_state.mirror_name = hit.get("name", "")
+    st.session_state.mirror_img = hit.get("img", "")
+    st.session_state.mirror_reply_text = None
+    st.session_state.mirror_after_text = None
+    st.session_state.mirror_choice = None
+    st.session_state.pop("mirror_open_line", None)
+    if sync_select:
+        st.session_state.mirror_onape_sel = hit.get("name", "")
+    return True
+
+
 _mirror_pool = [v for v in data["items"].values() if v.get("name")]
 _mirror_with_img = [v for v in _mirror_pool if v.get("img")]
-if _mirror_with_img:
-    if "mirror_name" not in st.session_state or not any(
-        v.get("name") == st.session_state.mirror_name and v.get("img") for v in _mirror_with_img
-    ):
-        picked = _mirror_pick_item(_mirror_with_img, recent_name or rec_name)
+_mirror_names = [v.get("name") for v in (_mirror_with_img or _mirror_pool)]
+if _mirror_with_img or _mirror_pool:
+    _pool_for_pick = _mirror_with_img or _mirror_pool
+    if "mirror_name" not in st.session_state or st.session_state.mirror_name not in _mirror_names:
+        picked = _mirror_pick_item(_pool_for_pick, recent_name or rec_name)
         st.session_state.mirror_name = picked.get("name", "")
         st.session_state.mirror_img = picked.get("img", "")
+        st.session_state.mirror_onape_sel = st.session_state.mirror_name
+
+    if st.session_state.get("mirror_onape_sel") not in _mirror_names:
+        st.session_state.mirror_onape_sel = st.session_state.mirror_name
+
+    st.markdown("<h3 style='text-align:center'>🪞 鏡チェック</h3>", unsafe_allow_html=True)
+    st.markdown(
+        "<div style='text-align:center;color:#ffb6d9;font-style:italic;font-size:0.9em;"
+        "margin-bottom:0.6em;'>フェラと亀頭キスで、イかせに来てるわよ</div>",
+        unsafe_allow_html=True,
+    )
+
+    selected_onape = st.selectbox(
+        "どのオナペにイかせてもらう？",
+        _mirror_names,
+        key="mirror_onape_sel",
+    )
+    if selected_onape != st.session_state.get("mirror_name"):
+        if _mirror_switch_to(selected_onape, _mirror_with_img or _mirror_pool):
+            st.rerun()
 
     mirror_name = st.session_state.mirror_name
     mirror_item = next(
-        (v for v in _mirror_with_img if v.get("name") == mirror_name),
-        _mirror_with_img[0],
+        (v for v in (_mirror_with_img or _mirror_pool) if v.get("name") == mirror_name),
+        (_mirror_with_img or _mirror_pool)[0],
     )
     st.session_state.mirror_img = mirror_item.get("img", "") or st.session_state.get("mirror_img", "")
     mirror_name = mirror_item.get("name", mirror_name)
@@ -801,13 +848,6 @@ if _mirror_with_img:
         st.session_state.mirror_open_line = random.choice(open_lines)
         st.session_state.mirror_open_for = mirror_name
 
-    st.markdown("<h3 style='text-align:center'>🪞 鏡チェック</h3>", unsafe_allow_html=True)
-    st.markdown(
-        "<div style='text-align:center;color:#ffb6d9;font-style:italic;font-size:0.9em;"
-        "margin-bottom:0.6em;'>フェラと亀頭キスで、イかせに来てるわよ</div>",
-        unsafe_allow_html=True,
-    )
-
     st.markdown(f"""
 <div class="tease-wall" style="max-width:520px;margin:0 auto 0.8em;">
   <div class="tease-badge">💋 {mirror_name} が口で来るわよ</div>
@@ -824,6 +864,8 @@ if _mirror_with_img:
                 st.image(BytesIO(base64.b64decode(raw.split(",", 1)[1])), use_container_width=True)
             except Exception:
                 st.caption("画像を読み込めなかったわ……別の子を見てみて")
+        else:
+            st.caption("この子はまだ画像がないわ。でも口では来れるわよ")
 
     st.markdown(
         "<div style='text-align:center;color:#ff80ab;font-size:0.78em;margin:0.4em 0 0.6em;'>"
@@ -861,30 +903,24 @@ if _mirror_with_img:
         if st.button("イキそう…口でイカせて", key="mirror_edge", use_container_width=True):
             _mirror_pick("edge")
 
-    st.caption("決め技")
-    f1, f2, f3 = st.columns(3)
-    with f1:
-        if st.button("フェラ＋亀頭キスでイかせて", key="mirror_kiss", use_container_width=True):
-            _mirror_pick("kiss")
-    with f2:
-        if st.button("亀頭キスで溶かして", key="mirror_glans", use_container_width=True):
-            _mirror_pick("glans")
-    with f3:
-        if st.button("口で堕として", key="mirror_mouth", use_container_width=True):
-            _mirror_pick("mouth")
+    st.markdown("##### 決め技")
+    st.caption("どれでイかせてほしいか、選んでね")
+    finisher_label = st.radio(
+        "決め技を選ぶ",
+        _MIRROR_FINISHER_LABELS,
+        key="mirror_finisher_radio",
+        label_visibility="collapsed",
+    )
+    if st.button("💋 この決め技でイかせて", key="mirror_finisher_go", use_container_width=True):
+        _mirror_pick(_MIRROR_FINISHER_KEY.get(finisher_label, "kiss"))
 
     c_shuf, c_more = st.columns(2)
     with c_shuf:
-        if st.button("🔀 別の子を見る", key="mirror_shuffle", use_container_width=True):
-            others = [v for v in _mirror_with_img if v.get("name") != mirror_name]
+        if st.button("🔀 ランダムで別の子", key="mirror_shuffle", use_container_width=True):
+            others = [v for v in (_mirror_with_img or _mirror_pool) if v.get("name") != mirror_name]
             if others:
                 nxt = random.choice(others)
-                st.session_state.mirror_name = nxt.get("name", "")
-                st.session_state.mirror_img = nxt.get("img", "")
-                st.session_state.mirror_reply_text = None
-                st.session_state.mirror_after_text = None
-                st.session_state.mirror_choice = None
-                st.session_state.pop("mirror_open_line", None)
+                _mirror_switch_to(nxt.get("name", ""), _mirror_with_img or _mirror_pool)
                 st.rerun()
     with c_more:
         if st.button("💋 もっと口でイかせに来る", key="mirror_more", use_container_width=True):
@@ -926,9 +962,9 @@ if _mirror_with_img:
   </div>
 </div>
 """, unsafe_allow_html=True)
-elif _mirror_pool:
+else:
     st.markdown("<h3 style='text-align:center'>🪞 鏡チェック</h3>", unsafe_allow_html=True)
-    st.caption("画像付きの弱点を登録すると、ここで顔が見えるわよ。")
+    st.caption("弱点（オナペ）を登録すると、ここで選べるわよ。")
 
 # === TRIAL TEASE START ===
 if trial_tease:
