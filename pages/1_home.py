@@ -466,14 +466,16 @@ def mirror_reply(choice, name):
         ]
     elif choice == "kiss":
         lines = [
-            f"ふふ……亀頭キスに弱いのね。{name}に先端ちゅってされた想像しただけで、びくびくしてるわよ。",
-            f"亀頭にキス……そこが死ぬほど弱いんでしょ。{name}にそこだけ舐められて、もう終わりね。",
-            f"先端にキスされたいの？かわいい。{name}にそこをちゅっちゅされたら、情けなくイっちゃうわよ。",
-            f"亀頭キスで頭真っ白になるタイプね。{name}、そこだけ狙ってる顔してるわ……ふふ。",
-            f"先端、キスされるの想像してるだけで先走りそう？{name}の前じゃ隠せないわよ。",
-            f"死ぬほど弱いところ、教えてくれてありがとう。{name}に亀頭キスで焦らされて、震えてなさい。",
-            f"ちゅっ……ってされただけで負けそうなんでしょ。{name}、そこがあなたのスイッチね。",
-            f"亀頭に優しくキスされながら、しごかれる想像……もう限界でしょ。{name}に全部あげるわ。",
+            f"ふふ……私の唇、見えてる？いまからその亀頭に、ちゅってしてあげるつもりよ。出せないわ。",
+            f"唇だけでいじめてあげる。先端にちゅっ、ちゅっ……って。ちんぽ、イライラしてきたでしょ。",
+            f"キスは顔じゃないわ。ちんぽの先に、唇。{name}の唇でそこだけ焦らされて、動けないわね。",
+            f"唇が近づいてくるの想像しなさい。触るのはまだ。ちゅってするだけ。……先、びくびくしてるわよ。",
+            f"ちんぽイライラさせてあげたいの。唇で亀頭だけ甘くふさいで、出させてあげないわ。",
+            f"ねえ、先端に私の唇感じてる？まだ触れないのに疼くの、かわいい。……もっと焦らすわよ。",
+            f"唇特化でいじめるわ。亀頭にキスして離す、キスして離す。……出せなくて悔しいでしょ。",
+            f"ちんぽの先に唇を押し当てて、ちゅっ。それだけ。しごかない。イライラする？ふふ、それでいいの。",
+            f"{name}の唇が亀頭に吸いつく想像……もう先走りそう？だめ。唇のおもちゃになってなさい。",
+            f"唇で先端を塞がれたまま、腰動かしたくなるでしょ。でも出させないわ。ちんぽ、困ってるわね。",
         ]
     elif choice == "start":
         lines = [
@@ -492,7 +494,7 @@ def mirror_reply(choice, name):
             f"手が止まらないのね。{name}のせいだって認めながら、もっと情けなくしごきなさい。",
             f"ぬちゃぬちゃ音、出てない？ふふ……{name}の前じゃ隠せないわよ。",
             f"しごいてる途中でアプリ見てるの、いちばん弱いわ。{name}に焦らされてる自覚、ある？",
-            f"しごきながら、{name}に亀頭キスされてる想像してるでしょ。先端、びくびくしてるわよ。",
+            f"しごきながら、{name}の唇が亀頭に来る想像してるでしょ。手より唇の方が効くの、ばれてるわよ。",
         ]
     else:  # edge
         lines = [
@@ -502,7 +504,7 @@ def mirror_reply(choice, name):
             f"イキそうな顔のまま、{name}を見て……まだ出せないわ。焦らされるの、好きでしょ？",
             f"もう少しで出そうなのに止めるの、情けない……でも最高よ。{name}のための我慢ね。",
             f"先走りそう？ふふ。{name}に焦らされて、頭真っ白になるまでイかせてあげないわ。",
-            f"限界直前で、{name}に亀頭へちゅってされた想像しなさい。……まだ出さないのよ。",
+            f"限界直前で、{name}の唇が亀頭にちゅって……手は止めて。ちんぽだけイライラさせとくわ。",
         ]
     return random.choice(lines)
 
@@ -529,25 +531,25 @@ def mirror_after(choice, name, ab_days=None):
         ]
     elif choice == "kiss":
         extras = [
-            f"亀頭だけ、{name}にキスされ続けるの想像しなさい。出すのはまだだめよ……でも疼くでしょ。",
-            f"先端にちゅってされながら我慢するの、いちばん情けないわ。{name}のための弱い子ね。",
-            f"{name}が亀頭キスで焦らすたびに、腰が引けちゃうんでしょ。かわいい……もっと弱くなって。",
-            f"そこが死ぬほど弱いなら、記録するときも思い出しなさい。{name}のキスで負けたんだって。",
-            f"ちゅっ、ちゅっ……って想像するだけでイキそう？ふふ。{name}にそこを独占されてるわよ。",
+            f"唇だけ。手は使わない。亀頭にちゅってして、離す。……ちんぽ、怒ってるみたいに脈打ってるわよ。",
+            f"出せないまま、唇の感触だけ残しなさい。イライラ？当然よ。それが焦らし。",
+            f"先端に唇をあてたまま「まだだめ」って言ってあげる。腰、動きたくて仕方ないでしょ。",
+            f"ちゅっ……ふふ。それだけで先が熱いのね。しごかせてあげないわ。唇で足りなさい。",
+            f"ちんぽイライラしてきた？いい子。{name}の唇に負けて、まだ出さないで震えなさい。",
         ]
     elif choice == "start":
         extras = [
             f"触りはじめたなら、{name}の顔から目を離さないで。手だけ動かして、とろけなさい。",
             f"ゆっくりでいいわ。{name}に見られながら、自分で弱くなっていくのよ。",
             f"もう始めたんだから……途中で逃げるのはなしよ。{name}の前で、最後まで情けなく。",
-            f"先端を優しく撫でながら、{name}の亀頭キス想像しなさい。もう弱い顔になってるわよ。",
+            f"先端を唇だけであしらう想像しなさい。{name}は手を使わない。……ちんぽ、困ってるわね。",
         ]
     elif choice == "stroke":
         extras = [
             f"その調子。{name}を見つめながら、イキそうになるまでしごきなさい……でもまだ出さないの。",
             f"リズム速くなってきたでしょ？ふふ、{name}に焦らされてる証拠よ。",
             f"しごいてる手、止めなくていいわ。でも射精は私が許すまで禁止……のつもりで、ね。",
-            f"しごきながら先端だけ{name}にキスされてるつもりで……腰、震え始めたでしょ。",
+            f"手を止めて。代わりに{name}の唇が先端に来るの。ちゅっ……だけで、イライラしなさい。",
         ]
     else:
         extras = [
@@ -555,12 +557,12 @@ def mirror_after(choice, name, ab_days=None):
             f"焦らされてるのに気持ちいいのね。ふふ……{name}にイかされる準備、できてるわよ。",
             f"もう出していい？……まだだめ。もう少しだけ、{name}の顔で我慢しなさい。",
             f"我慢のあとで出すと、もっと情けなく負けるわよ。{name}のために溜めなさい。",
-            f"イキそうな先端に、{name}のキス……想像しただけで出せそう？だめよ、もう少し焦らすわ。",
+            f"イキそうな先端に唇だけ。……手はなし。ちんぽイライラしてきた？ふふ、その顔好きよ。",
         ]
     if ab_days and ab_days >= 2:
         extras.append(f"{ab_days}日分、いま手の中で暴れてるでしょ。{name}に焦らされてから、出していいわ。")
         if choice == "kiss":
-            extras.append(f"{ab_days}日溜めた亀頭に、{name}のキス……考えただけで負け確定ね。ふふ。")
+            extras.append(f"{ab_days}日溜めた亀頭に、{name}の唇だけ……触らせてあげない。キスだけ。出せないわね。")
     return random.choice(extras)
 
 
@@ -779,11 +781,12 @@ if _mirror_with_img:
             f"ふふ、手、動いてるでしょ。{mirror_name}に見られながら、進捗を報告しなさい。",
             f"触ってる？しごいてる？イキそう？……{mirror_name}の前じゃ、隠せないわよ。",
             f"{mirror_name}に見つめられながら、ちんぽいじってるのね。いまの段階、教えて？",
-            f"……ねえ。亀頭キスされた想像、してない？{mirror_name}の前じゃ、ばれバレよ。",
+            f"……ねえ。私の唇、見えてる？いまから亀頭に行くわよ。触らない。キスだけ。",
+            f"ちんぽ、イライラさせてあげたい気分。唇で先端だけ、ちゅってしてあげる。……まだ出せないわ。",
         ]
         if ab_days and ab_days >= 2:
             open_lines.append(f"{ab_days}日分、いま手の中で暴れてない？{mirror_name}に焦らされたいんでしょ。")
-            open_lines.append(f"{ab_days}日溜めた先端に、{mirror_name}のキス……考えただけで弱い顔してるわよ。")
+            open_lines.append(f"{ab_days}日溜めた先端に、{mirror_name}の唇……ちゅってされたら即負けね。でもまだ出させない。")
         st.session_state.mirror_open_line = random.choice(open_lines)
         st.session_state.mirror_open_for = mirror_name
 
@@ -847,8 +850,8 @@ if _mirror_with_img:
         if st.button("イキそう…焦らして", key="mirror_edge", use_container_width=True):
             _mirror_pick("edge")
 
-    st.caption("弱点")
-    if st.button("💋 亀頭キスに死ぬほど弱い", key="mirror_kiss", use_container_width=True):
+    st.caption("弱点・焦らし")
+    if st.button("💋 唇で亀頭いじめて…出せない", key="mirror_kiss", use_container_width=True):
         _mirror_pick("kiss")
 
     c_shuf, c_more = st.columns(2)
@@ -868,8 +871,8 @@ if _mirror_with_img:
         if st.button("🔥 もっと焦らす", key="mirror_more", use_container_width=True):
             choice = st.session_state.get("mirror_choice") or "kiss"
             choice = {"touch": "want"}.get(choice, choice)
-            # 弱点指定中はキス煽りを混ぜやすい
-            if choice in ("stroke", "edge", "start") and random.random() < 0.45:
+            # 唇焦らしを優先して混ぜる
+            if choice != "kiss" and random.random() < 0.55:
                 choice = "kiss"
             st.session_state.mirror_reply_text = mirror_reply(choice, mirror_name)
             st.session_state.mirror_after_text = mirror_after(choice, mirror_name, ab_days)
@@ -878,7 +881,7 @@ if _mirror_with_img:
 
     if st.session_state.get("mirror_reply_text"):
         after = st.session_state.get("mirror_after_text") or ""
-        badge = "💋 亀頭キス弱点" if st.session_state.get("mirror_choice") == "kiss" else "🔥 射精焦らし"
+        badge = "💋 唇でちんぽ焦らし" if st.session_state.get("mirror_choice") == "kiss" else "🔥 射精焦らし"
         st.markdown(f"""
 <div style="max-width:520px;margin:0.6em auto 0.4em;
   background:linear-gradient(160deg,rgba(194,24,91,0.22),rgba(40,0,25,0.55));
@@ -892,7 +895,7 @@ if _mirror_with_img:
     「{after}」
   </div>
   <div style="color:#804060;font-size:0.75em;margin-top:0.7em;">
-    限界まで焦らしたら……下で「💋 敗北射精」。{mirror_name}に情けなく出して記録しなさい
+    唇に負けて限界きたら……下で「💋 敗北射精」。{mirror_name}に情けなく出して記録しなさい
   </div>
 </div>
 """, unsafe_allow_html=True)
