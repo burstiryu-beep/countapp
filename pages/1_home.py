@@ -333,6 +333,38 @@ def diary_line(h, month_count):
     ]
     return date_lbl, time_lbl, rng.choice(lines)
 
+# ===== 試し: 開くだけで勃つモード（トグルOFFで完全に非表示）=====
+def tease_wall_lines(name, ab_days):
+    lines = [
+        f"ただ見に来ただけ？……いいのよ、{name}を見てなさい。",
+        f"カウントしないつもり？ふふ、でも{name}の顔は見てるわね。",
+        f"{name}……触らなくても、もう反応してるでしょ。",
+        f"記録はしなくていいわ。まずは{name}をじっくり見て。",
+        f"また開いちゃったの。{name}に会いたくなっただけ？かわいい。",
+    ]
+    if ab_days and ab_days >= 2:
+        lines.append(f"{ab_days}日我慢してるのに、また{name}を見に来たのね……正直でかわいいわ。")
+    return random.choice(lines)
+
+
+def tease_memory_line(name, when_lbl):
+    lines = [
+        f"{when_lbl}、{name}のこの顔で負けたよね。覚えてる？",
+        f"この日の{name}……思い出しただけで、また疼いてきたでしょ。",
+        f"{when_lbl}の敗北。{name}にまた負けたくなってきたんじゃない？",
+        f"記録を見に来たの？それとも{name}に会いたくて？ふふ。",
+    ]
+    return random.choice(lines)
+
+
+def tease_gallery_whisper(name):
+    lines = [
+        f"{name}……眺めてるだけでもう十分？",
+        f"触らなくていいのよ。でも目は離さないで。",
+        f"{name}の顔、好きすぎて見るだけで負けそうね。",
+    ]
+    return random.choice(lines)
+
 # ===== データ集計 =====
 today_count = sum(1 for h in data["history"] if h["time"].startswith(today_str))
 total_all = sum(sum(v.get("counts", {}).values()) for v in data["items"].values())
@@ -429,6 +461,18 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
+# === TRIAL TEASE: サイドバートグル（OFFで元に戻る）===
+trial_tease = st.sidebar.toggle(
+    "🧪 試し：開くだけで勃つモード",
+    value=st.session_state.get("trial_tease", False),
+    help="壁ドン起動・観賞・思い出再生。OFFにすると消えます",
+)
+st.session_state.trial_tease = trial_tease
+if trial_tease:
+    st.sidebar.caption("ON中：カウントしなくても刺激が出ます")
+else:
+    st.session_state.tease_wall_dismissed = False
+
 months = all_months(data)
 current_month = now_jst.strftime("%Y-%m")
 if current_month not in months:
@@ -463,6 +507,112 @@ if st.session_state.get("master_word"):
 if milestone_msg:
     icon, text = milestone_msg
     st.markdown(f"<div class='milestone-msg'>{icon} {text}</div>", unsafe_allow_html=True)
+
+# === TRIAL TEASE START ===
+if trial_tease:
+    tease_items = [v for v in data["items"].values() if v.get("img")]
+    if not tease_items:
+        tease_items = list(data["items"].values())
+
+    # 1) 壁ドン起動（セッション中1回、閉じるまで大きく表示）
+    if tease_items and not st.session_state.get("tease_wall_dismissed"):
+        if "tease_wall_name" not in st.session_state:
+            pick = random.choice(tease_items)
+            st.session_state.tease_wall_name = pick.get("name", "")
+            st.session_state.tease_wall_img = pick.get("img", "")
+        wall_name = st.session_state.tease_wall_name
+        wall_img = img_to_html(
+            st.session_state.tease_wall_img,
+            style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;",
+        )
+        wall_line = tease_wall_lines(wall_name, ab_days)
+        st.markdown(f"""
+<div class="tease-wall">
+  <div class="tease-badge">💋 ただ見に来ただけ？</div>
+  {wall_img}
+  <h2 style="color:#ffe0f0;margin:0.2em 0;">🌸 {wall_name}</h2>
+  <div class="tease-line">「{wall_line}」</div>
+  <div style="color:#804060;font-size:0.78em;margin-top:0.4em;">カウントしなくていいわ。まず見てなさい。</div>
+</div>
+""", unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("👀 もっと見る", key="tease_keep", use_container_width=True):
+                st.session_state.tease_wall_dismissed = True
+                st.session_state.tease_focus = "gallery"
+                st.rerun()
+        with c2:
+            if st.button("閉じる（記録へ）", key="tease_close", use_container_width=True):
+                st.session_state.tease_wall_dismissed = True
+                st.rerun()
+
+    # 2) 観賞モード
+    if tease_items:
+        st.markdown("<h3 style='text-align:center'>👀 観賞モード</h3>", unsafe_allow_html=True)
+        st.caption("カウントなし。眺めるだけ……でもそれだけで十分でしょ？")
+        if st.button("🔀 別の顔を見る", key="tease_gallery_shuffle"):
+            st.session_state.tease_gallery_seed = random.randint(0, 10**9)
+            st.rerun()
+        g_seed = st.session_state.get("tease_gallery_seed", int(hashlib.md5(today_str.encode()).hexdigest(), 16))
+        g_rng = random.Random(g_seed)
+        gallery = tease_items[:]
+        g_rng.shuffle(gallery)
+        gallery = gallery[:6]
+        cards = ""
+        for it in gallery:
+            n = it.get("name", "")
+            thumb = img_to_html(
+                it.get("img", ""),
+                style="width:100%;height:120px;object-fit:cover;display:block;",
+                face_detect=True,
+            )
+            whisper = tease_gallery_whisper(n)
+            cards += (
+                f"<div class='tease-gallery-item'>"
+                f"{thumb}"
+                f"<div class='name'>🌸 {n}</div>"
+                f"<div style='color:#ffb6d9;font-style:italic;font-size:0.7em;padding:0 0.4em 0.5em;'>"
+                f"「{whisper}」</div></div>"
+            )
+        st.markdown(f"<div class='tease-gallery-grid'>{cards}</div>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+
+    # 3) 思い出再生
+    hist_with_img = []
+    for h in reversed(data.get("history", [])):
+        item = next((v for v in data["items"].values() if v["name"] == h["name"]), None)
+        if item and item.get("img"):
+            hist_with_img.append((h, item))
+            if len(hist_with_img) >= 30:
+                break
+    if hist_with_img:
+        if st.button("📖 思い出を再生", key="tease_memory_btn", use_container_width=True):
+            st.session_state.tease_memory = random.choice(hist_with_img)
+        mem = st.session_state.get("tease_memory")
+        if mem:
+            h, item = mem
+            try:
+                dt = datetime.strptime(h["time"], "%Y-%m-%d %H:%M:%S")
+                when_lbl = f"{dt.month}月{dt.day}日"
+            except Exception:
+                when_lbl = h["time"][:10]
+            mem_img = img_to_html(
+                item.get("img", ""),
+                style="width:100%;max-height:260px;object-fit:cover;border-radius:12px;",
+            )
+            mem_line = tease_memory_line(h["name"], when_lbl)
+            st.markdown(f"""
+<div class="ero-card" style="border:1px solid #ff4081;max-width:480px;margin:0 auto 1.2em;">
+  <div style="color:#ff80ab;font-size:0.8em;letter-spacing:0.1em;">📖 思い出再生</div>
+  {mem_img}
+  <h3 style="margin:0.3em 0;">🌸 {h['name']}</h3>
+  <div style="color:#804060;font-size:0.8em;">{when_lbl}　{h['time'][11:16]}</div>
+  <div class="tease-line">「{mem_line}」</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.divider()
+# === TRIAL TEASE END ===
 
 # ===== おすすめオナペ =====
 if rec_name:

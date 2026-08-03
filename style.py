@@ -194,6 +194,64 @@ img.cal-t:hover {
     box-shadow: 0 6px 24px rgba(0,0,0,0.9), 0 0 12px rgba(255,64,129,0.6);
 }
 
+/* ===== 試し: 開くだけで勃つモード ===== */
+@keyframes tease-in {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.tease-wall {
+    animation: tease-in 0.45s ease-out;
+    background: linear-gradient(160deg, rgba(40,0,25,0.95), rgba(15,0,10,0.98));
+    border: 2px solid #ff4081;
+    border-radius: 18px;
+    padding: 1.2em;
+    margin: 0 auto 1.2em;
+    max-width: 520px;
+    text-align: center;
+    box-shadow: 0 0 28px rgba(255,64,129,0.35);
+}
+.tease-wall img {
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin: 0.6em 0;
+}
+.tease-badge {
+    color: #ff80ab;
+    font-size: 0.75em;
+    letter-spacing: 0.12em;
+}
+.tease-line {
+    color: #ffb6d9;
+    font-style: italic;
+    font-size: 1.05em;
+    margin: 0.5em 0;
+}
+.tease-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5em;
+}
+.tease-gallery-item {
+    background: rgba(30,0,20,0.5);
+    border: 1px solid rgba(194,24,91,0.35);
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+}
+.tease-gallery-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+}
+.tease-gallery-item .name {
+    color: #ffe0f0;
+    font-size: 0.78em;
+    padding: 0.35em;
+}
+
 /* ===== スクロールバー ===== */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #120008; }
