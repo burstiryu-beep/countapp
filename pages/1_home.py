@@ -640,56 +640,101 @@ if milestone_msg:
     st.markdown(f"<div class='milestone-msg'>{icon} {text}</div>", unsafe_allow_html=True)
 
 # ===== 鏡チェック（本番常設）=====
-_mirror_pool = [v for v in data["items"].values() if v.get("img")] or list(data["items"].values())
-if _mirror_pool:
-    if "mirror_name" not in st.session_state:
-        # 直近 or おすすめ or ランダム
-        seed_name = recent_name or rec_name
-        if seed_name and any(v.get("name") == seed_name for v in _mirror_pool):
-            st.session_state.mirror_name = seed_name
-        else:
-            st.session_state.mirror_name = random.choice(_mirror_pool).get("name", "")
+def _mirror_pick_item(pool, prefer_name=None):
+    if prefer_name:
+        hit = next((v for v in pool if v.get("name") == prefer_name and v.get("img")), None)
+        if hit:
+            return hit
+    with_img = [v for v in pool if v.get("img")]
+    return random.choice(with_img or pool)
+
+
+_mirror_pool = [v for v in data["items"].values() if v.get("name")]
+_mirror_with_img = [v for v in _mirror_pool if v.get("img")]
+if _mirror_with_img:
+    # 表示対象をセッションで固定（画像付きのみ）
+    if "mirror_name" not in st.session_state or not any(
+        v.get("name") == st.session_state.mirror_name and v.get("img") for v in _mirror_with_img
+    ):
+        picked = _mirror_pick_item(_mirror_with_img, recent_name or rec_name)
+        st.session_state.mirror_name = picked.get("name", "")
+        st.session_state.mirror_img = picked.get("img", "")
+
     mirror_name = st.session_state.mirror_name
+    # 最新データから画像を取り直す（cloud参照の復元後など）
+    mirror_item = next(
+        (v for v in _mirror_with_img if v.get("name") == mirror_name),
+        _mirror_with_img[0],
+    )
+    st.session_state.mirror_img = mirror_item.get("img", "") or st.session_state.get("mirror_img", "")
+    mirror_name = mirror_item.get("name", mirror_name)
+
+    mirror_img_html = img_to_html(
+        st.session_state.mirror_img,
+        style="width:100%;max-height:280px;object-fit:cover;border-radius:12px;",
+    )
+
     st.markdown("<h3 style='text-align:center'>🪞 鏡チェック</h3>", unsafe_allow_html=True)
     st.caption("正直になっていいのよ。情けない反応も、ぜんぶかわいいから。")
+    st.markdown(
+        f"<div style='color:#ff80ab;font-size:0.85em;text-align:center;"
+        f"letter-spacing:0.08em;margin-bottom:0.3em;'>🌸 {mirror_name}</div>",
+        unsafe_allow_html=True,
+    )
+    if mirror_img_html:
+        st.markdown(
+            f"<div style='max-width:480px;margin:0 auto 0.8em;'>{mirror_img_html}</div>",
+            unsafe_allow_html=True,
+        )
+    else:
+        # HTML埋め込み失敗時のフォールバック
+        raw = st.session_state.mirror_img or ""
+        shown = False
+        if raw.startswith("data:") and "," in raw:
+            try:
+                import base64
+                from io import BytesIO
+                b64 = raw.split(",", 1)[1]
+                st.image(BytesIO(base64.b64decode(b64)), use_container_width=True)
+                shown = True
+            except Exception:
+                shown = False
+        if not shown:
+            st.caption("画像を読み込めなかったわ……別の子を見てみて")
+
     m1, m2, m3 = st.columns(3)
     with m1:
         if st.button("いま勃ってる…", key="mirror_hard", use_container_width=True):
-            st.session_state.mirror_reply = mirror_reply("hard", mirror_name)
-            st.session_state.mirror_show = mirror_name
+            st.session_state.mirror_reply_text = mirror_reply("hard", mirror_name)
             st.rerun()
     with m2:
         if st.button("触りたい……", key="mirror_touch", use_container_width=True):
-            st.session_state.mirror_reply = mirror_reply("touch", mirror_name)
-            st.session_state.mirror_show = mirror_name
+            st.session_state.mirror_reply_text = mirror_reply("touch", mirror_name)
             st.rerun()
     with m3:
         if st.button("……黙る", key="mirror_silent", use_container_width=True):
-            st.session_state.mirror_reply = mirror_reply("silent", mirror_name)
-            st.session_state.mirror_show = mirror_name
+            st.session_state.mirror_reply_text = mirror_reply("silent", mirror_name)
             st.rerun()
     if st.button("🔀 別の子を見る", key="mirror_shuffle"):
-        others = [v.get("name") for v in _mirror_pool if v.get("name") != mirror_name]
+        others = [v for v in _mirror_with_img if v.get("name") != mirror_name]
         if others:
-            st.session_state.mirror_name = random.choice(others)
-            st.session_state.mirror_reply = None
+            nxt = random.choice(others)
+            st.session_state.mirror_name = nxt.get("name", "")
+            st.session_state.mirror_img = nxt.get("img", "")
+            st.session_state.mirror_reply_text = None
             st.rerun()
-    if st.session_state.get("mirror_reply"):
-        m_item = next(
-            (v for v in data["items"].values() if v["name"] == st.session_state.get("mirror_show")),
-            _mirror_pool[0],
-        )
-        m_img = img_to_html(
-            m_item.get("img", ""),
-            style="width:100%;max-height:260px;object-fit:cover;border-radius:12px;",
-        )
+    if st.session_state.get("mirror_reply_text"):
         st.markdown(f"""
-<div class="ero-card" style="border:1px solid #ff4081;max-width:480px;margin:0.6em auto 1em;">
-  <div style="color:#ff80ab;font-size:0.78em;letter-spacing:0.08em;">🌸 {m_item.get('name', '')}</div>
-  {m_img}
-  <div class="tease-line">「{st.session_state.mirror_reply}」</div>
+<div style="max-width:480px;margin:0.4em auto 1em;text-align:center;
+  color:#ffb6d9;font-style:italic;font-size:1.02em;
+  background:rgba(194,24,91,0.12);border:1px solid rgba(255,64,129,0.35);
+  border-radius:12px;padding:0.8em 1em;">
+  「{st.session_state.mirror_reply_text}」
 </div>
 """, unsafe_allow_html=True)
+elif _mirror_pool:
+    st.markdown("<h3 style='text-align:center'>🪞 鏡チェック</h3>", unsafe_allow_html=True)
+    st.caption("画像付きの弱点を登録すると、ここで顔が見えるわよ。")
 
 # === TRIAL TEASE START ===
 if trial_tease:
