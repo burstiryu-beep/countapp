@@ -334,7 +334,7 @@ def diary_line(h, month_count):
     return date_lbl, time_lbl, rng.choice(lines)
 
 # ===== 試し: 開くだけで勃つモード（トグルOFFで完全に非表示）=====
-def tease_wall_lines(name, ab_days):
+def tease_wall_lines(name, ab_days, night=False, clean_day=False):
     lines = [
         f"ただ見に来ただけ？……いいのよ、{name}を見てなさい。",
         f"カウントしないつもり？ふふ、でも{name}の顔は見てるわね。",
@@ -344,6 +344,18 @@ def tease_wall_lines(name, ab_days):
     ]
     if ab_days and ab_days >= 2:
         lines.append(f"{ab_days}日我慢してるのに、また{name}を見に来たのね……正直でかわいいわ。")
+    if clean_day:
+        lines.extend([
+            f"今日はまだ負けてないのね。じゃあせめて{name}を見ていきなさい。",
+            f"我慢の日？ふふ……{name}の顔だけでもいいのよ。",
+            f"記録ゼロのくせに、{name}を見に来るなんて……かわいい矛盾ね。",
+        ])
+    if night:
+        lines.extend([
+            f"こんな時間に{name}……もう我慢のつもり、ないでしょ。",
+            f"夜のあなた、{name}に弱いのバレバレよ。",
+            f"{name}の顔、夜だと余計に効くでしょ？素直になりなさい。",
+        ])
     return random.choice(lines)
 
 
@@ -357,12 +369,91 @@ def tease_memory_line(name, when_lbl):
     return random.choice(lines)
 
 
-def tease_gallery_whisper(name):
+def tease_gallery_whisper(name, night=False):
     lines = [
         f"{name}……眺めてるだけでもう十分？",
         f"触らなくていいのよ。でも目は離さないで。",
         f"{name}の顔、好きすぎて見るだけで負けそうね。",
     ]
+    if night:
+        lines.extend([
+            f"夜に{name}を眺めてるの……かわいいわ。",
+            f"{name}、もう頭の中いっぱいでしょ？",
+        ])
+    return random.choice(lines)
+
+
+def tease_desire_extra(ab_days, d_pct):
+    if ab_days is None:
+        return "まだ記録がないわ……でも、見に来た時点で負けよ。"
+    if ab_days == 0:
+        return "今日もう一回？見てるだけでもう疼いてるでしょ。"
+    if ab_days == 1:
+        return "見るだけで溜まるのね。手は動かさなくていいわ……今は。"
+    if ab_days <= 3:
+        return f"{ab_days}日分……画面を開いただけで限界が近づいてるわよ。"
+    if ab_days <= 7:
+        return f"蓄積度 {d_pct}%。触らなくても、もう正直な顔してるわ。"
+    return f"{ab_days}日我慢して開くなんて……見るだけでイキそうなんでしょ？"
+
+
+def tease_predict_next(history, items_list, hour_now):
+    """曜日・時間帯の傾向から『次に負ける相手』を断言。"""
+    if not items_list:
+        return None
+    wd = today_jst.weekday()
+    bucket = "深夜" if hour_now < 5 else ("朝" if hour_now < 11 else ("昼" if hour_now < 17 else "夜"))
+    scores = {}
+    for h in history:
+        try:
+            dt = datetime.strptime(h["time"], "%Y-%m-%d %H:%M:%S")
+        except Exception:
+            continue
+        name = h.get("name")
+        if not name:
+            continue
+        score = 1
+        if dt.weekday() == wd:
+            score += 3
+        hb = "深夜" if dt.hour < 5 else ("朝" if dt.hour < 11 else ("昼" if dt.hour < 17 else "夜"))
+        if hb == bucket:
+            score += 2
+        scores[name] = scores.get(name, 0) + score
+    if not scores:
+        pick = random.choice(items_list)
+        return pick.get("name"), pick, "まだデータが薄いけど……たぶんこの子ね。"
+    best = max(scores.items(), key=lambda x: x[1])[0]
+    item = next((v for v in items_list if v.get("name") == best), None)
+    if item is None:
+        item = {"name": best, "img": ""}
+    lines = [
+        f"今夜はたぶん「{best}」ね。逃げられないわよ。",
+        f"{bucket}のあなたは「{best}」に弱いの、もう分かってるでしょ。",
+        f"次に負ける相手は「{best}」。ふふ、予言してあげる。",
+        f"「{best}」……また会いたくなってきたでしょ？素直に認めなさい。",
+    ]
+    return best, item, random.choice(lines)
+
+
+def tease_mirror_reply(choice, name):
+    if choice == "hard":
+        lines = [
+            f"正直ね。{name}を見ただけでそうなるなんて……かわいいわ。",
+            f"もう勃ってるのにアプリ開くの？ふふ、{name}のせいね。",
+            f"反応が出てるのに、まだ触らないつもり？偉いわ……でも無理よ。",
+        ]
+    elif choice == "touch":
+        lines = [
+            f"触りたいって言えたの、えらい。でもまずは{name}を見てなさい。",
+            f"手が出そう？ふふ……{name}が呼んでるわよ。",
+            f"触りたい気持ち、隠さなくていいの。{name}の前ではね。",
+        ]
+    else:
+        lines = [
+            f"答えないの？……でも目は{name}に釘付けね。",
+            f"沈黙もかわいいわ。体はもう正直でしょ？",
+            f"言わなくても分かるわよ。{name}で疼いてるんでしょ。",
+        ]
     return random.choice(lines)
 
 # ===== データ集計 =====
@@ -465,13 +556,31 @@ st.sidebar.markdown(
 trial_tease = st.sidebar.toggle(
     "🧪 試し：開くだけで勃つモード",
     value=st.session_state.get("trial_tease", False),
-    help="壁ドン起動・観賞・思い出再生。OFFにすると消えます",
+    help="壁ドン・鏡チェック・観賞・予言など。OFFで消えます",
 )
 st.session_state.trial_tease = trial_tease
+is_night = hour >= 22 or hour < 5
+clean_day = today_count == 0
 if trial_tease:
     st.sidebar.caption("ON中：カウントしなくても刺激が出ます")
+    if is_night:
+        st.sidebar.markdown(
+            "<div style='color:#ff4081;font-size:0.78em;font-style:italic;"
+            "margin-bottom:0.5em;'>🌙 夜モード発動中……容赦しないわよ</div>",
+            unsafe_allow_html=True,
+        )
+    extra = tease_desire_extra(ab_days, d_pct)
+    st.sidebar.markdown(
+        f"<div style='padding:0.45em;background:rgba(194,24,91,0.12);"
+        f"border:1px solid rgba(255,64,129,0.35);border-radius:8px;margin-bottom:0.8em;'>"
+        f"<div style='color:#ff80ab;font-size:0.72em;'>💋 見るだけ煽り</div>"
+        f"<div style='color:#ffb6d9;font-style:italic;font-size:0.78em;'>{extra}</div>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
 else:
     st.session_state.tease_wall_dismissed = False
+    st.session_state.pop("tease_mirror_reply", None)
 
 months = all_months(data)
 current_month = now_jst.strftime("%Y-%m")
@@ -514,7 +623,28 @@ if trial_tease:
     if not tease_items:
         tease_items = list(data["items"].values())
 
-    # 1) 壁ドン起動（セッション中1回、閉じるまで大きく表示）
+    # 0) 今日まだ負けてない日のバナー
+    if clean_day:
+        st.markdown(
+            "<div style='text-align:center;background:rgba(194,24,91,0.18);"
+            "border:1px solid #ff4081;border-radius:12px;padding:0.7em;margin-bottom:0.9em;'>"
+            "<div style='color:#ff80ab;font-size:0.78em;letter-spacing:0.08em;'>🕊 今日はまだ負けてない</div>"
+            "<div style='color:#ffb6d9;font-style:italic;font-size:0.95em;'>"
+            "「我慢の日？……じゃあ、せめて見ていきなさい。記録は後でいいわ」"
+            "</div></div>",
+            unsafe_allow_html=True,
+        )
+    elif is_night:
+        st.markdown(
+            "<div style='text-align:center;background:rgba(80,0,40,0.35);"
+            "border:1px solid #c2185b;border-radius:12px;padding:0.55em;margin-bottom:0.9em;"
+            "color:#ffb6d9;font-style:italic;'>"
+            "🌙 夜の甘マゾ時間……見るだけで十分疼くわよ"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    # 1) 壁ドン起動
     if tease_items and not st.session_state.get("tease_wall_dismissed"):
         if "tease_wall_name" not in st.session_state:
             pick = random.choice(tease_items)
@@ -525,10 +655,11 @@ if trial_tease:
             st.session_state.tease_wall_img,
             style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;",
         )
-        wall_line = tease_wall_lines(wall_name, ab_days)
+        wall_line = tease_wall_lines(wall_name, ab_days, night=is_night, clean_day=clean_day)
+        night_tag = "🌙 夜の壁ドン" if is_night else "💋 ただ見に来ただけ？"
         st.markdown(f"""
 <div class="tease-wall">
-  <div class="tease-badge">💋 ただ見に来ただけ？</div>
+  <div class="tease-badge">{night_tag}</div>
   {wall_img}
   <h2 style="color:#ffe0f0;margin:0.2em 0;">🌸 {wall_name}</h2>
   <div class="tease-line">「{wall_line}」</div>
@@ -546,11 +677,93 @@ if trial_tease:
                 st.session_state.tease_wall_dismissed = True
                 st.rerun()
 
-    # 2) 観賞モード
+    # 2) 鏡チェック
     if tease_items:
-        st.markdown("<h3 style='text-align:center'>👀 観賞モード</h3>", unsafe_allow_html=True)
-        st.caption("カウントなし。眺めるだけ……でもそれだけで十分でしょ？")
-        if st.button("🔀 別の顔を見る", key="tease_gallery_shuffle"):
+        mirror_name = st.session_state.get("tease_wall_name") or tease_items[0].get("name", "")
+        st.markdown("<h3 style='text-align:center'>🪞 鏡チェック</h3>", unsafe_allow_html=True)
+        st.caption("答えなくてもいいわ。体はもう正直でしょ？")
+        m1, m2, m3 = st.columns(3)
+        with m1:
+            if st.button("いま勃ってる", key="tease_m_hard", use_container_width=True):
+                st.session_state.tease_mirror_reply = tease_mirror_reply("hard", mirror_name)
+                st.session_state.tease_mirror_show = mirror_name
+        with m2:
+            if st.button("触りたい", key="tease_m_touch", use_container_width=True):
+                st.session_state.tease_mirror_reply = tease_mirror_reply("touch", mirror_name)
+                st.session_state.tease_mirror_show = mirror_name
+        with m3:
+            if st.button("……黙る", key="tease_m_silent", use_container_width=True):
+                st.session_state.tease_mirror_reply = tease_mirror_reply("silent", mirror_name)
+                st.session_state.tease_mirror_show = mirror_name
+        if st.session_state.get("tease_mirror_reply"):
+            m_item = next(
+                (v for v in data["items"].values() if v["name"] == st.session_state.get("tease_mirror_show")),
+                tease_items[0],
+            )
+            m_img = img_to_html(
+                m_item.get("img", ""),
+                style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;",
+            )
+            st.markdown(f"""
+<div class="ero-card" style="border:1px solid #ff4081;max-width:480px;margin:0.6em auto 1em;">
+  {m_img}
+  <div class="tease-line">「{st.session_state.tease_mirror_reply}」</div>
+</div>
+""", unsafe_allow_html=True)
+
+    # 3) 次に負ける相手 断言
+    pred = tease_predict_next(data.get("history", []), tease_items or list(data["items"].values()), hour)
+    if pred:
+        p_name, p_item, p_line = pred
+        p_img = img_to_html(
+            p_item.get("img", ""),
+            style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;",
+        )
+        st.markdown(f"""
+<div class="ero-card" style="border:1px solid #ff4081;max-width:480px;margin:0 auto 1.2em;">
+  <div style="color:#ff80ab;font-size:0.8em;letter-spacing:0.1em;">🔮 次に負ける相手</div>
+  {p_img}
+  <h3 style="margin:0.3em 0;">🌸 {p_name}</h3>
+  <div class="tease-line">「{p_line}」</div>
+</div>
+""", unsafe_allow_html=True)
+
+    # 4) 観賞スライドショー（大きく1枚＋次へ）
+    if tease_items:
+        st.markdown("<h3 style='text-align:center'>🎞 観賞スライド</h3>", unsafe_allow_html=True)
+        st.caption("手を動かさなくていいわ。顔だけ、ゆっくり見てなさい。")
+        if "tease_slide_idx" not in st.session_state:
+            st.session_state.tease_slide_idx = random.randrange(len(tease_items))
+        s_idx = st.session_state.tease_slide_idx % len(tease_items)
+        s_item = tease_items[s_idx]
+        s_name = s_item.get("name", "")
+        s_img = img_to_html(
+            s_item.get("img", ""),
+            style="width:100%;max-height:360px;object-fit:cover;border-radius:14px;",
+        )
+        s_line = tease_gallery_whisper(s_name, night=is_night)
+        st.markdown(f"""
+<div class="tease-wall" style="max-width:520px;">
+  <div class="tease-badge">👀 {s_idx + 1} / {len(tease_items)}</div>
+  {s_img}
+  <h2 style="color:#ffe0f0;margin:0.3em 0;">🌸 {s_name}</h2>
+  <div class="tease-line">「{s_line}」</div>
+</div>
+""", unsafe_allow_html=True)
+        sc1, sc2 = st.columns(2)
+        with sc1:
+            if st.button("⏭ 次の顔", key="tease_slide_next", use_container_width=True):
+                st.session_state.tease_slide_idx = (s_idx + 1) % len(tease_items)
+                st.rerun()
+        with sc2:
+            if st.button("🔀 ランダム", key="tease_slide_rand", use_container_width=True):
+                st.session_state.tease_slide_idx = random.randrange(len(tease_items))
+                st.rerun()
+
+    # 5) 観賞グリッド
+    if tease_items:
+        st.markdown("<h3 style='text-align:center'>👀 観賞ギャラリー</h3>", unsafe_allow_html=True)
+        if st.button("🔀 別の顔を並べる", key="tease_gallery_shuffle"):
             st.session_state.tease_gallery_seed = random.randint(0, 10**9)
             st.rerun()
         g_seed = st.session_state.get("tease_gallery_seed", int(hashlib.md5(today_str.encode()).hexdigest(), 16))
@@ -566,7 +779,7 @@ if trial_tease:
                 style="width:100%;height:120px;object-fit:cover;display:block;",
                 face_detect=True,
             )
-            whisper = tease_gallery_whisper(n)
+            whisper = tease_gallery_whisper(n, night=is_night)
             cards += (
                 f"<div class='tease-gallery-item'>"
                 f"{thumb}"
@@ -577,7 +790,7 @@ if trial_tease:
         st.markdown(f"<div class='tease-gallery-grid'>{cards}</div>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
-    # 3) 思い出再生
+    # 6) 思い出再生
     hist_with_img = []
     for h in reversed(data.get("history", [])):
         item = next((v for v in data["items"].values() if v["name"] == h["name"]), None)
