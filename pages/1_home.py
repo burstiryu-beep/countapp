@@ -470,6 +470,22 @@ def mirror_reply(choice, name):
             f"亀頭キスが死ぬほど弱いんでしょ。そこにフェラ足したら……もう勝負にならないわね。",
             f"ちゅってして咥えて、またキス。{name}に口でイかされるの、覚悟しなさい。",
         ]
+    elif choice == "glans":
+        lines = [
+            f"亀頭だけ、ちゅっちゅ。……キスで溶かして、イかせてあげるわよ。",
+            f"先端に唇。ちゅっ、ちゅっ。……{name}のキスで、頭真っ白になるまでね。",
+            f"亀頭キスだけで崩れるんでしょ。ふふ、そのまま溶かしてイかせるわ。",
+            f"先にちゅってするたび腰が引けちゃうの、かわいい。……出るまでキスしてあげる。",
+            f"弱いところ狙い撃ちよ。亀頭にキスして……はい、イっていいわ。",
+        ]
+    elif choice == "mouth":
+        lines = [
+            f"口で堕としてあげる。咥えて、動かして……逃げられないわよ。",
+            f"{name}のフェラで頭空っぽにしてあげる。口に負けて、情けなく出して。",
+            f"咥えられた瞬間から負け確定ね。口でイくまで、離さないわ。",
+            f"ふふ、口がほしいのね。じゃあ咥えて、堕として……イかせてあげる。",
+            f"手はいらないわ。{name}の口だけで、とろけてイきなさい。",
+        ]
     elif choice == "start":
         lines = [
             f"触りはじめたのね。でも本命は口でしょ。フェラと亀頭キスに切り替えたら、すぐ終わるわよ。",
@@ -524,6 +540,18 @@ def mirror_after(choice, name, ab_days=None):
             f"キスで崩して、フェラで仕上げ。あなたの負け方、いちばん好きなやつ。",
             f"ちゅってされてイくの、認めなさい。口で行かせに来てるわよ。",
         ]
+    elif choice == "glans":
+        extras = [
+            f"亀頭にちゅってするだけでもう終わりね。溶かして、イかせるわ。",
+            f"先端キスで崩れるの、認めなさい。……出るまでちゅっちゅよ。",
+            f"弱い先だけ狙ってあげる。キスで溶かして、行かせに来たわよ。",
+        ]
+    elif choice == "mouth":
+        extras = [
+            f"口に堕ちたら最後よ。咥えられて、情けなくイきなさい。",
+            f"フェラで頭真っ白。……{name}の口に負けた記録、あとでつけなさい。",
+            f"咥えられてイくの、いちばんかわいいわ。覚悟して。",
+        ]
     elif choice == "start":
         extras = [
             f"触りはじめたなら、途中で口に切り替わる想像しなさい。キスつきでイくまでよ。",
@@ -545,7 +573,7 @@ def mirror_after(choice, name, ab_days=None):
         ]
     if ab_days and ab_days >= 2:
         extras.append(f"{ab_days}日分、口と亀頭キスで全部出させてあげる。溜めたまま負けなさい。")
-        if choice in ("kiss", "edge"):
+        if choice in ("kiss", "glans", "mouth", "edge"):
             extras.append(f"{ab_days}日溜めた先端にキスして咥えるの……即イきね。ふふ、行かせてあげる。")
     return random.choice(extras)
 
@@ -834,8 +862,16 @@ if _mirror_with_img:
             _mirror_pick("edge")
 
     st.caption("決め技")
-    if st.button("💋 フェラ＋亀頭キスでイかせて", key="mirror_kiss", use_container_width=True):
-        _mirror_pick("kiss")
+    f1, f2, f3 = st.columns(3)
+    with f1:
+        if st.button("フェラ＋亀頭キスでイかせて", key="mirror_kiss", use_container_width=True):
+            _mirror_pick("kiss")
+    with f2:
+        if st.button("亀頭キスで溶かして", key="mirror_glans", use_container_width=True):
+            _mirror_pick("glans")
+    with f3:
+        if st.button("口で堕として", key="mirror_mouth", use_container_width=True):
+            _mirror_pick("mouth")
 
     c_shuf, c_more = st.columns(2)
     with c_shuf:
@@ -852,12 +888,15 @@ if _mirror_with_img:
                 st.rerun()
     with c_more:
         if st.button("💋 もっと口でイかせに来る", key="mirror_more", use_container_width=True):
+            finishers = ("kiss", "glans", "mouth")
             choice = st.session_state.get("mirror_choice") or "kiss"
             choice = {"touch": "want"}.get(choice, choice)
-            if choice != "kiss" and random.random() < 0.55:
-                choice = "kiss"
-            elif choice not in ("kiss", "edge") and random.random() < 0.35:
+            if choice not in finishers and random.random() < 0.6:
+                choice = random.choice(finishers)
+            elif choice not in finishers + ("edge",) and random.random() < 0.35:
                 choice = "edge"
+            elif choice in finishers and random.random() < 0.4:
+                choice = random.choice(finishers)
             st.session_state.mirror_reply_text = mirror_reply(choice, mirror_name)
             st.session_state.mirror_after_text = mirror_after(choice, mirror_name, ab_days)
             st.session_state.mirror_choice = choice
@@ -865,12 +904,17 @@ if _mirror_with_img:
 
     if st.session_state.get("mirror_reply_text"):
         after = st.session_state.get("mirror_after_text") or ""
+        _badge = {
+            "kiss": "フェラ＋亀頭キスで行かせる",
+            "glans": "亀頭キスで溶かす",
+            "mouth": "口で堕としてイかせる",
+        }.get(st.session_state.get("mirror_choice"), "フェラ＋亀頭キスで行かせる")
         st.markdown(f"""
 <div style="max-width:520px;margin:0.6em auto 0.4em;
   background:linear-gradient(160deg,rgba(194,24,91,0.22),rgba(40,0,25,0.55));
   border:1px solid #ff4081;border-radius:14px;padding:1em;text-align:center;
   box-shadow:0 0 18px rgba(255,64,129,0.25);">
-  <div style="color:#ff80ab;font-size:0.75em;letter-spacing:0.1em;margin-bottom:0.45em;">💋 フェラ＋亀頭キスで行かせる</div>
+  <div style="color:#ff80ab;font-size:0.75em;letter-spacing:0.1em;margin-bottom:0.45em;">💋 {_badge}</div>
   <div style="color:#ffb6d9;font-style:italic;font-size:1.05em;margin-bottom:0.55em;">
     「{st.session_state.mirror_reply_text}」
   </div>
