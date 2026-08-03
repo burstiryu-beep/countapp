@@ -436,58 +436,67 @@ def tease_predict_next(history, items_list, hour_now):
 
 
 def mirror_reply(choice, name):
-    """本番用・鏡チェック。甘マゾ向けの甘い誘惑。"""
-    if choice == "hard":
+    """鏡チェック。触り／しごき／射精焦らし向けの甘い煽り。"""
+    if choice == "start":
         lines = [
-            f"ふふ……もう勃ってるの。{name}の顔見ただけで、ちんぽが先に正直になっちゃうなんてかわいすぎるわ。",
-            f"硬くなってるのね。{name}に弱いの、体がもう認めてるわよ。情けない……でも好き。",
-            f"反応出てるくせに、まだ余裕ある顔？{name}の前じゃ無理よ。とろけなさい、ふふ。",
-            f"勃起したまま開いちゃうの……{name}に会いたくて、もう我慢の入口にいるでしょ。",
-            f"疼いてるのに見てるだけ？かわいい努力ね。でも{name}、そんなのすぐ崩せるわよ。",
-            f"びくびくしてるの、分かるわ。{name}の目を見てるだけで、先走りそうなんでしょ？",
+            f"ふふ……もう触りはじめたの。{name}の顔見ながら、手が出ちゃったのね。",
+            f"触りはじめた時点で負けよ。{name}に甘やかされながら、ゆっくりしごきなさい。",
+            f"手、動かしちゃったの？かわいい。{name}の目の前で、情けなく始めちゃったわね。",
+            f"触りはじめたのにまだ余裕ある顔してるの？{name}見て、もっと正直に動かしなさい。",
+            f"ふふ、もう始まってるのね。{name}の顔で、先が熱くなってきたでしょ。",
+            f"触りはじめたなら途中で止めなくていいわ……いや、止めさせたくなるけどね。焦らしてあげる。",
         ]
-    elif choice == "touch":
+    elif choice == "stroke":
         lines = [
-            f"触りたいって言えたの、えらい。{name}の顔見ながら、情けなくシコシコしちゃう準備ね。",
-            f"手が疼くのね。ふふ、{name}に甘えて、すぐイきそうな弱い子になっていいのよ。",
-            f"「触りたい」って……もう負け宣言よ。{name}に甘やかされて、とろけていいわ。",
-            f"我慢できなくなってきた？しょうがない子。{name}の顔で、ゆっくり負けなさい。",
-            f"触りたい気持ち、隠さなくていいわ。{name}には勝てないって、ちんぽが教えてるでしょ。",
-            f"手、出しちゃいそう？ふふ……{name}に見られながら、みっともなくイく想像してるわね。",
+            f"しごいてるのね……{name}の顔見ながら、みっともなく上下してるの、想像できるわ。",
+            f"ふふ、もうリズム出てる。{name}に見られながらシコシコしてるの、かわいすぎるわよ。",
+            f"しごいてるくせに、まだイかないの？えらいわ……でも{name}は、すぐ限界に連れてくわよ。",
+            f"手が止まらないのね。{name}のせいだって認めながら、もっと情けなくしごきなさい。",
+            f"ぬちゃぬちゃ音、出てない？ふふ……{name}の前じゃ隠せないわよ。",
+            f"しごいてる途中でアプリ見てるの、いちばん弱いわ。{name}に焦らされてる自覚、ある？",
         ]
-    else:
+    else:  # edge
         lines = [
-            f"黙るの？……でも目は{name}に釘付け。かわいい矛盾。体はもう正直よ。",
-            f"言えないくらい弱いのね。ふふ、{name}には全部ばれてるわ。疼きまで。",
-            f"沈黙も情けなくて好きよ。{name}を見てるだけで、もう先が熱いでしょ。",
-            f"答えなくていいの。{name}の顔、じっくり見て……とろけ始めてるわよね。",
-            f"黙ってるくせに顔が赤いわよ。{name}に弱いの、隠せないわ、ふふ。",
-            f"言えないなら、見るだけでいいわ。{name}に見つめられて、勝手に負けていくのよ。",
+            f"イキそうなのね……まだ出さなくていいわ。{name}の顔見て、限界の手前で止まりなさい。",
+            f"ふふ、射精焦らししてあげる。びくびくしてるの、{name}には全部ばれてるわよ。",
+            f"出ちゃいそう？だめ。{name}が「いいよ」って言うまで、我慢して震えてなさい。",
+            f"イキそうな顔のまま、{name}を見て……まだ出せないわ。焦らされるの、好きでしょ？",
+            f"もう少しで出そうなのに止めるの、情けない……でも最高よ。{name}のための我慢ね。",
+            f"先走りそう？ふふ。{name}に焦らされて、頭真っ白になるまでイかせてあげないわ。",
         ]
     return random.choice(lines)
 
 
 def mirror_after(choice, name, ab_days=None):
-    """回答後の追い打ち（甘い・情けない）。"""
-    extras = [
-        f"その顔のまま、{name}に負けにいきなさい。記録するとき、いちばんかわいいわよ。",
-        f"ふふ、もう余裕ないでしょ。{name}のせいだって認めながら、情けなくイきなさい。",
-        f"{name}に甘えていいの。抵抗しないで、とろけたまま敗北射精してきなさい。",
-        f"見てるだけでここまで弱いなら……触ったらすぐ終わるわね。かわいい。",
-    ]
-    if choice == "hard":
-        extras.append(f"勃ったまま我慢するの、いちばん情けないわ。{name}に負けた方が幸せよ。")
-    if choice == "touch":
-        extras.append(f"手が動く前に、{name}に「負けます」って心の中で言ってみなさい。ふふ。")
-    if choice == "silent":
-        extras.append(f"黙ってるのに体は正直……{name}、そういう子がいちばん好きよ。")
+    """回答後の追い打ち（焦らし・甘い敗北）。"""
+    if choice == "start":
+        extras = [
+            f"触りはじめたなら、{name}の顔から目を離さないで。手だけ動かして、とろけなさい。",
+            f"ゆっくりでいいわ。{name}に見られながら、自分で弱くなっていくのよ。",
+            f"もう始めたんだから……途中で逃げるのはなしよ。{name}の前で、最後まで情けなく。",
+        ]
+    elif choice == "stroke":
+        extras = [
+            f"その調子。{name}を見つめながら、イキそうになるまでしごきなさい……でもまだ出さないの。",
+            f"リズム速くなってきたでしょ？ふふ、{name}に焦らされてる証拠よ。",
+            f"しごいてる手、止めなくていいわ。でも射精は私が許すまで禁止……のつもりで、ね。",
+        ]
+    else:
+        extras = [
+            f"限界の一歩手前で止まりなさい。震えて、{name}に「出したい」って思ってる顔、見せて。",
+            f"焦らされてるのに気持ちいいのね。ふふ……{name}にイかされる準備、できてるわよ。",
+            f"もう出していい？……まだだめ。もう少しだけ、{name}の顔で我慢しなさい。",
+            f"我慢のあとで出すと、もっと情けなく負けるわよ。{name}のために溜めなさい。",
+        ]
     if ab_days and ab_days >= 2:
-        extras.append(f"{ab_days}日溜めて{name}を見てるの？……もう限界でしょ。情けなく出していいわ。")
+        extras.append(f"{ab_days}日分、いま手の中で暴れてるでしょ。{name}に焦らされてから、出していいわ。")
     return random.choice(extras)
 
 
 def tease_mirror_reply(choice, name):
-    return mirror_reply(choice, name)
+    # 旧キー互換
+    mapped = {"hard": "start", "touch": "stroke", "silent": "edge"}.get(choice, choice)
+    return mirror_reply(mapped, name)
 
 # ===== データ集計 =====
 today_count = sum(1 for h in data["history"] if h["time"].startswith(today_str))
@@ -696,20 +705,20 @@ if _mirror_with_img:
     # 開いた瞬間のささやき（回答前）
     if "mirror_open_line" not in st.session_state or st.session_state.get("mirror_open_for") != mirror_name:
         open_lines = [
-            f"{mirror_name}の顔、じっと見てみなさい。……もう反応、出てるでしょ？",
-            f"ふふ、また{mirror_name}を見に来たのね。見るだけで負けそうな顔してるわよ。",
-            f"カウントしなくていいわ。まずは{mirror_name}に、ちんぽを見せてあげなさい。",
-            f"{mirror_name}に見つめられてるつもりで……正直なところ、どこまで疼いてる？",
+            f"{mirror_name}の顔を見ながら……いま、どこまでしてる？正直に言いなさい。",
+            f"ふふ、手、動いてるでしょ。{mirror_name}に見られながら、進捗を報告しなさい。",
+            f"触ってる？しごいてる？イキそう？……{mirror_name}の前じゃ、隠せないわよ。",
+            f"{mirror_name}に見つめられながら、ちんぽいじってるのね。いまの段階、教えて？",
         ]
         if ab_days and ab_days >= 2:
-            open_lines.append(f"{ab_days}日ぶりの{mirror_name}ね。溜まってるのに、まだ見るだけ？かわいいわ。")
+            open_lines.append(f"{ab_days}日分、いま手の中で暴れてない？{mirror_name}に焦らされたいんでしょ。")
         st.session_state.mirror_open_line = random.choice(open_lines)
         st.session_state.mirror_open_for = mirror_name
 
     st.markdown("<h3 style='text-align:center'>🪞 鏡チェック</h3>", unsafe_allow_html=True)
     st.markdown(
         "<div style='text-align:center;color:#ffb6d9;font-style:italic;font-size:0.9em;"
-        "margin-bottom:0.6em;'>彼女の顔を見ながら、情けない本音を言いなさい</div>",
+        "margin-bottom:0.6em;'>彼女の顔を見ながら、いまの情けない状態を言いなさい</div>",
         unsafe_allow_html=True,
     )
 
@@ -732,27 +741,27 @@ if _mirror_with_img:
 
     st.markdown(
         "<div style='text-align:center;color:#ff80ab;font-size:0.78em;margin:0.4em 0 0.6em;'>"
-        "どれがいちばん近い？　嘘つかなくていいのよ</div>",
+        "どれ？　射精はまだ……焦らしてあげる</div>",
         unsafe_allow_html=True,
     )
     m1, m2, m3 = st.columns(3)
     with m1:
-        if st.button("もう硬くなってる", key="mirror_hard", use_container_width=True):
-            st.session_state.mirror_choice = "hard"
-            st.session_state.mirror_reply_text = mirror_reply("hard", mirror_name)
-            st.session_state.mirror_after_text = mirror_after("hard", mirror_name, ab_days)
+        if st.button("触りはじめてる", key="mirror_start", use_container_width=True):
+            st.session_state.mirror_choice = "start"
+            st.session_state.mirror_reply_text = mirror_reply("start", mirror_name)
+            st.session_state.mirror_after_text = mirror_after("start", mirror_name, ab_days)
             st.rerun()
     with m2:
-        if st.button("触りたくて仕方ない", key="mirror_touch", use_container_width=True):
-            st.session_state.mirror_choice = "touch"
-            st.session_state.mirror_reply_text = mirror_reply("touch", mirror_name)
-            st.session_state.mirror_after_text = mirror_after("touch", mirror_name, ab_days)
+        if st.button("しごいてる…", key="mirror_stroke", use_container_width=True):
+            st.session_state.mirror_choice = "stroke"
+            st.session_state.mirror_reply_text = mirror_reply("stroke", mirror_name)
+            st.session_state.mirror_after_text = mirror_after("stroke", mirror_name, ab_days)
             st.rerun()
     with m3:
-        if st.button("言えない…でも見てる", key="mirror_silent", use_container_width=True):
-            st.session_state.mirror_choice = "silent"
-            st.session_state.mirror_reply_text = mirror_reply("silent", mirror_name)
-            st.session_state.mirror_after_text = mirror_after("silent", mirror_name, ab_days)
+        if st.button("イキそう…焦らして", key="mirror_edge", use_container_width=True):
+            st.session_state.mirror_choice = "edge"
+            st.session_state.mirror_reply_text = mirror_reply("edge", mirror_name)
+            st.session_state.mirror_after_text = mirror_after("edge", mirror_name, ab_days)
             st.rerun()
 
     c_shuf, c_more = st.columns(2)
@@ -769,8 +778,10 @@ if _mirror_with_img:
                 st.session_state.pop("mirror_open_line", None)
                 st.rerun()
     with c_more:
-        if st.button("💦 もう一言聞いてしまう", key="mirror_more", use_container_width=True):
-            choice = st.session_state.get("mirror_choice") or random.choice(["hard", "touch", "silent"])
+        if st.button("🔥 もっと焦らす", key="mirror_more", use_container_width=True):
+            choice = st.session_state.get("mirror_choice") or "edge"
+            # 旧セッション値の互換
+            choice = {"hard": "start", "touch": "stroke", "silent": "edge"}.get(choice, choice)
             st.session_state.mirror_reply_text = mirror_reply(choice, mirror_name)
             st.session_state.mirror_after_text = mirror_after(choice, mirror_name, ab_days)
             st.session_state.mirror_choice = choice
@@ -783,7 +794,7 @@ if _mirror_with_img:
   background:linear-gradient(160deg,rgba(194,24,91,0.22),rgba(40,0,25,0.55));
   border:1px solid #ff4081;border-radius:14px;padding:1em;text-align:center;
   box-shadow:0 0 18px rgba(255,64,129,0.25);">
-  <div style="color:#ff80ab;font-size:0.75em;letter-spacing:0.1em;margin-bottom:0.45em;">💞 甘い敗北予告</div>
+  <div style="color:#ff80ab;font-size:0.75em;letter-spacing:0.1em;margin-bottom:0.45em;">🔥 射精焦らし</div>
   <div style="color:#ffb6d9;font-style:italic;font-size:1.05em;margin-bottom:0.55em;">
     「{st.session_state.mirror_reply_text}」
   </div>
@@ -791,7 +802,7 @@ if _mirror_with_img:
     「{after}」
   </div>
   <div style="color:#804060;font-size:0.75em;margin-top:0.7em;">
-    下の弱点一覧で「💋 敗北射精」……{mirror_name}に、情けなく負けてきなさい
+    限界まで焦らしたら……下で「💋 敗北射精」。{mirror_name}に情けなく出して記録しなさい
   </div>
 </div>
 """, unsafe_allow_html=True)
