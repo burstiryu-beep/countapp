@@ -52,7 +52,7 @@ with st.form("add"):
         else:
             data["items"][key] = {
                 "name": name.strip(), "tab": "all",
-                "counts": {}, "img": "", "points": 0
+                "counts": {}, "img": "", "points": 0, "weak_tags": []
             }
             if img:
                 data["items"][key]["img"] = encode_image(img)
@@ -74,6 +74,36 @@ if item_names:
                 _save_and_notify(data, "画像を更新しました！")
         else:
             st.warning("画像を選択してください")
+else:
+    st.caption("登録されている弱点がありません")
+
+st.divider()
+
+# ===== 口プレイ弱点メモ =====
+st.markdown("<h3>💋 口プレイ弱点メモ</h3>", unsafe_allow_html=True)
+st.caption("鏡チェックのセリフに混ざります")
+_WEAK_OPTS = [
+    "亀頭キス弱い",
+    "奥フェラが好き",
+    "浅い咥えで溶ける",
+    "ちゅっ音に弱い",
+    "先端なめが効く",
+    "ゆっくりされると落ちる",
+]
+if item_names:
+    sel_weak = st.selectbox("対象のオナペ", sorted(item_names), key="weak_sel")
+    item_key_w = next((k for k, v in data["items"].items() if v["name"] == sel_weak), None)
+    cur_tags = list((data["items"].get(item_key_w) or {}).get("weak_tags") or [])
+    new_tags = st.multiselect(
+        "弱点タグ",
+        _WEAK_OPTS,
+        default=[t for t in cur_tags if t in _WEAK_OPTS],
+        key="weak_tags_sel",
+    )
+    if st.button("弱点メモを保存", key="weak_save_btn"):
+        if item_key_w:
+            data["items"][item_key_w]["weak_tags"] = list(new_tags)
+            _save_and_notify(data, f"✅ {sel_weak} の弱点メモを保存しました")
 else:
     st.caption("登録されている弱点がありません")
 

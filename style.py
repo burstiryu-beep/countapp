@@ -256,6 +256,53 @@ img.cal-t:hover {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #120008; }
 ::-webkit-scrollbar-thumb { background: #c2185b; border-radius: 3px; }
+
+/* ===== 鏡チェック：間と粘着 ===== */
+@keyframes mirrorFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes mirrorChu {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+}
+@keyframes mirrorGaugePulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.25); }
+}
+.mirror-chu {
+    display: inline-block;
+    color: #ff80ab;
+    letter-spacing: 0.2em;
+    animation: mirrorChu 1.4s ease-in-out infinite;
+}
+.mirror-line-main {
+    animation: mirrorFadeIn 0.55s ease both;
+}
+.mirror-after-delay {
+    opacity: 0;
+    animation: mirrorFadeIn 1.1s ease 0.9s forwards;
+}
+.mirror-permit-delay {
+    opacity: 0;
+    animation: mirrorFadeIn 0.9s ease 1.5s forwards;
+}
+.mirror-gauge-hot .dev-bar {
+    animation: mirrorGaugePulse 1.2s ease-in-out infinite;
+}
+.mirror-step-dot {
+    display: inline-block;
+    width: 0.55em;
+    height: 0.55em;
+    border-radius: 50%;
+    margin: 0 0.15em;
+    background: rgba(255,128,171,0.25);
+    border: 1px solid #ff4081;
+}
+.mirror-step-dot.on {
+    background: #ff80ab;
+    box-shadow: 0 0 8px rgba(255,64,129,0.7);
+}
 </style>
 """
 

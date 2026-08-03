@@ -26,6 +26,8 @@ def ensure_structure(data):
             v["img"] = ""
         if not v.get("tab"):
             v["tab"] = "all"
+        if not isinstance(v.get("weak_tags"), list):
+            v["weak_tags"] = []
     return data
 
 
