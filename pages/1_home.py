@@ -818,7 +818,7 @@ if _mirror_with_img or _mirror_pool:
         key="mirror_onape_sel",
     )
     if selected_onape != st.session_state.get("mirror_name"):
-        if _mirror_switch_to(selected_onape, _mirror_with_img or _mirror_pool):
+        if _mirror_switch_to(selected_onape, _mirror_with_img or _mirror_pool, sync_select=False):
             st.rerun()
 
     mirror_name = st.session_state.mirror_name
