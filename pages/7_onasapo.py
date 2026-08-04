@@ -11,7 +11,6 @@ from utils import active_items, make_key, img_to_html
 from onasapo import (
     ONASAPO_STYLES,
     ONASAPO_PACES,
-    ONASAPO_PHASES,
     dress_onasapo,
     resolve_style,
     next_phase,
@@ -28,7 +27,6 @@ JST = timezone(timedelta(hours=9))
 style.apply()
 data = ensure_structure(get_data())
 now_jst = datetime.now(JST)
-today_str = now_jst.strftime("%Y-%m-%d")
 
 st.markdown("<h2 style='text-align:center'>🎙 オナサポモード</h2>", unsafe_allow_html=True)
 st.markdown(
