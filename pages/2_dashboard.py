@@ -43,6 +43,12 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+from ero_flavor import category_mazo_diagnosis, render_category_mazo_html
+st.markdown(
+    render_category_mazo_html(category_mazo_diagnosis(category_defeat_stats(data, month=cat_month))),
+    unsafe_allow_html=True,
+)
+
 st.divider()
 
 st.markdown("<h3>🏆 敗北ランキング Top 5</h3>", unsafe_allow_html=True)

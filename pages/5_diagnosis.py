@@ -1,7 +1,8 @@
 import streamlit as st
 import style
 from core import get_data, ensure_structure, compute_points
-from categories import category_labels
+from categories import category_labels, category_defeat_stats
+from ero_flavor import category_mazo_diagnosis, render_category_mazo_html
 from utils import img_to_html
 
 style.apply()
@@ -15,6 +16,13 @@ st.markdown(
     "</p>",
     unsafe_allow_html=True,
 )
+
+# 属性特化マゾ診断（全体）
+st.markdown(
+    render_category_mazo_html(category_mazo_diagnosis(category_defeat_stats(data))),
+    unsafe_allow_html=True,
+)
+st.caption("カテゴリを付けて敗北を重ねるほど、特化診断がエグくなるわよ❤️")
 
 selected = st.selectbox(
     "診断する弱点を選択",

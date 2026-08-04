@@ -1305,11 +1305,14 @@ def mirror_weak_level(loss_count):
     return 0
 
 
-def mirror_with_voice(text, voice, name):
+def mirror_with_voice(text, voice, name, heat=None):
     if not text:
         return text
+    from ero_flavor import apply_heat
     pre = mirror_voice_prefix(voice, name)
-    return f"{pre}{text}" if pre else text
+    heat = heat if heat is not None else st.session_state.get("mirror_heat", "soft")
+    body = apply_heat(text, heat, name)
+    return f"{pre}{body}" if pre else body
 
 
 def mirror_history_whisper(name, history):
@@ -1759,9 +1762,9 @@ def mirror_gauge_lines(gauge_key, name, tags=None, loss_count=0, self_note=""):
 
 def mirror_enrich(
     choice, name, ab_days=None, tags=None, gauge=None,
-    loss_count=0, voice="sweet", self_note="",
+    loss_count=0, voice="sweet", self_note="", heat=None,
 ):
-    """既存セリフに弱点・ゲージ・声色・自己申告を足して返す。"""
+    """既存セリフに弱点・ゲージ・声色・エロ度・自己申告を足して返す。"""
     main = mirror_reply(choice, name)
     after = mirror_after(choice, name, ab_days)
     weak = mirror_weak_flavor(name, tags or [], loss_count, self_note)
@@ -1774,7 +1777,7 @@ def mirror_enrich(
         )
     elif gauge == "near":
         after = f"{after}限界のふちね。口とキスと乳首で、もう一段とろけさせられるわよ。"
-    main = mirror_with_voice(main, voice, name)
+    main = mirror_with_voice(main, voice, name, heat=heat)
     return main, after
 
 # ===== データ集計 =====
@@ -2037,6 +2040,8 @@ def _mirror_reset_play():
     st.session_state.mirror_permit = None
     st.session_state.mirror_permit_line = None
     st.session_state.mirror_edge_loop = 0
+    st.session_state.mirror_dual_mouth = 0
+    st.session_state.mirror_dual_nipple = 0
     st.session_state.pop("mirror_open_line", None)
     st.session_state.pop("mirror_open_base", None)
     st.session_state.pop("mirror_hist_whisper", None)
@@ -2160,7 +2165,23 @@ if _mirror_with_img or _mirror_pool:
     mirror_cal = mirror_calendar_whisper(mirror_name, data.get("history", []), count_date)
     mirror_weak_lv = mirror_weak_level(mirror_loss_n)
     st.session_state.setdefault("mirror_voice", "sweet")
+    st.session_state.setdefault("mirror_heat", "thick")
     st.session_state.setdefault("mirror_edge_loop", 0)
+    st.session_state.setdefault("mirror_dual_mouth", 0)
+    st.session_state.setdefault("mirror_dual_nipple", 0)
+
+    from ero_flavor import (
+        MIRROR_HEAT,
+        today_tease_menu,
+        render_today_menu_html,
+        DUAL_MOUTH_STEPS,
+        DUAL_NIPPLE_STEPS,
+        dual_mouth_line,
+        dual_nipple_line,
+        dual_sync_after,
+        render_dual_bars_html,
+    )
+    from categories import category_labels as _cat_labels_fn
 
     voice_labs = [lab for _, lab in MIRROR_VOICES]
     voice_keys = [k for k, _ in MIRROR_VOICES]
@@ -2178,6 +2199,27 @@ if _mirror_with_img or _mirror_pool:
     )
     mirror_voice = voice_keys[voice_labs.index(voice_lab)]
     st.session_state.mirror_voice = mirror_voice
+
+    heat_labs = [lab for _, lab in MIRROR_HEAT]
+    heat_keys = [k for k, _ in MIRROR_HEAT]
+    cur_heat = st.session_state.get("mirror_heat", "thick")
+    try:
+        h_idx = heat_keys.index(cur_heat)
+    except ValueError:
+        h_idx = 1
+    heat_lab = st.radio(
+        "エロ度",
+        heat_labs,
+        index=h_idx,
+        horizontal=True,
+        key="mirror_heat_radio",
+    )
+    mirror_heat = heat_keys[heat_labs.index(heat_lab)]
+    st.session_state.mirror_heat = mirror_heat
+    st.caption(
+        {"soft": "甘くとろける描写", "thick": "ぬるぬる濃い描写", "filthy": "どろどろ卑猥描写"}
+        .get(mirror_heat, "")
+    )
     if mirror_weak_lv >= 1:
         lv_lbl = "育ってきた弱点" if mirror_weak_lv == 1 else "完成した弱点"
         st.caption(f"弱点成長：{mirror_name}に累計 {mirror_loss_n} 回負け → {lv_lbl}")
@@ -2272,8 +2314,13 @@ if _mirror_with_img or _mirror_pool:
         st.session_state.mirror_open_for = mirror_name
 
     st.session_state.mirror_open_line = mirror_with_voice(
-        st.session_state.mirror_open_base, mirror_voice, mirror_name
+        st.session_state.mirror_open_base, mirror_voice, mirror_name, heat=mirror_heat
     )
+
+    # 今日の責めメニュー
+    mirror_cats = _cat_labels_fn(data, mirror_item.get("categories") or [])
+    _menu = today_tease_menu(mirror_name, today_str, mirror_tags, mirror_cats)
+    st.markdown(render_today_menu_html(_menu), unsafe_allow_html=True)
 
     st.markdown(f"""
 <div class="tease-wall" style="max-width:520px;margin:0 auto 0.8em;">
@@ -2367,6 +2414,7 @@ if _mirror_with_img or _mirror_pool:
             mirror_gauge_lines(new_g, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
             mirror_voice,
             mirror_name,
+            heat=mirror_heat,
         )
         st.session_state.mirror_after_text = (
             f"ゲージは正直ね。……{mirror_name}の口プレイ、この熱に合わせてくるわよ。"
@@ -2385,6 +2433,7 @@ if _mirror_with_img or _mirror_pool:
             mirror_loss_n,
             mirror_voice,
             mirror_note,
+            heat=mirror_heat,
         )
         st.session_state.mirror_choice = choice
         st.session_state.mirror_reply_text = main
@@ -2438,6 +2487,80 @@ if _mirror_with_img or _mirror_pool:
             _mirror_set_gauge("near")
             _mirror_pick("nipple_mouth")
 
+    # --- 同時責めタイムライン（口×乳首並列）---
+    st.markdown("##### 同時責めタイムライン❤️")
+    st.caption("口と乳首、別々に進めて上下どっちが先に落とすか競争よ")
+    mouth_i = int(st.session_state.get("mirror_dual_mouth", 0) or 0)
+    nipple_i = int(st.session_state.get("mirror_dual_nipple", 0) or 0)
+    mouth_i = max(0, min(mouth_i, len(DUAL_MOUTH_STEPS) - 1))
+    nipple_i = max(0, min(nipple_i, len(DUAL_NIPPLE_STEPS) - 1))
+    st.markdown(render_dual_bars_html(mouth_i, nipple_i), unsafe_allow_html=True)
+    dm1, dm2 = st.columns(2)
+    with dm1:
+        if st.button(
+            f"💋 口を進める（{DUAL_MOUTH_STEPS[mouth_i][0]}）",
+            key="dual_mouth_go",
+            use_container_width=True,
+        ):
+            sk = DUAL_MOUTH_STEPS[mouth_i][1]
+            line = dual_mouth_line(sk, mirror_name)
+            st.session_state.mirror_reply_text = mirror_with_voice(
+                line, mirror_voice, mirror_name, heat=mirror_heat
+            )
+            st.session_state.mirror_after_text = dual_sync_after(mouth_i, nipple_i, mirror_name)
+            st.session_state.mirror_choice = f"dual_mouth_{sk}"
+            if mouth_i < len(DUAL_MOUTH_STEPS) - 1:
+                st.session_state.mirror_dual_mouth = mouth_i + 1
+            else:
+                _mirror_set_gauge("cum")
+                st.session_state.mirror_permit = "ask"
+            if mouth_i >= 2 and nipple_i >= 2:
+                _mirror_set_gauge("near")
+            st.rerun()
+    with dm2:
+        if st.button(
+            f"💗 乳首を進める（{DUAL_NIPPLE_STEPS[nipple_i][0]}）",
+            key="dual_nipple_go",
+            use_container_width=True,
+        ):
+            sk = DUAL_NIPPLE_STEPS[nipple_i][1]
+            line = dual_nipple_line(sk, mirror_name)
+            st.session_state.mirror_reply_text = mirror_with_voice(
+                line, mirror_voice, mirror_name, heat=mirror_heat
+            )
+            st.session_state.mirror_after_text = dual_sync_after(mouth_i, nipple_i, mirror_name)
+            st.session_state.mirror_choice = f"dual_nipple_{sk}"
+            if nipple_i < len(DUAL_NIPPLE_STEPS) - 1:
+                st.session_state.mirror_dual_nipple = nipple_i + 1
+            else:
+                _mirror_set_gauge("near")
+                st.session_state.mirror_permit = "ask"
+            if mouth_i >= 2 and nipple_i >= 2:
+                _mirror_set_gauge("near")
+            st.rerun()
+    if st.button("🔥 同時に一段進める", key="dual_both_go", use_container_width=True):
+        mk = DUAL_MOUTH_STEPS[mouth_i][1]
+        nk = DUAL_NIPPLE_STEPS[nipple_i][1]
+        combo = (
+            f"{dual_mouth_line(mk, mirror_name)}"
+            f" ……同時に、{dual_nipple_line(nk, mirror_name)}"
+        )
+        st.session_state.mirror_reply_text = mirror_with_voice(
+            combo, mirror_voice, mirror_name, heat=mirror_heat
+        )
+        new_m = min(mouth_i + 1, len(DUAL_MOUTH_STEPS) - 1)
+        new_n = min(nipple_i + 1, len(DUAL_NIPPLE_STEPS) - 1)
+        st.session_state.mirror_dual_mouth = new_m
+        st.session_state.mirror_dual_nipple = new_n
+        st.session_state.mirror_after_text = dual_sync_after(new_m, new_n, mirror_name)
+        st.session_state.mirror_choice = f"dual_both_{mk}_{nk}"
+        if new_m >= len(DUAL_MOUTH_STEPS) - 1 and new_n >= len(DUAL_NIPPLE_STEPS) - 1:
+            _mirror_set_gauge("cum")
+            st.session_state.mirror_permit = "ask"
+        else:
+            _mirror_set_gauge("near")
+        st.rerun()
+
     # --- 口プレイ手順モード ---
     st.markdown("##### 口プレイ手順")
     step_i = int(st.session_state.get("mirror_step", 0) or 0)
@@ -2463,6 +2586,7 @@ if _mirror_with_img or _mirror_pool:
                 mirror_step_lines(sk, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
                 mirror_voice,
                 mirror_name,
+                heat=mirror_heat,
             )
             st.session_state.mirror_after_text = mirror_step_after(sk, mirror_name)
             st.session_state.mirror_permit = None
@@ -2474,6 +2598,7 @@ if _mirror_with_img or _mirror_pool:
                 mirror_step_lines(step_key, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
                 mirror_voice,
                 mirror_name,
+                heat=mirror_heat,
             )
             st.session_state.mirror_after_text = mirror_step_after(step_key, mirror_name)
             if step_key == "finish" or st.session_state.get("mirror_gauge") == "cum":
@@ -2493,6 +2618,7 @@ if _mirror_with_img or _mirror_pool:
                 mirror_step_lines(sk, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
                 mirror_voice,
                 mirror_name,
+                heat=mirror_heat,
             )
             st.session_state.mirror_after_text = mirror_step_after(sk, mirror_name)
             if sk == "finish":
@@ -2544,6 +2670,14 @@ if _mirror_with_img or _mirror_pool:
             "nipple": "乳首責めで溶かす",
             "nipple_lick": "乳首舐め・ちゅっ責め",
             "nipple_mouth": "乳首＋口の同時責め",
+            "dual_mouth_kiss": "同時責め・口トラック",
+            "dual_mouth_shallow": "同時責め・口トラック",
+            "dual_mouth_deep": "同時責め・口トラック",
+            "dual_mouth_finish": "同時責め・口仕上げ",
+            "dual_nipple_stroke": "同時責め・乳首トラック",
+            "dual_nipple_pinch": "同時責め・乳首トラック",
+            "dual_nipple_lick": "同時責め・乳首トラック",
+            "dual_nipple_hard": "同時責め・乳首最大",
             "kiss_only": "まずは亀頭キスだけ",
             "lick": "先端をねっとり舐める",
             "shallow": "浅く咥えて溶かす",
@@ -2559,6 +2693,12 @@ if _mirror_with_img or _mirror_pool:
         _choice = st.session_state.get("mirror_choice") or ""
         if str(_choice).startswith("edge_loop_"):
             _badge = f"イく直前ループ ×{_choice.split('_')[-1]}"
+        elif str(_choice).startswith("dual_both_"):
+            _badge = "同時責め・上下一段"
+        elif str(_choice).startswith("dual_mouth_"):
+            _badge = "同時責め・口トラック"
+        elif str(_choice).startswith("dual_nipple_"):
+            _badge = "同時責め・乳首トラック"
         st.markdown(f"""
 <div style="max-width:520px;margin:0.6em auto 0.4em;
   background:linear-gradient(160deg,rgba(194,24,91,0.22),rgba(40,0,25,0.55));
@@ -2591,7 +2731,7 @@ if _mirror_with_img or _mirror_pool:
         _mirror_set_gauge("near" if edge_n < 5 else "cum")
         main, after = mirror_edge_loop_lines(mirror_name, edge_n, mirror_tags, mirror_loss_n, mirror_note)
         st.session_state.mirror_choice = f"edge_loop_{edge_n}"
-        st.session_state.mirror_reply_text = mirror_with_voice(main, mirror_voice, mirror_name)
+        st.session_state.mirror_reply_text = mirror_with_voice(main, mirror_voice, mirror_name, heat=mirror_heat)
         st.session_state.mirror_after_text = after
         st.session_state.mirror_permit = "ask" if edge_n >= 3 else "denied"
         st.rerun()
