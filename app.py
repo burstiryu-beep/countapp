@@ -32,22 +32,22 @@ with col1:
 with col2:
     st.markdown("""
 <div class="ero-card">
-  <div style="font-size:2em;">📊</div>
-  <h3>ダッシュボード</h3>
-  <p style="color:#ffb6d9; font-size:0.9em;">月別・合計の記録を確認</p>
+  <div style="font-size:2em;">🎙</div>
+  <h3>オナサポ</h3>
+  <p style="color:#ffb6d9; font-size:0.9em;">段階誘導でイかせる</p>
 </div>
 """, unsafe_allow_html=True)
 with col3:
     st.markdown("""
 <div class="ero-card">
-  <div style="font-size:2em;">🏆</div>
-  <h3>ランキング</h3>
-  <p style="color:#ffb6d9; font-size:0.9em;">最も感じた弱点はどこ？</p>
+  <div style="font-size:2em;">📊</div>
+  <h3>ダッシュボード</h3>
+  <p style="color:#ffb6d9; font-size:0.9em;">月別・属性の敗北マップ</p>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <p style="text-align:center; color:#804060; font-size:0.8em; margin-top:2em;">
-  ← 左のメニューからページを選んでください
+  ← 左のメニューから「オナサポモード」も選べるわよ❤️
 </p>
 """, unsafe_allow_html=True)
