@@ -1,6 +1,7 @@
 import streamlit as st
 import style
-from core import get_data, ensure_structure, category_labels
+from core import get_data, ensure_structure
+from categories import category_labels
 from utils import active_items, all_months, img_to_html, tier
 
 style.apply()

@@ -3,8 +3,9 @@ import base64, io
 import streamlit as st
 import style
 from PIL import Image
-from core import (
-    get_data, ensure_structure, list_categories, add_category, delete_category,
+from core import get_data, ensure_structure
+from categories import (
+    list_categories, add_category, delete_category,
     category_defeat_stats, render_category_defeat_html,
 )
 from storage import save_data, IMG_DIR

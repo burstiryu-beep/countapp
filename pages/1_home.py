@@ -7,9 +7,11 @@ JST = timezone(timedelta(hours=9))
 
 import streamlit as st
 import style
-from core import (
-    get_data, ensure_structure, category_labels,
-    category_defeat_stats, render_category_defeat_html,
+from core import get_data, ensure_structure
+from categories import (
+    category_labels,
+    category_defeat_stats,
+    render_category_defeat_html,
 )
 from storage import save_data
 from utils import aggregate, all_months, make_key, img_to_html

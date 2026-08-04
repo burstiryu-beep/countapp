@@ -1,8 +1,8 @@
 from datetime import datetime
 import streamlit as st
 import style
-from core import (
-    get_data, ensure_structure, compute_points,
+from core import get_data, ensure_structure, compute_points
+from categories import (
     category_defeat_stats, render_category_defeat_html, category_labels,
 )
 from utils import active_items, calc_continuous_days, registered_item_count, img_to_html

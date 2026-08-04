@@ -39,7 +39,8 @@ def default_data():
     return {
         "tabs": [{"id": "all", "name": "全体"}],
         "items": {},
-        "history": []
+        "history": [],
+        "categories": [],
     }
 
 
