@@ -1,7 +1,10 @@
 from datetime import datetime
 import streamlit as st
 import style
-from core import get_data, ensure_structure, compute_points
+from core import (
+    get_data, ensure_structure, compute_points,
+    category_defeat_stats, render_category_defeat_html, category_labels,
+)
 from utils import active_items, calc_continuous_days, registered_item_count, img_to_html
 
 style.apply()
@@ -23,6 +26,25 @@ with col3:
 
 st.divider()
 
+# ===== カテゴリ別敗北マップ =====
+st.markdown("<h3>🏷 カテゴリ別 敗北マップ</h3>", unsafe_allow_html=True)
+st.caption("どの属性にボコボコ敗北射精してるか、直視しなさい。……ちんぽ、もう正直でしょ❤️")
+cat_month_opts = ["全期間"] + sorted(
+    {m for v in items.values() for m in (v.get("counts") or {}).keys()},
+    reverse=True,
+)
+cat_month_sel = st.selectbox("期間", cat_month_opts, key="dash_cat_month")
+cat_month = None if cat_month_sel == "全期間" else cat_month_sel
+st.markdown(
+    render_category_defeat_html(
+        category_defeat_stats(data, month=cat_month),
+        title="🏷 あなたが負けてる属性ランキング",
+    ),
+    unsafe_allow_html=True,
+)
+
+st.divider()
+
 st.markdown("<h3>🏆 敗北ランキング Top 5</h3>", unsafe_allow_html=True)
 
 ranking = compute_points(data)
@@ -38,11 +60,22 @@ for rank, (name, info) in enumerate(sorted_rank[:5], 1):
         item.get("img", ""),
         style="width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0;"
     )
-    img_block = f"<div>{thumb}</div>" if thumb else f"<span style='font-size:1.6em;min-width:2em;text-align:center;'>{icon}</span>"
+    img_block = (
+        f"<div>{thumb}</div>"
+        if thumb
+        else f"<span style='font-size:1.6em;min-width:2em;text-align:center;'>{icon}</span>"
+    )
+    cat_bits = category_labels(data, item.get("categories") or [])
+    cat_html = (
+        f"<div style='color:#ff80ab;font-size:0.75em;margin-top:0.15em;'>{' · '.join(cat_bits)}</div>"
+        if cat_bits else ""
+    )
     st.markdown(
         f"<div class='ero-card' style='display:flex;align-items:center;gap:1em;text-align:left;padding:0.6em 1em;'>"
         f"{img_block}"
-        f"<span style='flex:1;font-size:1.1em;color:#ffe0f0;font-weight:600;'>#{rank}　{name}</span>"
+        f"<div style='flex:1;'>"
+        f"<span style='font-size:1.1em;color:#ffe0f0;font-weight:600;'>#{rank}　{name}</span>"
+        f"{cat_html}</div>"
         f"<span class='tier-{t}' style='margin-right:0.5em;font-size:1.3em;'>{t}</span>"
         f"<span style='color:#ff80ab;font-weight:700;'>{info['points']} 敗北</span>"
         f"</div>",
@@ -72,8 +105,7 @@ for m, c in sorted(month_map.items(), reverse=True):
 st.divider()
 
 # ===== 時間帯別 & 曜日別分析 =====
-time_labels = ["深夜\n(0-4時)", "朝\n(5-10時)", "昼\n(11-16時)", "夜\n(17-23時)"]
-time_keys   = ["深夜", "朝", "昼", "夜"]
+time_keys = ["深夜", "朝", "昼", "夜"]
 time_counts = {k: 0 for k in time_keys}
 weekday_labels = ["月", "火", "水", "木", "金", "土", "日"]
 weekday_counts = {d: 0 for d in weekday_labels}
@@ -98,13 +130,13 @@ time_total = sum(time_counts.values()) or 1
 weekday_total = sum(weekday_counts.values()) or 1
 
 peak_time = max(time_counts, key=time_counts.get) if time_total > 1 else None
-peak_day  = max(weekday_counts, key=weekday_counts.get) if weekday_total > 1 else None
+peak_day = max(weekday_counts, key=weekday_counts.get) if weekday_total > 1 else None
 
 time_comments = {
     "深夜": "深夜の口衝動が一番強いのね……フェラ想像して寝なさい、ふふ。",
-    "朝":   "朝から溜めて、キスで溶かされたいの？かわいい子。",
-    "昼":   "昼間っから咥えられたくて……我慢できないのね。",
-    "夜":   "夜になると口に弱くなるのね。わかりやすい甘マゾ。",
+    "朝": "朝から溜めて、キスで溶かされたいの？かわいい子。",
+    "昼": "昼間っから咥えられたくて……我慢できないのね。",
+    "夜": "夜になると口に弱くなるのね。わかりやすい甘マゾ。",
 }
 
 st.markdown("<h3>⏰ 時間帯別 敗北パターン</h3>", unsafe_allow_html=True)
@@ -115,9 +147,12 @@ time_row = ""
 for k in time_keys:
     c = time_counts[k]
     pct = round(c / time_total * 100)
-    bar_w = int(c / max_time_c * 140)
     is_peak = (k == peak_time)
-    highlight = "background:rgba(194,24,91,0.2);border:1px solid #ff4081;" if is_peak else "background:rgba(30,0,20,0.4);border:1px solid rgba(194,24,91,0.2);"
+    highlight = (
+        "background:rgba(194,24,91,0.2);border:1px solid #ff4081;"
+        if is_peak
+        else "background:rgba(30,0,20,0.4);border:1px solid rgba(194,24,91,0.2);"
+    )
     peak_mark = " 👑" if is_peak else ""
     time_row += (
         f"<div style='flex:1;{highlight}border-radius:10px;padding:0.6em;text-align:center;'>"
@@ -146,7 +181,6 @@ max_day_c = max(weekday_counts.values()) or 1
 day_row = ""
 for d in weekday_labels:
     c = weekday_counts[d]
-    pct = round(c / weekday_total * 100)
     bar_h = int(c / max_day_c * 70) + 10
     is_peak = (d == peak_day)
     color = "#ff4081" if is_peak else "#c2185b"

@@ -1,6 +1,6 @@
 import streamlit as st
 import style
-from core import get_data, ensure_structure
+from core import get_data, ensure_structure, category_labels
 from utils import active_items, all_months, img_to_html, tier
 
 style.apply()
@@ -67,6 +67,11 @@ else:
             item.get("img", ""),
             style="width:100%;border-radius:10px;margin-bottom:0.6em;object-fit:cover;max-height:200px;"
         )
+        cat_bits = category_labels(data, item.get("categories") or [])
+        cat_html = (
+            f"<div style='color:#ff80ab;font-size:0.78em;margin:0.2em 0;'>{' · '.join(cat_bits)}</div>"
+            if cat_bits else ""
+        )
 
         with cols[(rank - 1) % 2]:
             st.markdown(f"""
@@ -74,6 +79,7 @@ else:
   {img_html}
   <div style="font-size:0.85em;color:#804060;margin-bottom:0.2em;">#{rank}</div>
   <h3 style="margin:0.1em 0;">🌸 {name}</h3>
+  {cat_html}
   <div style="margin:0.3em 0;">
     <span class="tier-{t}" style="font-size:2em;">{t}</span>
     <span style="font-size:1.2em;">　{icon}</span>

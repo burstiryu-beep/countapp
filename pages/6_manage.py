@@ -3,7 +3,10 @@ import base64, io
 import streamlit as st
 import style
 from PIL import Image
-from core import get_data, ensure_structure
+from core import (
+    get_data, ensure_structure, list_categories, add_category, delete_category,
+    category_defeat_stats, render_category_defeat_html,
+)
 from storage import save_data, IMG_DIR
 from utils import delete_item, make_key, rename_item
 
@@ -36,6 +39,11 @@ def _save_and_notify(data, success_msg):
 st.markdown("<h2 style='text-align:center'>⚙️ 管理</h2>", unsafe_allow_html=True)
 
 item_names = list({v["name"] for v in data["items"].values()})
+cats = list_categories(data)
+cat_id_by_label = {
+    f"{c.get('icon', '🏷')} {c['name']}": c["id"] for c in cats
+}
+cat_label_by_id = {v: k for k, v in cat_id_by_label.items()}
 
 # ===== 弱点追加 =====
 st.markdown("<h3>➕ 弱点を追加</h3>", unsafe_allow_html=True)
@@ -43,6 +51,11 @@ st.markdown("<h3>➕ 弱点を追加</h3>", unsafe_allow_html=True)
 with st.form("add"):
     name = st.text_input("弱点名")
     img = st.file_uploader("画像（任意）")
+    add_cats = st.multiselect(
+        "カテゴリ属性（複数可）",
+        list(cat_id_by_label.keys()),
+        key="add_cats",
+    )
     ok = st.form_submit_button("追加する")
 
     if ok and name.strip():
@@ -52,11 +65,73 @@ with st.form("add"):
         else:
             data["items"][key] = {
                 "name": name.strip(), "tab": "all",
-                "counts": {}, "img": "", "points": 0, "weak_tags": []
+                "counts": {}, "img": "", "points": 0,
+                "weak_tags": [], "mirror_note": "",
+                "categories": [cat_id_by_label[l] for l in add_cats if l in cat_id_by_label],
             }
             if img:
                 data["items"][key]["img"] = encode_image(img)
             _save_and_notify(data, "追加しました！")
+
+st.divider()
+
+# ===== カテゴリ属性 =====
+st.markdown("<h3>🏷 カテゴリ属性</h3>", unsafe_allow_html=True)
+st.caption(
+    "グラビア・コスプレみたいな大雑把な属性よ。後から追加できるわ。"
+    "付けた属性ごとに、どこにボコボコ敗北してるか視覚化される❤️"
+)
+
+st.markdown(
+    render_category_defeat_html(category_defeat_stats(data), title="🏷 いまのカテゴリ敗北マップ"),
+    unsafe_allow_html=True,
+)
+
+with st.expander("カテゴリを追加・削除", expanded=False):
+    c1, c2 = st.columns([3, 1])
+    with c1:
+        new_cat_name = st.text_input(
+            "新しいカテゴリ名", key="new_cat_name", placeholder="例：メイド、ナース、巨乳…"
+        )
+    with c2:
+        new_cat_icon = st.text_input("絵文字", key="new_cat_icon", value="🏷", max_chars=2)
+    if st.button("カテゴリを追加", key="cat_add_btn"):
+        cid = add_category(data, new_cat_name, new_cat_icon or "🏷")
+        if cid:
+            _save_and_notify(data, f"✅ カテゴリ「{new_cat_name.strip()}」を追加したわ")
+        else:
+            st.error("名前を入れてね")
+
+    st.caption("登録済みカテゴリ")
+    for c in cats:
+        cols = st.columns([4, 1])
+        with cols[0]:
+            st.write(f"{c.get('icon', '🏷')} {c['name']}")
+        with cols[1]:
+            if st.button("削除", key=f"cat_del_{c['id']}"):
+                delete_category(data, c["id"])
+                _save_and_notify(data, f"カテゴリ「{c['name']}」を削除したわ")
+
+if item_names:
+    st.markdown("##### オナペにカテゴリを付ける")
+    sel_cat_item = st.selectbox("対象のオナペ", sorted(item_names), key="cat_item_sel")
+    item_key_c = next((k for k, v in data["items"].items() if v["name"] == sel_cat_item), None)
+    cur_cat_ids = list((data["items"].get(item_key_c) or {}).get("categories") or [])
+    cur_labels = [cat_label_by_id[i] for i in cur_cat_ids if i in cat_label_by_id]
+    new_cat_labels = st.multiselect(
+        "カテゴリ（複数可・グラビア＆コスプレみたいに重ねていいわ）",
+        list(cat_id_by_label.keys()),
+        default=cur_labels,
+        key="cat_assign_sel",
+    )
+    if st.button("カテゴリを保存", key="cat_assign_btn"):
+        if item_key_c:
+            data["items"][item_key_c]["categories"] = [
+                cat_id_by_label[l] for l in new_cat_labels if l in cat_id_by_label
+            ]
+            _save_and_notify(data, f"✅ {sel_cat_item} のカテゴリを保存したわ")
+else:
+    st.caption("登録されている弱点がありません")
 
 st.divider()
 
@@ -150,7 +225,6 @@ st.caption("データが消えたときの復元用。指定した月のカウ�
 
 if item_names:
     now_jst = datetime.now(JST)
-    # 過去12ヶ月の選択肢を生成
     month_choices = []
     for i in range(12):
         m = now_jst.replace(day=1) - timedelta(days=i * 28)

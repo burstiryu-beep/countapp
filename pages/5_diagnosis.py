@@ -1,6 +1,6 @@
 import streamlit as st
 import style
-from core import get_data, ensure_structure, compute_points
+from core import get_data, ensure_structure, compute_points, category_labels
 from utils import img_to_html
 
 style.apply()
@@ -52,8 +52,15 @@ if selected:
 
     weak_tags = list(item.get("weak_tags") or [])
     weak_bit = ""
+    cat_bits = category_labels(data, item.get("categories") or [])
+    if cat_bits:
+        weak_bit += (
+            f"<div style='color:#ff80ab;font-size:0.9em;margin-top:0.55em;'>"
+            f"属性：{' · '.join(cat_bits)}……この系統にボコボコにされてるわね。"
+            f"</div>"
+        )
     if weak_tags:
-        weak_bit = (
+        weak_bit += (
             f"<div style='color:#ffb6d9;font-style:italic;font-size:0.9em;margin-top:0.6em;'>"
             f"口プレイ弱点：{' / '.join(weak_tags)}……ここ、狙われるわよ。"
             f"</div>"

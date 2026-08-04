@@ -7,7 +7,10 @@ JST = timezone(timedelta(hours=9))
 
 import streamlit as st
 import style
-from core import get_data, ensure_structure
+from core import (
+    get_data, ensure_structure, category_labels,
+    category_defeat_stats, render_category_defeat_html,
+)
 from storage import save_data
 from utils import aggregate, all_months, make_key, img_to_html
 
@@ -2076,6 +2079,7 @@ def _mirror_record_defeat(name):
         item_key = make_key(name, "all")
         data["items"][item_key] = {
             "name": name, "tab": "all", "counts": {}, "img": "", "points": 0, "weak_tags": [],
+            "mirror_note": "", "categories": [],
         }
         m = count_date.strftime("%Y-%m")
         data["items"][item_key]["counts"][m] = 1
@@ -2890,6 +2894,16 @@ if trial_tease:
     st.divider()
 # === TRIAL TEASE END ===
 
+# ===== カテゴリ敗北マップ（コンパクト）=====
+st.markdown(
+    render_category_defeat_html(
+        category_defeat_stats(data, month=month_filter),
+        title="🏷 カテゴリ別 敗北マップ",
+    ),
+    unsafe_allow_html=True,
+)
+st.caption("属性の付け方は管理画面よ。グラビアに何回ボコボコにされてるか、直視しなさい❤️")
+
 # ===== おすすめオナペ =====
 if rec_name:
     rec_item = next((v for v in data["items"].values() if v["name"] == rec_name), {})
@@ -2899,6 +2913,11 @@ if rec_name:
     )
     rec_line = recommend_lines(rec_name, ranking.get(rec_name, {}).get("points", 0), rec_tier)
     rec_total = ranking.get(rec_name, {}).get("points", 0)
+    rec_cats = category_labels(data, rec_item.get("categories") or [])
+    rec_cat_html = (
+        f"<div style='color:#ff80ab;font-size:0.8em;margin:0.25em 0 0.4em;'>{' · '.join(rec_cats)}</div>"
+        if rec_cats else ""
+    )
 
     situ_text = tonight_situ(rec_name)
     st.markdown(f"""
@@ -2906,6 +2925,7 @@ if rec_name:
   <div style="color:#ff80ab;font-size:0.8em;letter-spacing:0.1em;margin-bottom:0.4em;">💞 おすすめオナペ</div>
   {rec_img}
   <h3 style="margin:0.2em 0;">🌸 {rec_name}</h3>
+  {rec_cat_html}
   <div style="color:#ffb6d9;font-style:italic;font-size:0.95em;margin:0.4em 0 0.6em;">
     「{rec_line}」
   </div>
@@ -3059,6 +3079,13 @@ for i, (name, val) in enumerate(items.items()):
             f"border-top:1px solid rgba(255,128,171,0.2);margin-top:0.5em;padding-top:0.4em;'>"
             f"💬 {daily_voice(name)}</div>"
         )
+        cat_bits = category_labels(data, item.get("categories") or [])
+        cat_html = (
+            f"<div style='color:#ff80ab;font-size:0.78em;margin:0.15em 0 0.25em;'>"
+            f"{' · '.join(cat_bits)}</div>"
+            if cat_bits else
+            "<div style='color:#604050;font-size:0.72em;margin:0.1em 0;'>属性未設定</div>"
+        )
 
         st.markdown(f"""
 <div class="ero-card" style="{card_style}">
@@ -3067,6 +3094,7 @@ for i, (name, val) in enumerate(items.items()):
     <h3 style="margin:0;">🌸 {name}</h3>
     <span style="font-size:0.8em;font-weight:700;color:{danger_color};">{danger_icon} {danger_label}</span>
   </div>
+  {cat_html}
   <div class="ero-count">{val}</div>
   <div class="ero-label">{'敗北（' + selected_month + '）' if month_filter else '累計敗北回数'}</div>
   {since_html}
@@ -3092,7 +3120,10 @@ for i, (name, val) in enumerate(items.items()):
                     tab = data["items"][item_key].get("tab", "all")
                 else:
                     item_key = make_key(name, "all")
-                    data["items"][item_key] = {"name": name, "tab": "all", "counts": {}, "img": "", "points": 0}
+                    data["items"][item_key] = {
+                        "name": name, "tab": "all", "counts": {}, "img": "", "points": 0,
+                        "weak_tags": [], "mirror_note": "", "categories": [],
+                    }
                     m = count_date.strftime("%Y-%m")
                     data["items"][item_key]["counts"][m] = 1
                     tab = "all"
