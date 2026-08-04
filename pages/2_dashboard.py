@@ -101,10 +101,10 @@ peak_time = max(time_counts, key=time_counts.get) if time_total > 1 else None
 peak_day  = max(weekday_counts, key=weekday_counts.get) if weekday_total > 1 else None
 
 time_comments = {
-    "深夜": "深夜の衝動が一番強いのね……ふふ。",
-    "朝":   "朝から溜まってるなんて、かわいい子。",
-    "昼":   "昼間っから……我慢できないのね。",
-    "夜":   "夜になると弱くなるのね。わかりやすい。",
+    "深夜": "深夜の口衝動が一番強いのね……フェラ想像して寝なさい、ふふ。",
+    "朝":   "朝から溜めて、キスで溶かされたいの？かわいい子。",
+    "昼":   "昼間っから咥えられたくて……我慢できないのね。",
+    "夜":   "夜になると口に弱くなるのね。わかりやすい甘マゾ。",
 }
 
 st.markdown("<h3>⏰ 時間帯別 敗北パターン</h3>", unsafe_allow_html=True)
@@ -170,6 +170,6 @@ if peak_day:
     st.markdown(
         f"<div style='color:#ffb6d9;font-style:italic;font-size:0.9em;text-align:center;"
         f"background:rgba(194,24,91,0.1);border-radius:8px;padding:0.5em;'>"
-        f"💬 {peak_day}曜日が一番危険な日ね。自分でもわかってるでしょ？</div>",
+        f"💬 {peak_day}曜日が一番危険……口負けしやすい日ね。自分でもわかってるでしょ？</div>",
         unsafe_allow_html=True,
     )

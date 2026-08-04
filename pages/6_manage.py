@@ -81,7 +81,7 @@ st.divider()
 
 # ===== 口プレイ弱点メモ =====
 st.markdown("<h3>💋 口プレイ弱点メモ</h3>", unsafe_allow_html=True)
-st.caption("鏡チェックのセリフに混ざります")
+st.caption("鏡チェックでフェラ・亀頭キスのセリフに混ざります。タグ2つ以上でコンボ発動よ")
 _WEAK_OPTS = [
     "亀頭キス弱い",
     "奥フェラが好き",

@@ -32,12 +32,12 @@ if selected:
     )
 
     tier_comment = {
-        "SS": "最愛の弱点ね。触れるだけでとろけちゃうでしょ？ふふ。",
-        "S":  "すごく敏感。かわいいくらい弱いわ、ここ。",
-        "A":  "かなり危険ゾーン。集中されたら負けちゃうのね。",
-        "B":  "じわじわ効いてくるわ。これからもっと育っていくわよ。",
-        "C":  "まだ粘れる……でも私が相手なら負けるわ、絶対。",
-        "D":  "まだ未開拓ね。これから一緒に育てましょ、ふふ。",
+        "SS": "最愛の口弱点ね。キスされただけでとろけちゃうでしょ？ふふ。",
+        "S":  "すごく敏感。フェラでかわいいくらい弱いわ、ここ。",
+        "A":  "かなり危険ゾーン。亀頭キス集中されたら負けちゃうのね。",
+        "B":  "じわじわ口で効いてくるわ。これからもっと育っていくわよ。",
+        "C":  "まだ粘れる……でも私が咥えたら負けるわ、絶対。",
+        "D":  "まだ未開拓ね。口弱点、これから一緒に育てましょ、ふふ。",
     }.get(tier, "")
 
     avg_time = max(5, 45 - pts // 2)
@@ -50,11 +50,27 @@ if selected:
     tama        = min(5, pts // 20)
     sakibashiri = min(5, pts // 10)
 
+    weak_tags = list(item.get("weak_tags") or [])
+    weak_bit = ""
+    if weak_tags:
+        weak_bit = (
+            f"<div style='color:#ffb6d9;font-style:italic;font-size:0.9em;margin-top:0.6em;'>"
+            f"口プレイ弱点：{' / '.join(weak_tags)}……ここ、狙われるわよ。"
+            f"</div>"
+        )
+    note = str(item.get("mirror_note") or "").strip()
+    if note:
+        weak_bit += (
+            f"<div style='color:#ffe0f0;font-size:0.85em;margin-top:0.35em;'>"
+            f"自己申告「{note[:80]}」……口で叶えてあげるわね。"
+            f"</div>"
+        )
+
     overall = (
-        "👑 最愛の弱点。触れるだけでとろけちゃうのね、かわいい" if pts >= 80 else
-        "🔥 すごく敏感。かわいいくらい弱いわ"                   if pts >= 50 else
-        "💋 かなり危険。もっと育っていくわよ、楽しみね"          if pts >= 30 else
-        "🌸 まだ粘れる……でも私が相手なら負けるわ、絶対"
+        "👑 最愛の口弱点。咥えられただけでとろけちゃうのね、かわいい" if pts >= 80 else
+        "🔥 すごく敏感。キスでかわいいくらい弱いわ"                   if pts >= 50 else
+        "💋 かなり危険。フェラでもっと育っていくわよ、楽しみね"          if pts >= 30 else
+        "🌸 まだ粘れる……でも私が口で相手なら負けるわ、絶対"
     )
 
     st.markdown(f"""
@@ -104,5 +120,6 @@ if selected:
   <div style="text-align:center; font-size:1.1em; font-weight:700; color:#ff80ab; padding:0.4em;">
     {overall}
   </div>
+  {weak_bit}
 </div>
 """, unsafe_allow_html=True)
