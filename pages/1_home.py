@@ -1726,7 +1726,7 @@ if _mirror_with_img or _mirror_pool:
         st.session_state.mirror_onape_sel = st.session_state.mirror_name
         _mirror_reset_play()
 
-    if rec_name and mirror_name == rec_name:
+    if rec_name and st.session_state.mirror_name == rec_name:
         st.caption(f"💞 おすすめの {rec_name} が、いま口で来てるわよ")
     elif rec_name and rec_name in _mirror_names:
         if st.button(f"💞 おすすめの {rec_name} で鏡チェック", key="mirror_pick_rec", use_container_width=True):
