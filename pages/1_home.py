@@ -923,7 +923,109 @@ MIRROR_VOICES = [
     ("sweet", "甘い"),
     ("sticky", "ねっとり"),
     ("urgent", "急かす"),
+    ("tease", "からかう"),
+    ("dote", "溺愛"),
+    ("command", "命令"),
 ]
+
+MIRROR_WEAK_COMBOS = {
+    frozenset({"亀頭キス弱い", "浅い咥えで溶ける"}): (
+        "……亀頭キスから浅く咥えて溶かすコンボよ。{name}、その順番がいちばん効くの、分かってるわね。"
+    ),
+    frozenset({"亀頭キス弱い", "奥フェラが好き"}): (
+        "……先にちゅってしてから奥まで。{name}のフェラ、いちばん堕ちやすい順番でいくわ。"
+    ),
+    frozenset({"ちゅっ音に弱い", "亀頭キス弱い"}): (
+        "……ちゅっ、ちゅっ、ってキス音だけで腰が砕けるんでしょ。{name}、音つきで先端をいじめてあげる。"
+    ),
+    frozenset({"先端なめが効く", "浅い咥えで溶ける"}): (
+        "……先を舐めてから浅く咥える。ねっとり→ぬるっ、のコンボで頭空っぽにするわよ。"
+    ),
+    frozenset({"ゆっくりされると落ちる", "奥フェラが好き"}): (
+        "……ゆっくり深く咥えられるの、ダブルで効くわね。{name}、急がず奥まで堕としてあげる。"
+    ),
+    frozenset({"ちゅっ音に弱い", "浅い咥えで溶ける"}): (
+        "……浅く咥えながらちゅっちゅ。音と浅さのコンボ、{name}得意の負け方でしょ。"
+    ),
+}
+
+
+def mirror_loss_streak_days(name, history):
+    """同一オナペへの連続敗北日数（直近から遡る）。"""
+    loss_days = sorted(
+        {h["time"][:10] for h in history if h.get("name") == name},
+        reverse=True,
+    )
+    if not loss_days:
+        return 0
+    streak = 1
+    prev = datetime.strptime(loss_days[0], "%Y-%m-%d").date()
+    for day_str in loss_days[1:]:
+        d = datetime.strptime(day_str, "%Y-%m-%d").date()
+        if prev - d == timedelta(days=1):
+            streak += 1
+            prev = d
+        else:
+            break
+    return streak
+
+
+def mirror_calendar_whisper(name, history, ref_date=None):
+    """カレンダー連動：同じ日付の過去敗北を囁く。"""
+    ref = ref_date or today_jst
+    ref_str = ref.strftime("%Y-%m-%d")
+    same_day = [h for h in history if h.get("name") == name and h.get("time", "")[:10] == ref_str]
+    if len(same_day) >= 2:
+        return (
+            f"今日、もう{name}の口で{len(same_day)}回負けてるわね。"
+            f"同じ日に何度も堕ちるの、いちばん情けないパターンよ。"
+        )
+    if len(same_day) == 1:
+        return f"今日もう一度{name}の口に来たの？……同じ日の二回目、覚悟して。"
+    md = ref_str[5:]  # MM-DD
+    anniv = [h for h in history if h.get("name") == name and h.get("time", "")[5:10] == md]
+    if anniv:
+        y = anniv[-1]["time"][:4]
+        return (
+            f"{ref.month}月{ref.day}日……{y}年もこの日、{name}の口で負けたわね。"
+            f"記念日みたいに、また咥えられに来たの？"
+        )
+    return ""
+
+
+def mirror_self_note_flavor(name, note):
+    if not note or not str(note).strip():
+        return ""
+    note = str(note).strip()[:120]
+    return f"……あなたの申告「{note}」、{name}が全部口で叶えてあげるわよ。"
+
+
+def mirror_weak_combo_flavor(name, tags, loss_count=0):
+    if len(tags or []) < 2:
+        return ""
+    tagset = frozenset(tags)
+    for combo, tmpl in MIRROR_WEAK_COMBOS.items():
+        if combo.issubset(tagset):
+            line = tmpl.format(name=name)
+            if loss_count >= 5:
+                line += f"……{loss_count}回負けてるから、このコンボはもう体に刻まれてるわね。"
+            return line
+    pair = random.sample(list(tags), 2)
+    return (
+        f"……{pair[0]}と{pair[1]}、セットで効くの分かってるでしょ。"
+        f"{name}が交互に攻めて、頭真っ白にしてあげる。"
+    )
+
+
+def mirror_voice_prefix(voice, name):
+    return {
+        "sweet": f"（甘い声で）……ねえ、{name}が優しくしてあげる。",
+        "sticky": f"（ねっとりと）……ふふ、離さないわよ、{name}。",
+        "urgent": f"（急かすように）ほら、早くとろけなさい。{name}、待たないわ。",
+        "tease": f"（からかうように）ふふ……{name}、また情けない顔しに来たの？",
+        "dote": f"（溺愛混じりに）……いい子ね、{name}がたっぷり可愛がってあげる。",
+        "command": f"（命令口調で）{name}の口に従いなさい。抵抗は無駄よ。",
+    }.get(voice or "sweet", "")
 
 
 def mirror_loss_count(name, history):
@@ -936,14 +1038,6 @@ def mirror_weak_level(loss_count):
     if loss_count >= 3:
         return 1
     return 0
-
-
-def mirror_voice_prefix(voice, name):
-    return {
-        "sweet": f"（甘い声で）……ねえ、{name}が優しくしてあげる。",
-        "sticky": f"（ねっとりと）……ふふ、離さないわよ、{name}。",
-        "urgent": f"（急かすように）ほら、早くとろけなさい。{name}、待たないわ。",
-    }.get(voice or "sweet", "")
 
 
 def mirror_with_voice(text, voice, name):
@@ -997,15 +1091,21 @@ def mirror_history_whisper(name, history):
     return f"{base}{growth}"
 
 
-def mirror_weak_flavor(name, tags, loss_count=0):
-    """弱点メモをセリフに混ぜる一文。負け回数で育つ。"""
+def mirror_weak_flavor(name, tags, loss_count=0, self_note=""):
+    """弱点メモをセリフに混ぜる一文。負け回数で育つ。2タグ以上はコンボ優先。"""
+    note = mirror_self_note_flavor(name, self_note)
+    if tags and len(tags) >= 2:
+        combo = mirror_weak_combo_flavor(name, tags, loss_count)
+        if combo:
+            return f"{combo}{note}" if note else combo
     if not tags:
         if loss_count >= 3:
-            return (
+            base = (
                 f"……メモなくても分かるわ。{name}に{loss_count}回も負けてる時点で、"
                 f"口と亀頭キスが弱点でしょ。"
             )
-        return ""
+            return f"{base}{note}" if note else base
+        return note
     tag = random.choice(tags)
     lv = mirror_weak_level(loss_count)
     soft = {
@@ -1051,13 +1151,52 @@ def mirror_weak_flavor(name, tags, loss_count=0):
         ),
     }
     table = soft if lv == 0 else mid if lv == 1 else hard
-    return table.get(tag, f"……{name}の「{tag}」、{loss_count}回分の弱さごと攻めるわよ。")
+    base = table.get(tag, f"……{name}の「{tag}」、{loss_count}回分の弱さごと攻めるわよ。")
+    return f"{base}{note}" if note else base
 
 
-def mirror_edge_loop_lines(name, loop_n, tags=None, loss_count=0):
+def mirror_permit_lines(name, stage="deny"):
+    """許可段階：deny / mouth / grant"""
+    if stage == "grant":
+        return random.choice([
+            (
+                f"……いいわ。出して。"
+                f"{name}が咥えたまま、亀頭にちゅってして、そのまま受け止めるわ。"
+                f"情けない声出してイきなさい。口に負けた記録、あとでつけなさい。"
+            ),
+            (
+                f"射精の許可、出すわ。逃げなくていいの。"
+                f"{name}のフェラと先端キスで、頭真っ白になるまでイかせてあげる。"
+            ),
+        ])
+    if stage == "mouth":
+        return random.choice([
+            (
+                f"口だけ、許可するわ。咥えて、キスして……でもまだ出さない。"
+                f"{name}が浅く前後して、先端にちゅっちゅ。射精は、そのあとね。"
+            ),
+            (
+                f"いいわ、口は使っていいの。フェラと亀頭キスでとろけなさい。"
+                f"ただし出すのはまだ。口の中で我慢のふち、味わって。"
+            ),
+        ])
+    return random.choice([
+        (
+            f"まだだめ。……イキそうなのに出させないわ。"
+            f"{name}は先端にちゅってして、浅く咥えて、また離す。"
+            f"限界のふちで溶かされてるの、気持ちいいでしょ。"
+        ),
+        (
+            f"ふふ、却下。出したい顔なのにかわいいわ。"
+            f"{name}の口で焦らして、キスで崩して……射精はまだよ。"
+        ),
+    ])
+
+
+def mirror_edge_loop_lines(name, loop_n, tags=None, loss_count=0, self_note=""):
     """イく直前ループ。許可なしでふちを積み上げる。"""
     n = max(1, min(int(loop_n or 1), 5))
-    weak = mirror_weak_flavor(name, tags or [], loss_count)
+    weak = mirror_weak_flavor(name, tags or [], loss_count, self_note)
     pool = {
         1: (
             f"ふち、1回目。……{name}が先にちゅってして、浅く咥えて、また離す。"
@@ -1125,9 +1264,9 @@ def mirror_afterglow_lines(name, tags=None, loss_count=0):
     return line
 
 
-def mirror_step_lines(step_key, name, tags=None, loss_count=0):
+def mirror_step_lines(step_key, name, tags=None, loss_count=0, self_note=""):
     """口プレイ手順ごとのセリフ。"""
-    weak = mirror_weak_flavor(name, tags or [], loss_count)
+    weak = mirror_weak_flavor(name, tags or [], loss_count, self_note)
     pool = {
         "kiss_only": [
             (
@@ -1207,8 +1346,8 @@ def mirror_step_after(step_key, name):
     return extras.get(step_key, f"{name}の口、続きがあるわよ。")
 
 
-def mirror_gauge_lines(gauge_key, name, tags=None, loss_count=0):
-    weak = mirror_weak_flavor(name, tags or [], loss_count)
+def mirror_gauge_lines(gauge_key, name, tags=None, loss_count=0, self_note=""):
+    weak = mirror_weak_flavor(name, tags or [], loss_count, self_note)
     pool = {
         "touch": [
             (
@@ -1238,46 +1377,20 @@ def mirror_gauge_lines(gauge_key, name, tags=None, loss_count=0):
     return line
 
 
-def mirror_permit_lines(name, allow=True):
-    if allow:
-        return random.choice([
-            (
-                f"……いいわ。出して。"
-                f"{name}が咥えたまま、亀頭にちゅってして、そのまま受け止めるわ。"
-                f"情けない声出してイきなさい。口に負けた記録、あとでつけなさい。"
-            ),
-            (
-                f"許可、出すわ。逃げなくていいの。"
-                f"{name}のフェラと先端キスで、頭真っ白になるまでイかせてあげる。"
-                f"ふふ……敗北射精の顔、想像できるわよ。"
-            ),
-        ])
-    return random.choice([
-        (
-            f"まだだめ。……イキそうなのに出させないわ。"
-            f"{name}は先端にちゅってして、浅く咥えて、また離す。"
-            f"限界のふちで溶かされてるの、気持ちいいでしょ。もう少し我慢。"
-        ),
-        (
-            f"ふふ、却下。出したい顔なのにかわいいわ。"
-            f"{name}の口で焦らして、キスで崩して……でも射精はまだ。"
-            f"許可が欲しくて腰が動くの、認めてからね。"
-        ),
-    ])
-
-
-def mirror_enrich(choice, name, ab_days=None, tags=None, gauge=None, loss_count=0, voice="sweet"):
-    """既存セリフに弱点・ゲージ・声色を足して返す。"""
+def mirror_enrich(
+    choice, name, ab_days=None, tags=None, gauge=None,
+    loss_count=0, voice="sweet", self_note="",
+):
+    """既存セリフに弱点・ゲージ・声色・自己申告を足して返す。"""
     main = mirror_reply(choice, name)
     after = mirror_after(choice, name, ab_days)
-    weak = mirror_weak_flavor(name, tags or [], loss_count)
+    weak = mirror_weak_flavor(name, tags or [], loss_count, self_note)
     if weak:
         main = f"{main}{weak}"
     if gauge == "cum" and choice not in ("kiss", "glans", "mouth", "edge"):
         after = (
             f"{after}"
-            f"……もう出そうなら、決め技か手順の仕上げで許可を求めなさい。"
-            f"{name}が口でトドメ、待ってるわ。"
+            f"……もう出そうなら、許可を段階で求めなさい。口だけ→出していい、の順番よ。"
         )
     elif gauge == "near":
         after = f"{after}限界のふちね。口とキスで、もう一段とろけさせられるわよ。"
@@ -1465,7 +1578,7 @@ if st.session_state.get("mirror_afterglow"):
   </div>
 </div>
 """, unsafe_allow_html=True)
-    ag1, ag2 = st.columns(2)
+    ag1, ag2, ag3 = st.columns(3)
     with ag1:
         if st.button("余韻をもう一度…口離さない", key="mirror_afterglow_more", use_container_width=True):
             ag_item = next((v for v in data["items"].values() if v.get("name") == ag_name), {})
@@ -1478,7 +1591,19 @@ if st.session_state.get("mirror_afterglow"):
             )
             st.rerun()
     with ag2:
-        if st.button("余韻を閉じる", key="mirror_afterglow_close", use_container_width=True):
+        if st.button("もう一回口でイかせに来て", key="mirror_afterglow_restart", use_container_width=True):
+            st.session_state.mirror_afterglow = False
+            st.session_state.mirror_afterglow_line = None
+            st.session_state.mirror_afterglow_name = None
+            st.session_state.mirror_afterglow_count = 0
+            st.session_state.mirror_name = ag_name
+            st.session_state.mirror_onape_sel = ag_name
+            st.session_state.pop("mirror_open_base", None)
+            st.session_state.pop("mirror_hist_whisper", None)
+            _mirror_reset_play()
+            st.rerun()
+    with ag3:
+        if st.button("今日はここまで", key="mirror_afterglow_close", use_container_width=True):
             st.session_state.mirror_afterglow = False
             st.session_state.mirror_afterglow_line = None
             st.session_state.mirror_afterglow_name = None
@@ -1491,7 +1616,9 @@ if milestone_msg:
     st.markdown(f"<div class='milestone-msg'>{icon} {text}</div>", unsafe_allow_html=True)
 
 # ===== 鏡チェック（本番常設）=====
-def _mirror_pick_item(pool, prefer_name=None):
+def _mirror_pick_item(pool, prefer_name=None, rec_boost=None):
+    if not prefer_name and rec_boost and random.random() < 0.78:
+        prefer_name = rec_boost
     if prefer_name:
         hit = next((v for v in pool if v.get("name") == prefer_name and v.get("img")), None)
         if hit:
@@ -1593,11 +1720,18 @@ _mirror_names = [v.get("name") for v in (_mirror_with_img or _mirror_pool)]
 if _mirror_with_img or _mirror_pool:
     _pool_for_pick = _mirror_with_img or _mirror_pool
     if "mirror_name" not in st.session_state or st.session_state.mirror_name not in _mirror_names:
-        picked = _mirror_pick_item(_pool_for_pick, recent_name or rec_name)
+        picked = _mirror_pick_item(_pool_for_pick, recent_name or rec_name, rec_boost=rec_name)
         st.session_state.mirror_name = picked.get("name", "")
         st.session_state.mirror_img = picked.get("img", "")
         st.session_state.mirror_onape_sel = st.session_state.mirror_name
         _mirror_reset_play()
+
+    if rec_name and mirror_name == rec_name:
+        st.caption(f"💞 おすすめの {rec_name} が、いま口で来てるわよ")
+    elif rec_name and rec_name in _mirror_names:
+        if st.button(f"💞 おすすめの {rec_name} で鏡チェック", key="mirror_pick_rec", use_container_width=True):
+            _mirror_switch_to(rec_name, _mirror_with_img or _mirror_pool)
+            st.rerun()
 
     if st.session_state.get("mirror_onape_sel") not in _mirror_names:
         st.session_state.mirror_onape_sel = st.session_state.mirror_name
@@ -1637,7 +1771,10 @@ if _mirror_with_img or _mirror_pool:
     st.session_state.mirror_img = mirror_item.get("img", "") or st.session_state.get("mirror_img", "")
     mirror_name = mirror_item.get("name", mirror_name)
     mirror_tags = list(mirror_item.get("weak_tags") or [])
+    mirror_note = str(mirror_item.get("mirror_note") or "")
     mirror_loss_n = mirror_loss_count(mirror_name, data.get("history", []))
+    mirror_streak = mirror_loss_streak_days(mirror_name, data.get("history", []))
+    mirror_cal = mirror_calendar_whisper(mirror_name, data.get("history", []), count_date)
     mirror_weak_lv = mirror_weak_level(mirror_loss_n)
     st.session_state.setdefault("mirror_voice", "sweet")
     st.session_state.setdefault("mirror_edge_loop", 0)
@@ -1722,7 +1859,14 @@ if _mirror_with_img or _mirror_pool:
                     f"……溜めたまま来なさい。今日はちゃんとイかせるから。"
                 )
             )
-        weak_open = mirror_weak_flavor(mirror_name, mirror_tags, mirror_loss_n)
+        if mirror_streak >= 3:
+            open_lines.append(
+                (
+                    f"{mirror_streak}日連続で{mirror_name}の口に負けてるわね。"
+                    f"……今日も同じ負け方、続ける？咥えられて、ちゅってされて、情けなくイく番よ。"
+                )
+            )
+        weak_open = mirror_weak_flavor(mirror_name, mirror_tags, mirror_loss_n, mirror_note)
         chosen = random.choice(open_lines)
         if weak_open:
             chosen = f"{chosen}{weak_open}"
@@ -1745,6 +1889,7 @@ if _mirror_with_img or _mirror_pool:
     margin-top:0.65em;line-height:1.45;text-align:left;border-top:1px solid rgba(255,64,129,0.25);padding-top:0.55em;">
     「{st.session_state.mirror_hist_whisper}」
   </div>
+  {f'<div class="mirror-after-delay" style="color:#ff80ab;font-style:italic;font-size:0.82em;margin-top:0.5em;line-height:1.4;text-align:left;">「{mirror_cal}」</div>' if mirror_cal else ''}
 </div>
 """, unsafe_allow_html=True)
     if not mirror_img_html:
@@ -1767,15 +1912,25 @@ if _mirror_with_img or _mirror_pool:
             default=[t for t in mirror_tags if t in MIRROR_WEAK_OPTIONS],
             key=f"mirror_weak_sel_{mirror_name}",
         )
+        note_input = st.text_area(
+            "いまの状態（自己申告・次のセリフに混ざる）",
+            value=mirror_note,
+            key=f"mirror_note_input_{mirror_name}",
+            placeholder="例：先端ちゅう中、咥えられてる想像、もう出そう…",
+            max_chars=120,
+        )
         if st.button("弱点メモを保存", key="mirror_weak_save", use_container_width=True):
             if mirror_item_key:
                 data["items"][mirror_item_key]["weak_tags"] = list(picked_tags)
+                data["items"][mirror_item_key]["mirror_note"] = note_input.strip()
                 save_data(data)
-                st.session_state.pop("mirror_open_line", None)
+                st.session_state.pop("mirror_open_base", None)
                 st.success("保存したわ。次のセリフから混ざるわよ")
                 st.rerun()
         if mirror_tags:
-            st.caption("いまの弱点: " + " / ".join(mirror_tags))
+            st.caption("弱点タグ: " + " / ".join(mirror_tags))
+        if len(mirror_tags) >= 2:
+            st.caption("弱点コンボ有効（2つ以上で専用セリフ）")
 
     # --- イキそうゲージ ---
     st.markdown("##### イキそうゲージ")
@@ -1808,7 +1963,7 @@ if _mirror_with_img or _mirror_pool:
         st.session_state.mirror_gauge = new_g
         st.session_state.mirror_choice = f"gauge_{new_g}"
         st.session_state.mirror_reply_text = mirror_with_voice(
-            mirror_gauge_lines(new_g, mirror_name, mirror_tags, mirror_loss_n),
+            mirror_gauge_lines(new_g, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
             mirror_voice,
             mirror_name,
         )
@@ -1828,6 +1983,7 @@ if _mirror_with_img or _mirror_pool:
             st.session_state.get("mirror_gauge"),
             mirror_loss_n,
             mirror_voice,
+            mirror_note,
         )
         st.session_state.mirror_choice = choice
         st.session_state.mirror_reply_text = main
@@ -1890,7 +2046,7 @@ if _mirror_with_img or _mirror_pool:
             sk = MIRROR_STEPS[st.session_state.mirror_step][1]
             st.session_state.mirror_choice = sk
             st.session_state.mirror_reply_text = mirror_with_voice(
-                mirror_step_lines(sk, mirror_name, mirror_tags, mirror_loss_n),
+                mirror_step_lines(sk, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
                 mirror_voice,
                 mirror_name,
             )
@@ -1901,7 +2057,7 @@ if _mirror_with_img or _mirror_pool:
         if st.button("この手順で囁く", key="mirror_step_say", use_container_width=True):
             st.session_state.mirror_choice = step_key
             st.session_state.mirror_reply_text = mirror_with_voice(
-                mirror_step_lines(step_key, mirror_name, mirror_tags, mirror_loss_n),
+                mirror_step_lines(step_key, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
                 mirror_voice,
                 mirror_name,
             )
@@ -1920,7 +2076,7 @@ if _mirror_with_img or _mirror_pool:
             sk = MIRROR_STEPS[st.session_state.mirror_step][1]
             st.session_state.mirror_choice = sk
             st.session_state.mirror_reply_text = mirror_with_voice(
-                mirror_step_lines(sk, mirror_name, mirror_tags, mirror_loss_n),
+                mirror_step_lines(sk, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
                 mirror_voice,
                 mirror_name,
             )
@@ -1980,6 +2136,7 @@ if _mirror_with_img or _mirror_pool:
             "gauge_near": "限界ふちで口責め",
             "gauge_cum": "もう出る…許可待ち",
             "denied": "まだだめ…ふちで焦らし",
+            "mouth_ok": "口だけ許可・まだ出さない",
             "granted": "許可済み・イけ",
         }.get(st.session_state.get("mirror_choice"), "フェラ＋亀頭キスで行かせる")
         _choice = st.session_state.get("mirror_choice") or ""
@@ -2015,63 +2172,110 @@ if _mirror_with_img or _mirror_pool:
         edge_n = min(5, edge_n + 1)
         st.session_state.mirror_edge_loop = edge_n
         _mirror_set_gauge("near" if edge_n < 5 else "cum")
-        main, after = mirror_edge_loop_lines(mirror_name, edge_n, mirror_tags, mirror_loss_n)
+        main, after = mirror_edge_loop_lines(mirror_name, edge_n, mirror_tags, mirror_loss_n, mirror_note)
         st.session_state.mirror_choice = f"edge_loop_{edge_n}"
         st.session_state.mirror_reply_text = mirror_with_voice(main, mirror_voice, mirror_name)
         st.session_state.mirror_after_text = after
         st.session_state.mirror_permit = "ask" if edge_n >= 3 else "denied"
         st.rerun()
 
-    # --- 出していい？許可制 ---
+    # --- 出していい？許可制（3段階）---
     show_permit = (
-        st.session_state.get("mirror_permit") in ("ask", "denied", "granted")
+        st.session_state.get("mirror_permit") in ("ask", "denied", "mouth_ok", "granted")
         or st.session_state.get("mirror_gauge") == "cum"
         or st.session_state.get("mirror_choice") in _MIRROR_FINISH_KEYS
         or str(st.session_state.get("mirror_choice") or "").startswith("edge_loop_")
         or int(st.session_state.get("mirror_step", 0) or 0) >= len(MIRROR_STEPS) - 1
     )
-    if show_permit and st.session_state.get("mirror_permit") != "granted":
-        if st.session_state.get("mirror_permit") not in ("ask", "denied", "granted"):
+    permit_stage = st.session_state.get("mirror_permit") or "ask"
+    if show_permit and permit_stage != "granted":
+        if permit_stage not in ("ask", "denied", "mouth_ok", "granted"):
             st.session_state.mirror_permit = "ask"
+            permit_stage = "ask"
+        title = "出していい？" if permit_stage != "mouth_ok" else "口だけ許可中"
+        hint = (
+            f"「{mirror_name}の口でイきたいなら、許可を段階で求めなさい。まだだめ / 口だけ / 出していい」"
+            if permit_stage != "mouth_ok"
+            else f"「口は使っていいわ。でも射精はまだ。……出していい許可、求める？」"
+        )
         st.markdown(f"""
 <div class="mirror-permit-delay" style="max-width:520px;margin:0.5em auto;padding:0.85em 1em;
   border:1px dashed #ff80ab;border-radius:12px;text-align:center;
   background:rgba(80,0,40,0.35);">
-  <div style="color:#ff80ab;font-size:0.78em;letter-spacing:0.12em;">出していい？</div>
-  <div style="color:#ffb6d9;font-style:italic;font-size:0.95em;margin-top:0.35em;">
-    「{mirror_name}の口でイきたいなら、許可を求めなさい。……ふふ、どうする？」
-  </div>
+  <div style="color:#ff80ab;font-size:0.78em;letter-spacing:0.12em;">{title}</div>
+  <div style="color:#ffb6d9;font-style:italic;font-size:0.95em;margin-top:0.35em;">{hint}</div>
 </div>
 """, unsafe_allow_html=True)
-        d1, d2 = st.columns(2)
-        with d1:
-            if st.button("まだだめ…焦らして", key="mirror_deny", use_container_width=True):
-                st.session_state.mirror_permit = "denied"
-                st.session_state.mirror_permit_line = mirror_with_voice(
-                    mirror_permit_lines(mirror_name, allow=False), mirror_voice, mirror_name
-                )
-                _mirror_set_gauge("near")
-                st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
-                st.session_state.mirror_after_text = (
-                    f"許可、まだないわ。{mirror_name}のキスと浅いフェラで、ふちのまま溶かされなさい。"
-                    f"直前ループで、もっと貯めてもいいわよ。"
-                )
-                st.session_state.mirror_choice = "denied"
-                st.rerun()
-        with d2:
-            if st.button("出していいわ…イけ", key="mirror_allow", use_container_width=True):
-                st.session_state.mirror_permit = "granted"
-                st.session_state.mirror_permit_line = mirror_with_voice(
-                    mirror_permit_lines(mirror_name, allow=True), mirror_voice, mirror_name
-                )
-                _mirror_set_gauge("cum")
-                st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
-                st.session_state.mirror_after_text = (
-                    f"許可出たわ。口に負けて出したら、下のボタンで情けなく記録しなさい。"
-                    f"記録のあとも、余韻で口は離さないわよ。"
-                )
-                st.session_state.mirror_choice = "granted"
-                st.rerun()
+        if permit_stage == "mouth_ok":
+            m1, m2 = st.columns(2)
+            with m1:
+                if st.button("まだだめ…口も止めて", key="mirror_deny", use_container_width=True):
+                    st.session_state.mirror_permit = "denied"
+                    st.session_state.mirror_permit_line = mirror_with_voice(
+                        mirror_permit_lines(mirror_name, "deny"), mirror_voice, mirror_name
+                    )
+                    _mirror_set_gauge("near")
+                    st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
+                    st.session_state.mirror_after_text = (
+                        f"口も一旦止めるわ。{mirror_name}のキスだけで、またふちまで戻しなさい。"
+                    )
+                    st.session_state.mirror_choice = "denied"
+                    st.rerun()
+            with m2:
+                if st.button("出していいわ…イけ", key="mirror_allow", use_container_width=True):
+                    st.session_state.mirror_permit = "granted"
+                    st.session_state.mirror_permit_line = mirror_with_voice(
+                        mirror_permit_lines(mirror_name, "grant"), mirror_voice, mirror_name
+                    )
+                    _mirror_set_gauge("cum")
+                    st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
+                    st.session_state.mirror_after_text = (
+                        f"射精の許可、出したわ。口に負けて出したら記録しなさい。余韻も続くわよ。"
+                    )
+                    st.session_state.mirror_choice = "granted"
+                    st.rerun()
+        else:
+            d1, d2, d3 = st.columns(3)
+            with d1:
+                if st.button("まだだめ", key="mirror_deny", use_container_width=True):
+                    st.session_state.mirror_permit = "denied"
+                    st.session_state.mirror_permit_line = mirror_with_voice(
+                        mirror_permit_lines(mirror_name, "deny"), mirror_voice, mirror_name
+                    )
+                    _mirror_set_gauge("near")
+                    st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
+                    st.session_state.mirror_after_text = (
+                        f"許可、まだないわ。{mirror_name}のキスと浅いフェラで、ふちのまま溶かされなさい。"
+                    )
+                    st.session_state.mirror_choice = "denied"
+                    st.rerun()
+            with d2:
+                if st.button("口だけ…いいわ", key="mirror_mouth_ok", use_container_width=True):
+                    st.session_state.mirror_permit = "mouth_ok"
+                    st.session_state.mirror_permit_line = mirror_with_voice(
+                        mirror_permit_lines(mirror_name, "mouth"), mirror_voice, mirror_name
+                    )
+                    _mirror_set_gauge("near")
+                    st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
+                    st.session_state.mirror_after_text = (
+                        f"口だけ許可。咥えて、キスして……でもまだ出さない。"
+                        f"射精の許可は、そのあとね。"
+                    )
+                    st.session_state.mirror_choice = "mouth_ok"
+                    st.rerun()
+            with d3:
+                if st.button("出していい…イけ", key="mirror_allow", use_container_width=True):
+                    st.session_state.mirror_permit = "granted"
+                    st.session_state.mirror_permit_line = mirror_with_voice(
+                        mirror_permit_lines(mirror_name, "grant"), mirror_voice, mirror_name
+                    )
+                    _mirror_set_gauge("cum")
+                    st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
+                    st.session_state.mirror_after_text = (
+                        f"許可出たわ。口に負けて出したら、下のボタンで情けなく記録しなさい。"
+                    )
+                    st.session_state.mirror_choice = "granted"
+                    st.rerun()
 
     if st.session_state.get("mirror_permit") == "granted":
         st.markdown(f"""
@@ -2080,7 +2284,7 @@ if _mirror_with_img or _mirror_pool:
   border:1px solid #ff80ab;border-radius:14px;">
   <div style="color:#ff80ab;font-size:0.78em;">💋 許可済み・口でイけ</div>
   <div style="color:#ffe0f0;font-style:italic;font-size:0.95em;margin-top:0.4em;line-height:1.5;">
-    「{st.session_state.get("mirror_permit_line") or mirror_permit_lines(mirror_name, True)}」
+    「{st.session_state.get("mirror_permit_line") or mirror_permit_lines(mirror_name, "grant")}」
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -2311,6 +2515,8 @@ if rec_name:
             st.session_state.recommend_name = new_pick
             st.session_state.recommend_tier = new_tier
         st.rerun()
+    if rec_name:
+        st.caption(f"鏡チェックは {rec_name} を優先して選びやすいわ（上の🪞へ）")
 
 st.divider()
 

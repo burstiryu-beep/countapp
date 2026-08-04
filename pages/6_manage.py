@@ -94,15 +94,23 @@ if item_names:
     sel_weak = st.selectbox("対象のオナペ", sorted(item_names), key="weak_sel")
     item_key_w = next((k for k, v in data["items"].items() if v["name"] == sel_weak), None)
     cur_tags = list((data["items"].get(item_key_w) or {}).get("weak_tags") or [])
+    cur_note = str((data["items"].get(item_key_w) or {}).get("mirror_note") or "")
     new_tags = st.multiselect(
         "弱点タグ",
         _WEAK_OPTS,
         default=[t for t in cur_tags if t in _WEAK_OPTS],
         key="weak_tags_sel",
     )
+    new_note = st.text_area(
+        "自己申告メモ（鏡チェックのセリフに混ざる）",
+        value=cur_note,
+        key="weak_note_sel",
+        max_chars=120,
+    )
     if st.button("弱点メモを保存", key="weak_save_btn"):
         if item_key_w:
             data["items"][item_key_w]["weak_tags"] = list(new_tags)
+            data["items"][item_key_w]["mirror_note"] = new_note.strip()
             _save_and_notify(data, f"✅ {sel_weak} の弱点メモを保存しました")
 else:
     st.caption("登録されている弱点がありません")

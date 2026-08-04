@@ -28,6 +28,8 @@ def ensure_structure(data):
             v["tab"] = "all"
         if not isinstance(v.get("weak_tags"), list):
             v["weak_tags"] = []
+        if not isinstance(v.get("mirror_note"), str):
+            v["mirror_note"] = ""
     return data
 
 
