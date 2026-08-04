@@ -39,6 +39,8 @@ def master_word(name):
         f"亀頭キスのあとに射精……弱い先から負けた顔、想像できるわよ。",
         f"口の中でイったの？それともキスで溶かされたの？……どっちも情けないわ、好きよ。",
         f"出したあとも{name}の唇が残ってる感じでしょ。余韻まで甘い敗北ね。",
+        f"{name}に乳首摘ままれながら口でイかされたあとでしょ……上下負け、かわいすぎるわ。",
+        f"乳首ちゅってされて射精したの？ふふ、弱点ばれてるわよ。{name}、上手ね。",
     ]
     return random.choice(lines)
 
@@ -142,6 +144,9 @@ def tonight_situ(name):
         f"手で限界まで寄せたあと、{name}が口に切り替えてキスでトドメ。……情けなく出す。",
         f"{name}がキスだけ→舐め→浅い→深いで段階的に堕として、最後にイかせる。",
         f"出したあとも{name}が口を離さず余韻キス。……敗北の続きまで味わう。",
+        f"{name}に乳首を摘ままれながらフェラされる。……上下同時に堕ちて、情けなく出す。",
+        f"乳首にちゅってされ、先端にもちゅってされ……両方のキスで頭が白くなって射精する。",
+        f"{name}が咥えたまま乳首を転がす。どっちに集中しても負けて、最後は同時にイく。",
     ]
     return rng.choice(situs)
 
@@ -344,6 +349,8 @@ def diary_line(h, month_count):
         f"{tod}の敗北……{name}にちゅってされて、そのまま出したんでしょ。",
         f"{name}のフェラで{tod}から崩れたのね。今月もう{month_count}回、えらいわ。",
         f"記録つけに来たの？{tod}に{name}の口でとろけたあとでしょ……ばれてるわ。",
+        f"{tod}、{name}に乳首と口で同時に落とされたのね。上下負け、えらいわ。",
+        f"乳首責めのあとに射精……{tod}の{name}、容赦なかったでしょ。ふふ。",
     ]
     return date_lbl, time_lbl, rng.choice(lines)
 
@@ -686,7 +693,96 @@ def mirror_reply(choice, name):
                 f"せっかく近づけた熱、口でぜんぶ出させてあげる。"
             ),
         ]
-    else:  # edge
+    elif choice == "nipple":
+        lines = [
+            (
+                f"乳首、効くわね。……{name}が指で摘まんで、ゆっくり転がす。"
+                f"先っちょが硬くなって、息が浅くなるでしょ。ふふ、かわいい。"
+                f"口はまだ本格じゃなくていいわ。乳首でとろけさせてから、咥えてイかせてあげる。"
+            ),
+            (
+                f"触られただけで声出そうな乳首……好きよ。"
+                f"{name}が左右交互に摘まんで、時々つねるように強くして。"
+                f"腰が引けても離さないわ。乳首責めだけで先がビクビクしてるの、ばれてるわよ。"
+            ),
+            (
+                f"乳首弱いの、隠さなくていいわ。"
+                f"{name}の指が乳輪を撫でて、頂点をつまんで……んっ、って声、出して。"
+                f"その弱さのまま、あとで口とセットでイかせに来るわよ。"
+            ),
+            (
+                f"ふふ、乳首だけでこんなに正直になるの。"
+                f"摘ままれて、引っ張られて、離された瞬間に熱が残る……その感覚、味わいなさい。"
+                f"{name}が乳首攻めで頭を溶かしながら、先端もキスしたがるまで待っててあげる。"
+            ),
+            (
+                f"乳首、もう立ってるわね。……触れてないのに。"
+                f"{name}が想像させただけで敏感になってるの、最高よ。"
+                f"実際に摘ままれたら、情けなくイきそうになるでしょ。いいわ、責めてあげる。"
+            ),
+        ]
+    elif choice == "nipple_lick":
+        lines = [
+            (
+                f"乳首、舐めてあげるわ。……{name}の舌が先端をねっとり一周。"
+                f"ちゅっ、吸って、また舐める。唾液でぬるぬるになった乳首、感度最悪でしょ。"
+                f"口で下も欲しがってるわね。両方、あげてもいいわよ。"
+            ),
+            (
+                f"乳首にちゅってするたび、腰が砕けるの。ばれてるわ。"
+                f"{name}が吸いついて、舌先でつ突いて、離してはまたキス。"
+                f"乳首舐めだけでイきそうな顔……ふふ、好き。先も熱くなってるわよ。"
+            ),
+            (
+                f"ねっとり、ねっとり。……乳首を舌でいじめられるの、気持ちいい？"
+                f"{name}は急がないわ。片側を溶かしてから、もう片側。"
+                f"そのあいだ先端は放置。……疼いて仕方ないでしょ。かわいい。"
+            ),
+            (
+                f"吸われる音、聞こえてるわよ。乳首、ちゅうちゅうされてるの。"
+                f"{name}の唇が乳の先端をふさいで、甘く、執拗に。"
+                f"声、出していいわ。乳首舐めに負けた声、いちばんエロいわ。"
+            ),
+            (
+                f"舌で溶かされて、キスでトドメ。……乳首責め、本気よ。"
+                f"{name}が濡らした乳首を冷たい空気に晒して、また温かい口で包む。"
+                f"落差でビクッてするたびに、下も反応してるわね。イかせに来てるの。"
+            ),
+        ]
+    elif choice == "nipple_mouth":
+        lines = [
+            (
+                f"同時よ。……{name}が咥えながら、乳首も摘まむわ。"
+                f"口の熱と、指の痛みと甘さ。上下から責められたら、思考追いつかないでしょ。"
+                f"ふふ、逃げられないわ。乳首とフェラで、情けなくイかせてあげる。"
+            ),
+            (
+                f"奥まで咥えられたまま、乳首がちゅってされる。……最悪のコンボね。"
+                f"{name}はリズムを口で作りながら、指で乳首を転がす。"
+                f"どっちに集中しても負けるわよ。両方で頭真っ白にしてあげる。"
+            ),
+            (
+                f"亀頭にキス、乳首にキス。……両方ちゅっちゅよ。"
+                f"{name}が先端を甘くふさいで、もう片方の手と唇で乳首を溶かす。"
+                f"同時責めが好きなんでしょ？認めなさい。そのままイくまで離さないわ。"
+            ),
+            (
+                f"浅いフェラのあいだに乳首を強く摘まむ。……腰、跳ねたわね。"
+                f"{name}はそれを見て、もっと浅く、もっと摘まむ。"
+                f"口と乳首、セットの負け方。……今日の決め技よ。出るまでよ。"
+            ),
+            (
+                f"咥えられてるのに乳首も責められるの、いちばんとろけるでしょ。"
+                f"{name}の喉の奥と、指の締めつけ。両方の快感で崩れていいわ。"
+                f"弱い声出して。同時にイかされる顔、見せなさい。"
+            ),
+            (
+                f"口で先を溶かして、乳首で理性を折る。……二刀流よ。"
+                f"ちゅっ（先端）、つねっ（乳首）、ふかふか（奥）。順番バラバラで思考を壊すわ。"
+                f"{name}に上下支配されて、情けなく射精しなさい。"
+            ),
+        ]
+    elif choice == "edge":
         lines = [
             (
                 f"イキそう？いいわ。……じゃあ行かせに来てあげる。"
@@ -712,6 +808,18 @@ def mirror_reply(choice, name):
                 f"限界のサイン、出てるわよ。かわいい。"
                 f"{name}のフェラと亀頭キスで仕上げるから、腰の力抜いて。"
                 f"ちゅってされて咥えられて……情けない顔のまま、イっていいわ。"
+            ),
+            (
+                f"イキそうなのに乳首まで摘ままれるの……ふふ、終わってるわね。"
+                f"{name}が口で押し切りながら、乳首を強くしてトドメ。"
+                f"上下同時の限界、情けなくイきなさい。"
+            ),
+        ]
+    else:
+        lines = [
+            (
+                f"{name}が口と乳首で来てるわよ。……どっちが先に落ちる？"
+                f"咥えられて、摘ままれて、キスされて。弱さ、全部出して。"
             ),
         ]
     return random.choice(lines)
@@ -868,6 +976,58 @@ def mirror_after(choice, name, ab_days=None):
                 f"しごきの続きがフェラになる瞬間……ふふ、好きよ。"
             ),
         ]
+    elif choice == "nipple":
+        extras = [
+            (
+                f"乳首だけでこんなに弱くなるの、かわいいわ。"
+                f"{name}は指を離さない。摘まんで、転がして、時々痛くして。"
+                f"先が疼いても、まだ口は本格じゃない……焦らされてイきなさい、その寸前で。"
+            ),
+            (
+                f"乳首責めの余韻、残ってるでしょ。硬くなった先端、触れただけでビクッてするわよ。"
+                f"次は口も足すから。……{name}の同時責め、覚悟して。"
+            ),
+            (
+                f"摘ままれた乳首が熱い。……その熱、下にも降りてるわね。"
+                f"{name}が乳首で溶かしたあとにフェラしたら、即イきよ。ふふ。"
+            ),
+        ]
+    elif choice == "nipple_lick":
+        extras = [
+            (
+                f"舐められた乳首、冷たい空気に当たると余計に感じるわよ。"
+                f"{name}がまた口を寄せて、ちゅっ。……逃げられないわ。"
+                f"乳首舐めのあとのフェラ、想像して疼いていなさい。"
+            ),
+            (
+                f"舌でいじめられた感触、残ってるでしょ。"
+                f"唾液で光ってる乳首を、{name}がまた吸う。声、我慢しなくていいわ。"
+            ),
+            (
+                f"片側溶かしたら、反対も。……公平にいじめられるわね。"
+                f"{name}の乳首舐め、丁寧すぎて落ちるタイプでしょ。認めなさい。"
+            ),
+        ]
+    elif choice == "nipple_mouth":
+        extras = [
+            (
+                f"同時責め、受け止めきれないでしょ。いいわ、それで。"
+                f"{name}が咥えたまま乳首を摘まむたびに、腰が勝手に動く。"
+                f"上下でイかされるの、今日の負け方よ。出していいわよ、そのうち。"
+            ),
+            (
+                f"口の快感と乳首の快感、どっちが先に落とすか競争よ。"
+                f"ふふ……{name}は両方勝つつもり。あなたはとろけるだけでいいの。"
+            ),
+            (
+                f"咥えられながら乳首ちゅってされるの、頭真っ白でしょ。"
+                f"思考、もう追いついてないわね。……情けない顔のままイきなさい。"
+            ),
+            (
+                f"同時に崩されたあとの体、いちばん正直よ。"
+                f"{name}は離さない。口も指も残したまま、射精まで導くわ。"
+            ),
+        ]
     else:
         extras = [
             (
@@ -890,6 +1050,10 @@ def mirror_after(choice, name, ab_days=None):
                 f"{name}は逃さないわ。先端キスで崩して、フェラで仕上げるだけ。"
                 f"今日の負け方、口で決めてあげる。"
             ),
+            (
+                f"限界なら乳首も摘ませるわ。……口で受け止めて、指でトドメ。"
+                f"{name}の同時仕上げ、逃げられないわよ。イって。"
+            ),
         ]
     if ab_days and ab_days >= 2:
         extras.append(
@@ -899,7 +1063,7 @@ def mirror_after(choice, name, ab_days=None):
                 f"溜めたまま負けなさい。……ふふ、行かせてあげる。"
             )
         )
-        if choice in ("kiss", "glans", "mouth", "edge"):
+        if choice in ("kiss", "glans", "mouth", "edge", "nipple_mouth", "nipple", "nipple_lick"):
             extras.append(
                 (
                     f"{ab_days}日溜めた先端にキスして咥えるの……即イきね。"
@@ -907,6 +1071,13 @@ def mirror_after(choice, name, ab_days=None):
                     f"我慢できた日数ぶん、情けなくイかせてあげるわよ。"
                 )
             )
+            if choice.startswith("nipple"):
+                extras.append(
+                    (
+                        f"{ab_days}日我慢した乳首も先端も、両方敏感すぎるわよ。"
+                        f"{name}が摘まんで咥えたら……秒で落ちるでしょ。ふふ、イかせてあげる。"
+                    )
+                )
         if ab_days >= 5:
             extras.append(
                 (
@@ -939,6 +1110,10 @@ MIRROR_WEAK_OPTIONS = [
     "ちゅっ音に弱い",
     "先端なめが効く",
     "ゆっくりされると落ちる",
+    "乳首弱い",
+    "乳首舐めが効く",
+    "乳首摘まみで落ちる",
+    "乳首と口の同時責めが好き",
 ]
 
 MIRROR_STEPS = [
@@ -997,6 +1172,27 @@ MIRROR_WEAK_COMBOS = {
     ),
     frozenset({"先端なめが効く", "奥フェラが好き"}): (
         "……先をねっとり舐めてから一気に奥。{name}、落差でイかせるわよ。"
+    ),
+    frozenset({"乳首弱い", "亀頭キス弱い"}): (
+        "……乳首と先端、同時にキスされるの最悪でしょ。{name}、上下から溶かしてあげる。"
+    ),
+    frozenset({"乳首弱い", "奥フェラが好き"}): (
+        "……深く咥えられながら乳首摘ままれるコンボよ。{name}、逃げ場ないわ。"
+    ),
+    frozenset({"乳首舐めが効く", "ちゅっ音に弱い"}): (
+        "……乳首にちゅっ、ちゅっ。音だけで腰が砕けるんでしょ。{name}、知っててやるわ。"
+    ),
+    frozenset({"乳首摘まみで落ちる", "浅い咥えで溶ける"}): (
+        "……浅く咥えられながら乳首摘ままれるの、ダブルで落ちるわね。{name}、得意技よ。"
+    ),
+    frozenset({"乳首と口の同時責めが好き", "乳首弱い"}): (
+        "……同時責め希望ね。口で咥えて、指で乳首。……{name}、その弱さ全部使うわ。"
+    ),
+    frozenset({"乳首舐めが効く", "亀頭キス弱い"}): (
+        "……乳首舐めて、先端ちゅって。キスのたびに両方熱くなるわよ。"
+    ),
+    frozenset({"乳首摘まみで落ちる", "ゆっくりされると落ちる"}): (
+        "……ゆっくり摘まんで、ゆっくり咥える。急がない同時責め、いちばんとろけるでしょ。"
     ),
 }
 
@@ -1057,6 +1253,8 @@ def mirror_self_note_flavor(name, note):
         hooks.append(f"限界の申告、受け取ったわ。{name}の口で、その寸前まで連れてく。")
     if any(k in note for k in ("ゆっくり", "ねっとり", "甘い")):
         hooks.append(f"急がないで、ねっとり。……申告どおり{name}が溶かしてあげる。")
+    if any(k in note for k in ("乳首", "ちく", "ニップ")):
+        hooks.append(f"乳首、効くわね。……申告どおり{name}が摘まんで、舐めて、同時に口で責めるわ。")
     if hooks:
         return "……" + random.choice(hooks) + f"（メモ：「{note}」）"
     return f"……あなたの申告「{note}」、{name}が全部口で叶えてあげるわよ。"
@@ -1177,6 +1375,10 @@ def mirror_weak_flavor(name, tags, loss_count=0, self_note=""):
         "ちゅっ音に弱い": f"……ちゅっ、って音だけでもう腰が引けるんでしょ。{name}、知ってるわ。",
         "先端なめが効く": f"……先端をねっとり舐められるの、{name}相手だと特に弱いものね。",
         "ゆっくりされると落ちる": f"……ゆっくりされるほど落ちるんでしょ。{name}、丁寧にイかせてあげる。",
+        "乳首弱い": f"……乳首、触られただけで声出そうでしょ。{name}、そこも攻めるわよ。",
+        "乳首舐めが効く": f"……乳首を舌でねっとり……想像しただけで先が熱くなってない？{name}、やるわよ。",
+        "乳首摘まみで落ちる": f"……摘ままれた瞬間に腰が落ちるタイプね。{name}、指、離さないわ。",
+        "乳首と口の同時責めが好き": f"……咥えられながら乳首も、でしょ。{name}、同時にいかせてあげる。",
     }
     mid = {
         "亀頭キス弱い": f"……{loss_count}回分の記憶ね。{name}の亀頭キスで落ちた回数、体が覚えてるわ。またそこよ。",
@@ -1185,6 +1387,10 @@ def mirror_weak_flavor(name, tags, loss_count=0, self_note=""):
         "ちゅっ音に弱い": f"……ちゅっ、の音で落ちるの、何回目？累計{loss_count}回の口負け、音にも弱いんでしょ。",
         "先端なめが効く": f"……先端なめに弱いの、{name}相手だと特に。{loss_count}回分、舌で思い出しなさい。",
         "ゆっくりされると落ちる": f"……ゆっくりで落ちる体質、{loss_count}回かけて証明済みね。{name}、丁寧に崩すわ。",
+        "乳首弱い": f"……乳首弱さ、{loss_count}回の敗北で育ってるわ。{name}が摘まむたびに、また落ちるのね。",
+        "乳首舐めが効く": f"……乳首舐めに弱いの、もう{loss_count}回分バレてるわ。{name}の舌、また来るわよ。",
+        "乳首摘まみで落ちる": f"……摘まみで落ちる回数、体が覚えてるでしょ。{loss_count}回の弱さ、{name}が掘るわ。",
+        "乳首と口の同時責めが好き": f"……同時責め、{loss_count}回分好きなんでしょ。口と乳首、{name}がセットで来るわ。",
     }
     hard = {
         "亀頭キス弱い": (
@@ -1210,6 +1416,22 @@ def mirror_weak_flavor(name, tags, loss_count=0, self_note=""):
         "ゆっくりされると落ちる": (
             f"……ゆっくりされるほど落ちる。{loss_count}回の実験結果、完璧よ。"
             f"{name}が急がないほど、あなたは情けなくイくの。"
+        ),
+        "乳首弱い": (
+            f"……乳首、{loss_count}回かけて完成した弱点ね。"
+            f"{name}が触れただけでイキそうになるの、もう逃げられないわ。"
+        ),
+        "乳首舐めが効く": (
+            f"……乳首舐め、{loss_count}回分の条件反射よ。"
+            f"{name}の舌が触れた瞬間から、腰が勝手にとろけるわ。"
+        ),
+        "乳首摘まみで落ちる": (
+            f"……摘ままれたら終わり。{loss_count}回の実験で証明済み。"
+            f"{name}の指が強くなった瞬間、情けなくイくの。分かってるわね。"
+        ),
+        "乳首と口の同時責めが好き": (
+            f"……同時責め中毒ね。{loss_count}回も口と乳首で堕ちてるわ。"
+            f"{name}が咥えて摘まむだけで、もう負け顔確定よ。"
         ),
     }
     table = soft if lv == 0 else mid if lv == 1 else hard
@@ -1306,6 +1528,11 @@ def mirror_edge_loop_lines(name, loop_n, tags=None, loss_count=0, self_note=""):
             f"ふふ、もう許可求めていいわよ。でも、まだだめって言うかも。"
         ),
     }
+    if any(str(t).startswith("乳首") for t in (tags or [])):
+        pool[min(n, 5)] = (
+            pool[n]
+            + f" ……ついでに乳首も摘まんでるわよ。口でふち、指で乳首。上下ふち、最悪でしょ。"
+        )
     line = pool[n]
     if weak:
         line = f"{line}{weak}"
@@ -1349,7 +1576,22 @@ def mirror_afterglow_lines(name, tags=None, loss_count=0):
             f"口の中に出したのに、まだ離れたくない顔してるわね。"
             f"{name}が唇で拭うようにキスして、残った熱をなめてる。……もう一回、いけそう？"
         ),
+        (
+            f"出したあとも乳首、まだ摘まんでるわよ。……びくっ。"
+            f"余韻の敏感さに{name}の指。口も浅く残してる。上下の敗北、まだ続いてるわ。"
+        ),
+        (
+            f"射精直後の乳首ちゅっ……最悪でしょ。"
+            f"{name}は先端も乳首も離さない。とろけたあとの弱さ、好きよ。"
+        ),
     ]
+    if any(str(t).startswith("乳首") for t in (tags or [])):
+        lines.append(
+            (
+                f"乳首弱点、出したあとも狙うわ。……{name}が軽く摘まんで、ちゅってする。"
+                f"余韻なのにまた疼くの、かわいい甘マゾね。"
+            )
+        )
     line = random.choice(lines)
     if weak:
         line = f"{line}{weak}"
@@ -1483,6 +1725,10 @@ def mirror_gauge_lines(gauge_key, name, tags=None, loss_count=0, self_note=""):
                 f"ふち……来たわね。出したい顔、かわいい。"
                 f"{name}は咥えては離して、キスで止める。限界のまま溶かされなさい。"
             ),
+            (
+                f"限界近いのに乳首まで……ふふ、弱い。"
+                f"{name}が浅く咥えながら乳首を摘まむ。ふちのまま上下で溶かされなさい。"
+            ),
         ],
         "cum": [
             (
@@ -1493,6 +1739,10 @@ def mirror_gauge_lines(gauge_key, name, tags=None, loss_count=0, self_note=""):
             (
                 f"射精直前ね。……震えてる先端に{name}が唇を寄せてる想像、しなさい。"
                 f"ちゅってして咥えて……出していい？って聞くまで、ふちで待ってて。"
+            ),
+            (
+                f"もう出る顔ね。乳首も硬くなってるわよ。"
+                f"{name}が咥えながら乳首を摘まんだら、許可なしでもイきそう……でもまだよ。"
             ),
         ],
     }
@@ -1512,13 +1762,13 @@ def mirror_enrich(
     weak = mirror_weak_flavor(name, tags or [], loss_count, self_note)
     if weak:
         main = f"{main}{weak}"
-    if gauge == "cum" and choice not in ("kiss", "glans", "mouth", "edge"):
+    if gauge == "cum" and choice not in ("kiss", "glans", "mouth", "edge", "nipple", "nipple_lick", "nipple_mouth"):
         after = (
             f"{after}"
             f"……もう出そうなら、許可を段階で求めなさい。口だけ→出していい、の順番よ。"
         )
     elif gauge == "near":
-        after = f"{after}限界のふちね。口とキスで、もう一段とろけさせられるわよ。"
+        after = f"{after}限界のふちね。口とキスと乳首で、もう一段とろけさせられるわよ。"
     main = mirror_with_voice(main, voice, name)
     return main, after
 
@@ -1759,10 +2009,12 @@ _MIRROR_FINISHERS = [
     ("kiss", "フェラ＋亀頭キスでイかせて"),
     ("glans", "亀頭キスで溶かして"),
     ("mouth", "口で堕として"),
+    ("nipple_mouth", "乳首＋口の同時責めでイかせて"),
+    ("nipple", "乳首責めで溶かして"),
 ]
 _MIRROR_FINISHER_LABELS = [label for _, label in _MIRROR_FINISHERS]
 _MIRROR_FINISHER_KEY = {label: key for key, label in _MIRROR_FINISHERS}
-_MIRROR_FINISH_KEYS = {"kiss", "glans", "mouth", "edge", "finish"}
+_MIRROR_FINISH_KEYS = {"kiss", "glans", "mouth", "edge", "finish", "nipple", "nipple_lick", "nipple_mouth"}
 
 
 def _mirror_set_gauge(key):
@@ -1867,7 +2119,7 @@ if _mirror_with_img or _mirror_pool:
     st.markdown("<h3 style='text-align:center'>🪞 鏡チェック</h3>", unsafe_allow_html=True)
     st.markdown(
         "<div style='text-align:center;color:#ffb6d9;font-style:italic;font-size:0.9em;"
-        "margin-bottom:0.6em;'>フェラと亀頭キスで、イかせに来てるわよ</div>",
+        "margin-bottom:0.6em;'>フェラと亀頭キスと……乳首も。イかせに来てるわよ❤️</div>",
         unsafe_allow_html=True,
     )
 
@@ -1984,6 +2236,21 @@ if _mirror_with_img or _mirror_pool:
                     f"……溜めたまま来なさい。今日はちゃんとイかせるから。"
                 )
             )
+        if any(t.startswith("乳首") for t in mirror_tags):
+            open_lines.append(
+                (
+                    f"……乳首も弱いの、覚えてるわよ。"
+                    f"{mirror_name}が口で来ながら、乳首も摘まんで舐める。"
+                    f"上下同時に堕とすつもり。いまの弱さ、正直に言いなさい。"
+                )
+            )
+            open_lines.append(
+                (
+                    f"フェラだけじゃないわ。乳首責め、効くんでしょ❤️"
+                    f"{mirror_name}が先端にちゅってして、乳首もちゅってする……想像しなさい。"
+                    f"同時にイかせに来てるの。状態、報告して。"
+                )
+            )
         if mirror_streak >= 3:
             open_lines.append(
                 (
@@ -2004,7 +2271,7 @@ if _mirror_with_img or _mirror_pool:
 
     st.markdown(f"""
 <div class="tease-wall" style="max-width:520px;margin:0 auto 0.8em;">
-  <div class="tease-badge">💋 {mirror_name} が口で来るわよ</div>
+  <div class="tease-badge">💋 {mirror_name} が口と乳首で来るわよ❤️</div>
   {mirror_img_html if mirror_img_html else ''}
   <div class="mirror-chu" style="margin-top:0.55em;font-size:0.85em;">ちゅっ……</div>
   <div class="tease-line mirror-line-main" style="margin-top:0.35em;line-height:1.55;text-align:left;">
@@ -2032,7 +2299,7 @@ if _mirror_with_img or _mirror_pool:
     # --- 弱点メモ ---
     with st.expander("弱点メモ（セリフに混ざるよ）", expanded=False):
         picked_tags = st.multiselect(
-            f"{mirror_name}の口プレイ弱点",
+            f"{mirror_name}の口プレイ／乳首弱点",
             MIRROR_WEAK_OPTIONS,
             default=[t for t in mirror_tags if t in MIRROR_WEAK_OPTIONS],
             key=f"mirror_weak_sel_{mirror_name}",
@@ -2041,7 +2308,7 @@ if _mirror_with_img or _mirror_pool:
             "いまの状態（自己申告・次のセリフに混ざる）",
             value=mirror_note,
             key=f"mirror_note_input_{mirror_name}",
-            placeholder="例：先端ちゅう中、咥えられてる想像、もう出そう…",
+            placeholder="例：乳首摘ままれてる、先端ちゅう中、もう出そう…",
             max_chars=120,
         )
         if st.button("弱点メモを保存", key="mirror_weak_save", use_container_width=True):
@@ -2123,7 +2390,7 @@ if _mirror_with_img or _mirror_pool:
 
     st.markdown(
         "<div style='text-align:center;color:#ff80ab;font-size:0.78em;margin:0.4em 0 0.6em;'>"
-        "口とキスでイかせる前提よ。いまの弱さを言いなさい</div>",
+        "口とキスと……乳首も、よ。いまの弱さを言いなさい❤️</div>",
         unsafe_allow_html=True,
     )
 
@@ -2151,6 +2418,19 @@ if _mirror_with_img or _mirror_pool:
         if st.button("イキそう…口でイカせて", key="mirror_edge", use_container_width=True):
             _mirror_set_gauge("cum")
             _mirror_pick("edge")
+
+    st.caption("乳首責め❤️")
+    n1, n2, n3 = st.columns(3)
+    with n1:
+        if st.button("乳首…摘まんで", key="mirror_nipple", use_container_width=True):
+            _mirror_pick("nipple")
+    with n2:
+        if st.button("乳首舐めてちゅって", key="mirror_nipple_lick", use_container_width=True):
+            _mirror_pick("nipple_lick")
+    with n3:
+        if st.button("乳首＋口で同時に…", key="mirror_nipple_mouth", use_container_width=True):
+            _mirror_set_gauge("near")
+            _mirror_pick("nipple_mouth")
 
     # --- 口プレイ手順モード ---
     st.markdown("##### 口プレイ手順")
@@ -2238,12 +2518,12 @@ if _mirror_with_img or _mirror_pool:
                 st.rerun()
     with c_more:
         if st.button("💋 もっと口でイかせに来る", key="mirror_more", use_container_width=True):
-            finishers = ("kiss", "glans", "mouth")
+            finishers = ("kiss", "glans", "mouth", "nipple_mouth", "nipple")
             choice = st.session_state.get("mirror_choice") or "kiss"
             choice = {"touch": "want"}.get(choice, choice)
-            if choice not in finishers and random.random() < 0.6:
+            if choice not in finishers and random.random() < 0.55:
                 choice = random.choice(finishers)
-            elif choice not in finishers + ("edge",) and random.random() < 0.35:
+            elif choice not in finishers + ("edge", "nipple_lick") and random.random() < 0.35:
                 choice = "edge"
             elif choice in finishers and random.random() < 0.4:
                 choice = random.choice(finishers)
@@ -2255,6 +2535,9 @@ if _mirror_with_img or _mirror_pool:
             "kiss": "フェラ＋亀頭キスで行かせる",
             "glans": "亀頭キスで溶かす",
             "mouth": "口で堕としてイかせる",
+            "nipple": "乳首責めで溶かす",
+            "nipple_lick": "乳首舐め・ちゅっ責め",
+            "nipple_mouth": "乳首＋口の同時責め",
             "kiss_only": "まずは亀頭キスだけ",
             "lick": "先端をねっとり舐める",
             "shallow": "浅く咥えて溶かす",
