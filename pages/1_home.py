@@ -1641,9 +1641,9 @@ _MIRROR_FINISH_KEYS = {"kiss", "glans", "mouth", "edge", "finish"}
 
 
 def _mirror_set_gauge(key):
+    """論理ゲージを更新。radio キーは描画前に同期する（描画後の書込は Streamlit が拒否する）。"""
     st.session_state.mirror_gauge = key
-    lab = next((lab for k, lab, _ in MIRROR_GAUGE if k == key), MIRROR_GAUGE[0][1])
-    st.session_state.mirror_gauge_radio = lab
+    st.session_state._mirror_gauge_sync = True
 
 
 def _mirror_reset_play():
@@ -1942,10 +1942,13 @@ if _mirror_with_img or _mirror_pool:
         g_idx = g_keys.index(cur_g)
     except ValueError:
         g_idx = 0
+        cur_g = g_keys[0]
+    # 初回 or プログラム更新時のみ、radio を描画前に合わせる（描画後の書込は不可）
+    if st.session_state.pop("_mirror_gauge_sync", False) or "mirror_gauge_radio" not in st.session_state:
+        st.session_state.mirror_gauge_radio = g_labels[g_idx]
     g_choice = st.radio(
         "いまどのくらい？",
         g_labels,
-        index=g_idx,
         horizontal=True,
         key="mirror_gauge_radio",
         label_visibility="collapsed",
