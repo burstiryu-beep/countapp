@@ -1,4 +1,4 @@
-"""オナサポモード：カウントと別枠の段階誘導セッション。"""
+"""オナサポモード：ちんぽに効く敗北誘導セッション。"""
 from datetime import datetime, timedelta, timezone
 
 import streamlit as st
@@ -17,10 +17,14 @@ from onasapo import (
     prev_phase,
     onasapo_line,
     onasapo_after,
+    onasapo_self_line,
+    onasapo_react_options,
     phase_label,
     render_phase_dots_html,
+    render_tension_html,
 )
 from ero_flavor import MIRROR_HEAT
+from self_voice import render_self_voice_html
 
 JST = timezone(timedelta(hours=9))
 
@@ -31,7 +35,7 @@ now_jst = datetime.now(JST)
 st.markdown("<h2 style='text-align:center'>🎙 オナサポモード</h2>", unsafe_allow_html=True)
 st.markdown(
     "<p style='text-align:center;color:#ff80ab;margin-bottom:0.8em;'>"
-    "カウントと別枠よ。……お姉さんが手の動きまで導いて、情けなくイかせてあげる❤️"
+    "ちんぽに効く❤️　手が動くたび口とキスと乳首の想像で、情けなく敗北射精まで導くわ"
     "</p>",
     unsafe_allow_html=True,
 )
@@ -59,11 +63,11 @@ with c1:
 with c2:
     style_labs = [lab for _, lab in ONASAPO_STYLES]
     style_keys = [k for k, _ in ONASAPO_STYLES]
-    cur_style = st.session_state.get("sapo_style", "dual")
+    cur_style = st.session_state.get("sapo_style", "mouth")
     try:
         s_idx = style_keys.index(cur_style)
     except ValueError:
-        s_idx = 2
+        s_idx = 0
     style_lab = st.selectbox("責めタイプ", style_labs, index=s_idx, key="sapo_style_sel")
     sapo_style = style_keys[style_labs.index(style_lab)]
 
@@ -81,11 +85,11 @@ with p1:
 with p2:
     heat_labs = [lab for _, lab in MIRROR_HEAT]
     heat_keys = [k for k, _ in MIRROR_HEAT]
-    cur_heat = st.session_state.get("sapo_heat", "thick")
+    cur_heat = st.session_state.get("sapo_heat", "filthy")
     try:
         h_idx = heat_keys.index(cur_heat)
     except ValueError:
-        h_idx = 1
+        h_idx = 2
     heat_lab = st.radio("エロ度", heat_labs, index=h_idx, horizontal=True, key="sapo_heat_radio")
     sapo_heat = heat_keys[heat_labs.index(heat_lab)]
 with p3:
@@ -99,13 +103,20 @@ with p3:
     ]
     v_labs = [lab for _, lab in voices]
     v_keys = [k for k, _ in voices]
-    cur_v = st.session_state.get("sapo_voice", "sweet")
+    cur_v = st.session_state.get("sapo_voice", "sticky")
     try:
         v_idx = v_keys.index(cur_v)
     except ValueError:
-        v_idx = 0
+        v_idx = 1
     v_lab = st.radio("声色", v_labs, index=v_idx, horizontal=True, key="sapo_voice_radio")
     sapo_voice = v_keys[v_labs.index(v_lab)]
+
+st.session_state.setdefault("sapo_self_voice", True)
+sapo_self_on = st.checkbox(
+    "自分の声（声だけ抵抗・ちんぽは正直）",
+    key="sapo_self_voice",
+    help="誘導のあいだに、抵抗する独り言を挟むよ",
+)
 
 st.session_state.sapo_name = sapo_name
 st.session_state.sapo_style = sapo_style
@@ -136,6 +147,9 @@ st.markdown(f"""
   <div style="color:#804060;font-size:0.78em;margin-top:0.35em;">
     モード：{dict(ONASAPO_STYLES).get(resolved, resolved)} ／ ペース：{dict(ONASAPO_PACES).get(sapo_pace)}
   </div>
+  <div style="color:#ff80ab;font-size:0.78em;margin-top:0.35em;font-style:italic;">
+    ちんぽ、今日は逃がさないわよ❤️
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -144,8 +158,11 @@ st.session_state.setdefault("sapo_phase", "ready")
 st.session_state.setdefault("sapo_edge_n", 0)
 st.session_state.setdefault("sapo_line", None)
 st.session_state.setdefault("sapo_after", None)
+st.session_state.setdefault("sapo_self", None)
 st.session_state.setdefault("sapo_active", False)
 st.session_state.setdefault("sapo_for", None)
+st.session_state.setdefault("sapo_react", None)
+st.session_state.setdefault("sapo_permit", None)
 
 # 相手が変わったらリセット
 if st.session_state.get("sapo_for") != sapo_name:
@@ -154,39 +171,56 @@ if st.session_state.get("sapo_for") != sapo_name:
     st.session_state.sapo_edge_n = 0
     st.session_state.sapo_line = None
     st.session_state.sapo_after = None
+    st.session_state.sapo_self = None
     st.session_state.sapo_active = False
+    st.session_state.sapo_react = None
+    st.session_state.sapo_permit = None
 
 
-def _gen_line(phase=None, edge_n=None):
+def _gen_line(phase=None, edge_n=None, react=None):
     ph = phase or st.session_state.sapo_phase
     en = st.session_state.sapo_edge_n if edge_n is None else edge_n
-    raw = onasapo_line(ph, sapo_name, resolved, sapo_pace, en, tags)
+    rx = st.session_state.sapo_react if react is None else react
+    raw = onasapo_line(ph, sapo_name, resolved, sapo_pace, en, tags, react=rx)
     st.session_state.sapo_line = dress_onasapo(raw, sapo_name, sapo_voice, sapo_heat)
     st.session_state.sapo_after = onasapo_after(ph, sapo_name, resolved, en)
+    if sapo_self_on:
+        st.session_state.sapo_self = onasapo_self_line(ph, sapo_name, en, react=rx)
+    else:
+        st.session_state.sapo_self = None
+
+
+def _reset_session():
+    st.session_state.sapo_active = False
+    st.session_state.sapo_phase = "ready"
+    st.session_state.sapo_edge_n = 0
+    st.session_state.sapo_line = None
+    st.session_state.sapo_after = None
+    st.session_state.sapo_self = None
+    st.session_state.sapo_react = None
+    st.session_state.sapo_permit = None
 
 
 # --- 開始 / リセット ---
 b_start, b_reset = st.columns(2)
 with b_start:
-    if st.button("🎙 オナサポ開始", key="sapo_start", use_container_width=True):
+    if st.button("🎙 ちんぽ敗北オナサポ開始", key="sapo_start", use_container_width=True):
         st.session_state.sapo_active = True
         st.session_state.sapo_phase = "ready"
         st.session_state.sapo_edge_n = 0
+        st.session_state.sapo_react = None
+        st.session_state.sapo_permit = None
         _gen_line("ready", 0)
         st.rerun()
 with b_reset:
     if st.button("↺ セッションリセット", key="sapo_reset", use_container_width=True):
-        st.session_state.sapo_active = False
-        st.session_state.sapo_phase = "ready"
-        st.session_state.sapo_edge_n = 0
-        st.session_state.sapo_line = None
-        st.session_state.sapo_after = None
+        _reset_session()
         st.rerun()
 
 if not st.session_state.sapo_active:
     st.markdown(
         "<div style='text-align:center;color:#ffb6d9;font-style:italic;margin:1em 0;'>"
-        "設定を選んで「オナサポ開始」を押しなさい。……手、準備はいい？"
+        "設定を選んで開始しなさい。……ちんぽ、出す準備はいい？　口でイかせに来るわよ"
         "</div>",
         unsafe_allow_html=True,
     )
@@ -196,10 +230,19 @@ phase = st.session_state.sapo_phase
 edge_n = int(st.session_state.sapo_edge_n or 0)
 
 st.markdown(render_phase_dots_html(phase), unsafe_allow_html=True)
-st.caption(f"いま：{phase_label(phase)}" + (f" ／ ふち ×{edge_n}" if phase == "edge" else ""))
+st.markdown(render_tension_html(phase, edge_n), unsafe_allow_html=True)
+st.caption(
+    f"いま：{phase_label(phase)}"
+    + (f" ／ ふち ×{edge_n}" if phase == "edge" else "")
+    + " —— 手の動きは指示どおり。ちんぽは正直に"
+)
 
 if not st.session_state.sapo_line:
     _gen_line()
+
+_self_html = ""
+if sapo_self_on and st.session_state.get("sapo_self"):
+    _self_html = render_self_voice_html(st.session_state.sapo_self)
 
 # メイン誘導カード
 st.markdown(f"""
@@ -207,18 +250,40 @@ st.markdown(f"""
   background:linear-gradient(160deg,rgba(194,24,91,0.25),rgba(40,0,25,0.6));
   border:1px solid #ff4081;border-radius:16px;box-shadow:0 0 18px rgba(255,64,129,0.25);">
   <div style="color:#ff80ab;font-size:0.75em;letter-spacing:0.12em;text-align:center;margin-bottom:0.45em;">
-    🎙 ONASAPO · {phase_label(phase).upper()}
+    🎙 ONASAPO · {phase_label(phase)} · ちんぽ敗北誘導
   </div>
   <div class="mirror-chu" style="font-size:0.8em;text-align:center;margin-bottom:0.4em;">ちゅっ……</div>
-  <div style="color:#ffb6d9;font-style:italic;font-size:1.05em;line-height:1.6;margin-bottom:0.65em;">
+  <div style="color:#ff80ab;font-size:0.7em;margin-bottom:0.2em;">{sapo_name}</div>
+  <div style="color:#ffb6d9;font-style:italic;font-size:1.05em;line-height:1.65;margin-bottom:0.45em;">
     「{st.session_state.sapo_line}」
   </div>
-  <div style="color:#ffe0f0;font-style:italic;font-size:0.9em;line-height:1.5;
+  {_self_html}
+  <div style="color:#ff80ab;font-size:0.7em;margin:0.35em 0 0.2em;">{sapo_name}・追い打ち</div>
+  <div style="color:#ffe0f0;font-style:italic;font-size:0.9em;line-height:1.55;
     border-top:1px solid rgba(255,64,129,0.3);padding-top:0.55em;">
     「{st.session_state.sapo_after}」
   </div>
 </div>
 """, unsafe_allow_html=True)
+
+# --- ちんぽ反応（対話）---
+st.markdown("##### 💦 ちんぽの返事")
+st.caption("正直に言いなさい。反応するたびに誘導が寄ってくるわ")
+_opts = onasapo_react_options(phase, edge_n)
+_cols = st.columns(2)
+for i, (okey, olabel) in enumerate(_opts):
+    with _cols[i % 2]:
+        if st.button(olabel, key=f"sapo_rx_{phase}_{okey}_{i}", use_container_width=True):
+            st.session_state.sapo_react = okey
+            if okey == "near" and phase == "build":
+                st.session_state.sapo_phase = "edge"
+                st.session_state.sapo_edge_n = max(1, edge_n)
+            elif okey == "cum" and phase in ("edge", "build"):
+                st.session_state.sapo_permit = "ask"
+            elif okey == "want" and phase in ("ready", "warmup"):
+                st.session_state.sapo_phase = next_phase(phase) if phase == "ready" else "build"
+            _gen_line(react=okey)
+            st.rerun()
 
 # --- 操作 ---
 c_prev, c_again, c_next = st.columns(3)
@@ -227,18 +292,19 @@ with c_prev:
         st.session_state.sapo_phase = prev_phase(phase)
         if st.session_state.sapo_phase != "edge":
             st.session_state.sapo_edge_n = 0
+        st.session_state.sapo_react = None
         _gen_line()
         st.rerun()
 with c_again:
-    if st.button("💬 もう一声", key="sapo_again", use_container_width=True):
+    if st.button("💬 もう一声（ちんぽ向け）", key="sapo_again", use_container_width=True):
         _gen_line()
         st.rerun()
 with c_next:
     next_lbl = {
-        "ready": "前戯へ →",
-        "warmup": "本番へ →",
-        "build": "ふちへ →",
-        "edge": "仕上げへ →",
+        "ready": "前戯へ → 先を起こす",
+        "warmup": "本番へ → しごく",
+        "build": "ふちへ → 出させない",
+        "edge": "仕上げへ → イかせる",
         "finish": "余韻へ →",
         "after": "最初から",
     }.get(phase, "次へ →")
@@ -246,34 +312,97 @@ with c_next:
         if phase == "after":
             st.session_state.sapo_phase = "ready"
             st.session_state.sapo_edge_n = 0
+            st.session_state.sapo_permit = None
+        elif phase == "edge" and st.session_state.get("sapo_permit") != "granted" and edge_n < 3:
+            # ふちが浅いと許可を促す
+            st.session_state.sapo_permit = "ask"
+            st.session_state.sapo_react = "cum"
+            _gen_line("edge", react="cum")
+            st.rerun()
         else:
             st.session_state.sapo_phase = next_phase(phase)
             if st.session_state.sapo_phase == "edge":
                 st.session_state.sapo_edge_n = max(1, edge_n)
-            if phase == "edge" and st.session_state.sapo_phase == "finish":
-                pass
+            st.session_state.sapo_react = None
         _gen_line()
         st.rerun()
 
 # ふち専用
 if phase == "edge":
-    e1, e2 = st.columns(2)
+    st.markdown("##### 🔥 ふちでちんぽを泣かせる")
+    st.caption(f"いまふち ×{edge_n}/5 —— 出させないまま張力を積み上げなさい")
+    e1, e2, e3 = st.columns(3)
     with e1:
-        if st.button("🔥 ふちでもう一度（出さない）", key="sapo_edge_more", use_container_width=True):
+        if st.button("ふち+1（出さない）", key="sapo_edge_more", use_container_width=True):
             st.session_state.sapo_edge_n = min(5, edge_n + 1)
+            st.session_state.sapo_react = "near"
             _gen_line("edge")
             st.rerun()
     with e2:
-        if st.button("💦 もう限界…仕上げて", key="sapo_edge_finish", use_container_width=True):
-            st.session_state.sapo_phase = "finish"
-            _gen_line("finish")
+        if st.button("亀頭だけいじめ", key="sapo_edge_glans", use_container_width=True):
+            st.session_state.sapo_edge_n = min(5, max(edge_n, 1) + 0)
+            st.session_state.sapo_react = "resist"
+            _gen_line("edge", react="resist")
             st.rerun()
+    with e3:
+        if st.button("💦 限界…仕上げて", key="sapo_edge_finish", use_container_width=True):
+            st.session_state.sapo_permit = "ask"
+            st.session_state.sapo_react = "cum"
+            _gen_line("edge", react="cum")
+            st.rerun()
+
+# 許可制（ふち終盤〜仕上げ）
+show_permit = (
+    st.session_state.get("sapo_permit") in ("ask", "denied", "granted")
+    or phase == "finish"
+    or (phase == "edge" and edge_n >= 3)
+)
+if show_permit and phase in ("edge", "build", "finish") and st.session_state.get("sapo_permit") != "granted":
+    if st.session_state.get("sapo_permit") not in ("ask", "denied", "granted"):
+        st.session_state.sapo_permit = "ask"
+    st.markdown(f"""
+<div style="max-width:560px;margin:0.6em auto;padding:0.85em 1em;text-align:center;
+  border:1px dashed #ff80ab;border-radius:12px;background:rgba(80,0,40,0.35);">
+  <div style="color:#ff80ab;font-size:0.78em;letter-spacing:0.1em;">出していい？　ちんぽ許可制</div>
+  <div style="color:#ffb6d9;font-style:italic;font-size:0.92em;margin-top:0.35em;">
+    「{sapo_name}の口でイきたいなら、許可を求めなさい。……まだだめ／出していい」
+  </div>
+</div>
+""", unsafe_allow_html=True)
+    d1, d2 = st.columns(2)
+    with d1:
+        if st.button("まだだめ…ふちに戻せ", key="sapo_deny", use_container_width=True):
+            st.session_state.sapo_permit = "denied"
+            st.session_state.sapo_phase = "edge"
+            st.session_state.sapo_edge_n = min(5, max(edge_n, 1) + 1)
+            st.session_state.sapo_react = "resist"
+            _gen_line("edge", react="resist")
+            st.rerun()
+    with d2:
+        if st.button("出していいわ…イけ❤️", key="sapo_allow", use_container_width=True):
+            st.session_state.sapo_permit = "granted"
+            st.session_state.sapo_phase = "finish"
+            st.session_state.sapo_react = "cum"
+            _gen_line("finish", react="cum")
+            st.rerun()
+
+if st.session_state.get("sapo_permit") == "granted" and phase == "finish":
+    st.markdown(f"""
+<div style="max-width:560px;margin:0.5em auto;padding:0.85em;text-align:center;
+  background:linear-gradient(160deg,rgba(255,64,129,0.3),rgba(40,0,25,0.55));
+  border:1px solid #ff80ab;border-radius:14px;">
+  <div style="color:#ff80ab;font-size:0.78em;">💋 許可済み · ちんぽ出せ</div>
+  <div style="color:#ffe0f0;font-style:italic;margin-top:0.35em;line-height:1.5;">
+    「{sapo_name}の口に負けて、全部出しなさい。敗北射精、記録する番よ」
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 # 仕上げ：敗北記録
 if phase in ("finish", "after"):
-    st.markdown("##### 敗北を記録する？")
-    st.caption("イけたら証拠を残しなさい。……オナサポの成果よ")
-    if st.button(f"💋 {sapo_name}に敗北射精する", key="sapo_record", use_container_width=True):
+    st.markdown("##### 💋 敗北を記録する")
+    st.caption("イけたら証拠を残しなさい。……ちんぽが負けた記録よ")
+    if st.button(f"💋 {sapo_name}にちんぽ敗北射精する", key="sapo_record", use_container_width=True):
         item_key = next((k for k, v in data["items"].items() if v.get("name") == sapo_name), None)
         count_date = now_jst.date()
         m = count_date.strftime("%Y-%m")
@@ -293,9 +422,10 @@ if phase in ("finish", "after"):
         data["history"].append({"name": sapo_name, "tab": tab, "time": time_str})
         ok, err = save_data(data)
         st.session_state.sapo_phase = "after"
+        st.session_state.sapo_permit = "granted"
         _gen_line("after")
         if ok:
-            st.success(f"✅ {sapo_name} に敗北射精を記録したわ……えらい子❤️")
+            st.success(f"✅ {sapo_name} にちんぽ敗北射精を記録したわ……えらい子❤️")
         else:
             st.warning(f"記録に失敗かも: {err}")
         st.rerun()
@@ -303,7 +433,7 @@ if phase in ("finish", "after"):
 st.divider()
 st.markdown(
     "<p style='text-align:center;color:#804060;font-size:0.8em;'>"
-    "鏡チェックやカウントとは別モードよ。焦らしていいし、一気にイかせてもいいわ。"
+    "鏡チェックとは別モードよ。ふちを積んで、許可を乞って、口でイかされなさい。"
     "</p>",
     unsafe_allow_html=True,
 )
