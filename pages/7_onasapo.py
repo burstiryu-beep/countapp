@@ -22,8 +22,9 @@ from onasapo import (
     phase_label,
     render_phase_dots_html,
     render_tension_html,
+    denial_self_line,
+    denial_after,
 )
-from onasapo_denial import denial_self_line, denial_after
 from ero_flavor import MIRROR_HEAT
 from self_voice import render_self_voice_html
 

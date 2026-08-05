@@ -1,4 +1,4 @@
-"""オナサポ：我慢宣言・フル勃起矛盾いじり。"""
+"""オナサポ：我慢宣言・フル勃起矛盾いじり（onasapo からも同関数を提供）。"""
 from __future__ import annotations
 
 import hashlib
@@ -103,5 +103,3 @@ def denial_after(name, denial_n=1):
         f"負けないアピール、受け取ったわ。……じゃあフル勃起のまま続きなさい。"
         f"{name}は、強がりが崩れるところがいちばん好きよ。"
     )
-
-
