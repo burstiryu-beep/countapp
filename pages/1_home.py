@@ -2166,6 +2166,7 @@ if _mirror_with_img or _mirror_pool:
     mirror_weak_lv = mirror_weak_level(mirror_loss_n)
     st.session_state.setdefault("mirror_voice", "sweet")
     st.session_state.setdefault("mirror_heat", "thick")
+    st.session_state.setdefault("mirror_self_voice", True)
     st.session_state.setdefault("mirror_edge_loop", 0)
     st.session_state.setdefault("mirror_dual_mouth", 0)
     st.session_state.setdefault("mirror_dual_nipple", 0)
@@ -2180,6 +2181,8 @@ if _mirror_with_img or _mirror_pool:
         dual_nipple_line,
         dual_sync_after,
         render_dual_bars_html,
+        self_resist_line,
+        render_self_voice_html,
     )
     from categories import category_labels as _cat_labels_fn
 
@@ -2220,6 +2223,13 @@ if _mirror_with_img or _mirror_pool:
         {"soft": "甘くとろける描写", "thick": "ぬるぬる濃い描写", "filthy": "どろどろ卑猥描写"}
         .get(mirror_heat, "")
     )
+    mirror_self_on = st.checkbox(
+        "自分の声（声だけ抵抗・体は正直）",
+        key="mirror_self_voice",
+        help="彼女のセリフのあいだに、抵抗する自分の声を挟むよ。体は正直なまま……",
+    )
+    if mirror_self_on:
+        st.caption("「やめて…」って言いながら、腰と先が正直になる独り言が出るわ")
     if mirror_weak_lv >= 1:
         lv_lbl = "育ってきた弱点" if mirror_weak_lv == 1 else "完成した弱点"
         st.caption(f"弱点成長：{mirror_name}に累計 {mirror_loss_n} 回負け → {lv_lbl}")
@@ -2322,6 +2332,17 @@ if _mirror_with_img or _mirror_pool:
     _menu = today_tease_menu(mirror_name, today_str, mirror_tags, mirror_cats)
     st.markdown(render_today_menu_html(_menu), unsafe_allow_html=True)
 
+    _open_self_html = ""
+    if st.session_state.get("mirror_self_voice", True):
+        _open_self = self_resist_line(
+            "open",
+            mirror_name,
+            gauge=st.session_state.get("mirror_gauge"),
+            heat=mirror_heat,
+            edge_n=st.session_state.get("mirror_edge_loop", 0),
+        )
+        _open_self_html = render_self_voice_html(_open_self)
+
     st.markdown(f"""
 <div class="tease-wall" style="max-width:520px;margin:0 auto 0.8em;">
   <div class="tease-badge">💋 {mirror_name} が口と乳首で来るわよ❤️</div>
@@ -2330,6 +2351,7 @@ if _mirror_with_img or _mirror_pool:
   <div class="tease-line mirror-line-main" style="margin-top:0.35em;line-height:1.55;text-align:left;">
     「{st.session_state.mirror_open_line}」
   </div>
+  {_open_self_html}
   <div class="mirror-after-delay" style="color:#ffb6d9;font-style:italic;font-size:0.88em;
     margin-top:0.65em;line-height:1.45;text-align:left;border-top:1px solid rgba(255,64,129,0.25);padding-top:0.55em;">
     「{st.session_state.mirror_hist_whisper}」
@@ -2699,6 +2721,16 @@ if _mirror_with_img or _mirror_pool:
             _badge = "同時責め・口トラック"
         elif str(_choice).startswith("dual_nipple_"):
             _badge = "同時責め・乳首トラック"
+        _self_html = ""
+        if st.session_state.get("mirror_self_voice", True):
+            _self_line = self_resist_line(
+                _choice or st.session_state.get("mirror_gauge") or "want",
+                mirror_name,
+                gauge=st.session_state.get("mirror_gauge"),
+                heat=mirror_heat,
+                edge_n=st.session_state.get("mirror_edge_loop", 0),
+            )
+            _self_html = render_self_voice_html(_self_line)
         st.markdown(f"""
 <div style="max-width:520px;margin:0.6em auto 0.4em;
   background:linear-gradient(160deg,rgba(194,24,91,0.22),rgba(40,0,25,0.55));
@@ -2706,10 +2738,13 @@ if _mirror_with_img or _mirror_pool:
   box-shadow:0 0 18px rgba(255,64,129,0.25);">
   <div style="color:#ff80ab;font-size:0.75em;letter-spacing:0.1em;margin-bottom:0.35em;">💋 {_badge}</div>
   <div class="mirror-chu" style="font-size:0.8em;margin-bottom:0.35em;">ちゅっ……</div>
+  <div style="color:#ff80ab;font-size:0.7em;letter-spacing:0.06em;margin-bottom:0.2em;text-align:left;">彼女</div>
   <div class="mirror-line-main" style="color:#ffb6d9;font-style:italic;font-size:1.02em;
-    margin-bottom:0.55em;line-height:1.55;text-align:left;">
+    margin-bottom:0.35em;line-height:1.55;text-align:left;">
     「{st.session_state.mirror_reply_text}」
   </div>
+  {_self_html}
+  <div style="color:#ff80ab;font-size:0.7em;letter-spacing:0.06em;margin:0.35em 0 0.2em;text-align:left;">彼女・追い打ち</div>
   <div class="mirror-after-delay" style="color:#ffe0f0;font-style:italic;font-size:0.92em;
     opacity:0.95;line-height:1.5;text-align:left;">
     「{after}」
