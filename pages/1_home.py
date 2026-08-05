@@ -2201,7 +2201,7 @@ if _mirror_with_img or _mirror_pool:
     mirror_cal = mirror_calendar_whisper(mirror_name, data.get("history", []), count_date)
     mirror_weak_lv = mirror_weak_level(mirror_loss_n)
     st.session_state.setdefault("mirror_voice", "sweet")
-    st.session_state.setdefault("mirror_heat", "thick")
+    st.session_state.setdefault("mirror_heat", "filthy")
     st.session_state.setdefault("mirror_self_voice", True)
     st.session_state.setdefault("mirror_dialogue", [])
     st.session_state.setdefault("mirror_edge_loop", 0)
@@ -2240,11 +2240,11 @@ if _mirror_with_img or _mirror_pool:
 
     heat_labs = [lab for _, lab in MIRROR_HEAT]
     heat_keys = [k for k, _ in MIRROR_HEAT]
-    cur_heat = st.session_state.get("mirror_heat", "thick")
+    cur_heat = st.session_state.get("mirror_heat", "filthy")
     try:
         h_idx = heat_keys.index(cur_heat)
     except ValueError:
-        h_idx = 1
+        h_idx = 2
     heat_lab = st.radio(
         "エロ度",
         heat_labs,
@@ -2255,7 +2255,7 @@ if _mirror_with_img or _mirror_pool:
     mirror_heat = heat_keys[heat_labs.index(heat_lab)]
     st.session_state.mirror_heat = mirror_heat
     st.caption(
-        {"soft": "甘くとろける描写", "thick": "ぬるぬる濃い描写", "filthy": "どろどろ卑猥描写"}
+        {"soft": "甘くとろける描写", "thick": "ぬるぬる濃い描写", "filthy": "どろどろ卑猥描写・めちゃエロ"}
         .get(mirror_heat, "")
     )
     mirror_self_on = st.checkbox(
