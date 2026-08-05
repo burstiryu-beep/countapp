@@ -16,6 +16,12 @@ from categories import (
 from storage import save_data
 from utils import aggregate, all_months, make_key, img_to_html
 from self_voice import self_resist_line, render_self_voice_html
+from mirror_dialogue import (
+    dialogue_options,
+    dialogue_her_lines,
+    dialogue_turn_count,
+    render_dialogue_html,
+)
 
 style.apply()
 data = ensure_structure(get_data())
@@ -2043,9 +2049,38 @@ def _mirror_reset_play():
     st.session_state.mirror_edge_loop = 0
     st.session_state.mirror_dual_mouth = 0
     st.session_state.mirror_dual_nipple = 0
+    st.session_state.mirror_dialogue = []
     st.session_state.pop("mirror_open_line", None)
     st.session_state.pop("mirror_open_base", None)
     st.session_state.pop("mirror_hist_whisper", None)
+
+
+def _mirror_append_exchange(her_main, her_after="", choice=None, you_line=None, name=None):
+    """彼女→自分の声→追い打ちを対話ログに積み、最新リプライも更新。"""
+    name = name or st.session_state.get("mirror_name") or ""
+    dlg = list(st.session_state.get("mirror_dialogue") or [])
+    turn_n = dialogue_turn_count(dlg) + 1
+    if her_main:
+        dlg.append({"role": "her", "text": her_main, "choice": choice, "turn": turn_n})
+    if you_line is None and st.session_state.get("mirror_self_voice", True):
+        you_line = self_resist_line(
+            f"{choice or 'want'}_t{turn_n}",
+            name,
+            gauge=st.session_state.get("mirror_gauge"),
+            heat=st.session_state.get("mirror_heat", "thick"),
+            edge_n=st.session_state.get("mirror_edge_loop", 0),
+        )
+    if you_line:
+        dlg.append({"role": "you", "text": you_line, "choice": choice, "turn": turn_n})
+    if her_after:
+        dlg.append({"role": "her_after", "text": her_after, "choice": choice, "turn": turn_n})
+    st.session_state.mirror_dialogue = dlg
+    if her_main:
+        st.session_state.mirror_reply_text = her_main
+    if her_after is not None:
+        st.session_state.mirror_after_text = her_after
+    if choice is not None:
+        st.session_state.mirror_choice = choice
 
 
 def _mirror_start_afterglow(name):
@@ -2168,6 +2203,7 @@ if _mirror_with_img or _mirror_pool:
     st.session_state.setdefault("mirror_voice", "sweet")
     st.session_state.setdefault("mirror_heat", "thick")
     st.session_state.setdefault("mirror_self_voice", True)
+    st.session_state.setdefault("mirror_dialogue", [])
     st.session_state.setdefault("mirror_edge_loop", 0)
     st.session_state.setdefault("mirror_dual_mouth", 0)
     st.session_state.setdefault("mirror_dual_nipple", 0)
@@ -2430,15 +2466,16 @@ if _mirror_with_img or _mirror_pool:
 """, unsafe_allow_html=True)
     if new_g != st.session_state.get("mirror_gauge"):
         st.session_state.mirror_gauge = new_g
-        st.session_state.mirror_choice = f"gauge_{new_g}"
-        st.session_state.mirror_reply_text = mirror_with_voice(
-            mirror_gauge_lines(new_g, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
-            mirror_voice,
-            mirror_name,
-            heat=mirror_heat,
-        )
-        st.session_state.mirror_after_text = (
-            f"ゲージは正直ね。……{mirror_name}の口プレイ、この熱に合わせてくるわよ。"
+        _mirror_append_exchange(
+            mirror_with_voice(
+                mirror_gauge_lines(new_g, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
+                mirror_voice,
+                mirror_name,
+                heat=mirror_heat,
+            ),
+            f"ゲージは正直ね。……{mirror_name}の口プレイ、この熱に合わせてくるわよ。",
+            choice=f"gauge_{new_g}",
+            name=mirror_name,
         )
         if new_g != "cum":
             st.session_state.mirror_permit = None
@@ -2456,9 +2493,7 @@ if _mirror_with_img or _mirror_pool:
             mirror_note,
             heat=mirror_heat,
         )
-        st.session_state.mirror_choice = choice
-        st.session_state.mirror_reply_text = main
-        st.session_state.mirror_after_text = after
+        _mirror_append_exchange(main, after, choice=choice, name=mirror_name)
         if choice in _MIRROR_FINISH_KEYS or st.session_state.get("mirror_gauge") == "cum":
             st.session_state.mirror_permit = "ask"
             st.session_state.mirror_permit_line = None
@@ -2466,11 +2501,81 @@ if _mirror_with_img or _mirror_pool:
 
     st.markdown(
         "<div style='text-align:center;color:#ff80ab;font-size:0.78em;margin:0.4em 0 0.6em;'>"
-        "口とキスと……乳首も、よ。いまの弱さを言いなさい❤️</div>",
+        "口とキスと……乳首も、よ。返事しながら、対話しながら堕ちなさい❤️</div>",
         unsafe_allow_html=True,
     )
 
-    st.caption("反応")
+    # --- 敗北対話（複数ターン）---
+    _dlg = list(st.session_state.get("mirror_dialogue") or [])
+    _turn_n = dialogue_turn_count(_dlg)
+    st.markdown("##### 💬 対話で敗北射精")
+    st.caption(
+        f"彼女に返事すると会話が積み上がるよ（いま {_turn_n} 往復）。"
+        "抵抗しても欲しがっても、体は正直なまま……"
+    )
+
+    _opts = dialogue_options(
+        _turn_n,
+        gauge=st.session_state.get("mirror_gauge"),
+        permit=st.session_state.get("mirror_permit"),
+    )
+    st.caption("あなたの返事")
+    _cols = st.columns(2)
+    for i, (okey, olabel) in enumerate(_opts):
+        with _cols[i % 2]:
+            if st.button(olabel, key=f"mirror_dlg_{okey}_{_turn_n}_{i}", use_container_width=True):
+                main, after, new_g, permit_hint = dialogue_her_lines(
+                    okey,
+                    mirror_name,
+                    _turn_n + 1,
+                    gauge=st.session_state.get("mirror_gauge"),
+                    tags=mirror_tags,
+                    loss_n=mirror_loss_n,
+                )
+                main = mirror_with_voice(main, mirror_voice, mirror_name, heat=mirror_heat)
+                you_spoken = olabel
+                dlg = list(st.session_state.get("mirror_dialogue") or [])
+                dlg.append({
+                    "role": "you",
+                    "text": you_spoken,
+                    "choice": okey,
+                    "turn": _turn_n + 1,
+                })
+                st.session_state.mirror_dialogue = dlg
+                body_aside = ""
+                if st.session_state.get("mirror_self_voice", True):
+                    body_aside = self_resist_line(
+                        f"dlg_{okey}_t{_turn_n + 1}",
+                        mirror_name,
+                        gauge=st.session_state.get("mirror_gauge"),
+                        heat=mirror_heat,
+                        edge_n=st.session_state.get("mirror_edge_loop", 0),
+                    )
+                _mirror_append_exchange(
+                    main,
+                    after,
+                    choice=f"dlg_{okey}",
+                    name=mirror_name,
+                    you_line=body_aside,
+                )
+                if new_g and new_g != st.session_state.get("mirror_gauge"):
+                    _mirror_set_gauge(new_g)
+                if permit_hint:
+                    st.session_state.mirror_permit = permit_hint
+                    if permit_hint == "ask":
+                        st.session_state.mirror_permit_line = None
+                st.rerun()
+
+    _dlg = list(st.session_state.get("mirror_dialogue") or [])
+    if _dlg:
+        st.markdown(render_dialogue_html(_dlg, mirror_name), unsafe_allow_html=True)
+        if st.button("対話をクリア", key="mirror_dlg_clear", use_container_width=True):
+            st.session_state.mirror_dialogue = []
+            st.session_state.mirror_reply_text = None
+            st.session_state.mirror_after_text = None
+            st.rerun()
+
+    st.caption("反応（短押しでも対話に積み上がる）")
     r1, r2, r3 = st.columns(3)
     with r1:
         if st.button("もう硬い…咥えられそう", key="mirror_hard", use_container_width=True):
@@ -2525,11 +2630,12 @@ if _mirror_with_img or _mirror_pool:
         ):
             sk = DUAL_MOUTH_STEPS[mouth_i][1]
             line = dual_mouth_line(sk, mirror_name)
-            st.session_state.mirror_reply_text = mirror_with_voice(
-                line, mirror_voice, mirror_name, heat=mirror_heat
+            _mirror_append_exchange(
+                mirror_with_voice(line, mirror_voice, mirror_name, heat=mirror_heat),
+                dual_sync_after(mouth_i, nipple_i, mirror_name),
+                choice=f"dual_mouth_{sk}",
+                name=mirror_name,
             )
-            st.session_state.mirror_after_text = dual_sync_after(mouth_i, nipple_i, mirror_name)
-            st.session_state.mirror_choice = f"dual_mouth_{sk}"
             if mouth_i < len(DUAL_MOUTH_STEPS) - 1:
                 st.session_state.mirror_dual_mouth = mouth_i + 1
             else:
@@ -2546,11 +2652,12 @@ if _mirror_with_img or _mirror_pool:
         ):
             sk = DUAL_NIPPLE_STEPS[nipple_i][1]
             line = dual_nipple_line(sk, mirror_name)
-            st.session_state.mirror_reply_text = mirror_with_voice(
-                line, mirror_voice, mirror_name, heat=mirror_heat
+            _mirror_append_exchange(
+                mirror_with_voice(line, mirror_voice, mirror_name, heat=mirror_heat),
+                dual_sync_after(mouth_i, nipple_i, mirror_name),
+                choice=f"dual_nipple_{sk}",
+                name=mirror_name,
             )
-            st.session_state.mirror_after_text = dual_sync_after(mouth_i, nipple_i, mirror_name)
-            st.session_state.mirror_choice = f"dual_nipple_{sk}"
             if nipple_i < len(DUAL_NIPPLE_STEPS) - 1:
                 st.session_state.mirror_dual_nipple = nipple_i + 1
             else:
@@ -2566,15 +2673,16 @@ if _mirror_with_img or _mirror_pool:
             f"{dual_mouth_line(mk, mirror_name)}"
             f" ……同時に、{dual_nipple_line(nk, mirror_name)}"
         )
-        st.session_state.mirror_reply_text = mirror_with_voice(
-            combo, mirror_voice, mirror_name, heat=mirror_heat
-        )
         new_m = min(mouth_i + 1, len(DUAL_MOUTH_STEPS) - 1)
         new_n = min(nipple_i + 1, len(DUAL_NIPPLE_STEPS) - 1)
         st.session_state.mirror_dual_mouth = new_m
         st.session_state.mirror_dual_nipple = new_n
-        st.session_state.mirror_after_text = dual_sync_after(new_m, new_n, mirror_name)
-        st.session_state.mirror_choice = f"dual_both_{mk}_{nk}"
+        _mirror_append_exchange(
+            mirror_with_voice(combo, mirror_voice, mirror_name, heat=mirror_heat),
+            dual_sync_after(new_m, new_n, mirror_name),
+            choice=f"dual_both_{mk}_{nk}",
+            name=mirror_name,
+        )
         if new_m >= len(DUAL_MOUTH_STEPS) - 1 and new_n >= len(DUAL_NIPPLE_STEPS) - 1:
             _mirror_set_gauge("cum")
             st.session_state.mirror_permit = "ask"
@@ -2602,26 +2710,32 @@ if _mirror_with_img or _mirror_pool:
         if st.button("← 戻す", key="mirror_step_back", use_container_width=True, disabled=step_i <= 0):
             st.session_state.mirror_step = step_i - 1
             sk = MIRROR_STEPS[st.session_state.mirror_step][1]
-            st.session_state.mirror_choice = sk
-            st.session_state.mirror_reply_text = mirror_with_voice(
-                mirror_step_lines(sk, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
-                mirror_voice,
-                mirror_name,
-                heat=mirror_heat,
+            _mirror_append_exchange(
+                mirror_with_voice(
+                    mirror_step_lines(sk, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
+                    mirror_voice,
+                    mirror_name,
+                    heat=mirror_heat,
+                ),
+                mirror_step_after(sk, mirror_name),
+                choice=sk,
+                name=mirror_name,
             )
-            st.session_state.mirror_after_text = mirror_step_after(sk, mirror_name)
             st.session_state.mirror_permit = None
             st.rerun()
     with s_now:
         if st.button("この手順で囁く", key="mirror_step_say", use_container_width=True):
-            st.session_state.mirror_choice = step_key
-            st.session_state.mirror_reply_text = mirror_with_voice(
-                mirror_step_lines(step_key, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
-                mirror_voice,
-                mirror_name,
-                heat=mirror_heat,
+            _mirror_append_exchange(
+                mirror_with_voice(
+                    mirror_step_lines(step_key, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
+                    mirror_voice,
+                    mirror_name,
+                    heat=mirror_heat,
+                ),
+                mirror_step_after(step_key, mirror_name),
+                choice=step_key,
+                name=mirror_name,
             )
-            st.session_state.mirror_after_text = mirror_step_after(step_key, mirror_name)
             if step_key == "finish" or st.session_state.get("mirror_gauge") == "cum":
                 st.session_state.mirror_permit = "ask"
             st.rerun()
@@ -2634,14 +2748,17 @@ if _mirror_with_img or _mirror_pool:
             if step_i < len(MIRROR_STEPS) - 1:
                 st.session_state.mirror_step = step_i + 1
             sk = MIRROR_STEPS[st.session_state.mirror_step][1]
-            st.session_state.mirror_choice = sk
-            st.session_state.mirror_reply_text = mirror_with_voice(
-                mirror_step_lines(sk, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
-                mirror_voice,
-                mirror_name,
-                heat=mirror_heat,
+            _mirror_append_exchange(
+                mirror_with_voice(
+                    mirror_step_lines(sk, mirror_name, mirror_tags, mirror_loss_n, mirror_note),
+                    mirror_voice,
+                    mirror_name,
+                    heat=mirror_heat,
+                ),
+                mirror_step_after(sk, mirror_name),
+                choice=sk,
+                name=mirror_name,
             )
-            st.session_state.mirror_after_text = mirror_step_after(sk, mirror_name)
             if sk == "finish":
                 _mirror_set_gauge("cum")
                 st.session_state.mirror_permit = "ask"
@@ -2682,72 +2799,15 @@ if _mirror_with_img or _mirror_pool:
                 choice = random.choice(finishers)
             _mirror_pick(choice)
 
-    if st.session_state.get("mirror_reply_text"):
+    # 最新の一往復は上部の敗北対話ログに積み上がる（ここはガイドのみ）
+    if st.session_state.get("mirror_reply_text") and not st.session_state.get("mirror_dialogue"):
         after = st.session_state.get("mirror_after_text") or ""
-        _badge = {
-            "kiss": "フェラ＋亀頭キスで行かせる",
-            "glans": "亀頭キスで溶かす",
-            "mouth": "口で堕としてイかせる",
-            "nipple": "乳首責めで溶かす",
-            "nipple_lick": "乳首舐め・ちゅっ責め",
-            "nipple_mouth": "乳首＋口の同時責め",
-            "dual_mouth_kiss": "同時責め・口トラック",
-            "dual_mouth_shallow": "同時責め・口トラック",
-            "dual_mouth_deep": "同時責め・口トラック",
-            "dual_mouth_finish": "同時責め・口仕上げ",
-            "dual_nipple_stroke": "同時責め・乳首トラック",
-            "dual_nipple_pinch": "同時責め・乳首トラック",
-            "dual_nipple_lick": "同時責め・乳首トラック",
-            "dual_nipple_hard": "同時責め・乳首最大",
-            "kiss_only": "まずは亀頭キスだけ",
-            "lick": "先端をねっとり舐める",
-            "shallow": "浅く咥えて溶かす",
-            "deep": "深く咥えて堕とす",
-            "finish": "口で仕上げてイかせる",
-            "gauge_touch": "触りながらの口想像",
-            "gauge_near": "限界ふちで口責め",
-            "gauge_cum": "もう出る…許可待ち",
-            "denied": "まだだめ…ふちで焦らし",
-            "mouth_ok": "口だけ許可・まだ出さない",
-            "granted": "許可済み・イけ",
-        }.get(st.session_state.get("mirror_choice"), "フェラ＋亀頭キスで行かせる")
-        _choice = st.session_state.get("mirror_choice") or ""
-        if str(_choice).startswith("edge_loop_"):
-            _badge = f"イく直前ループ ×{_choice.split('_')[-1]}"
-        elif str(_choice).startswith("dual_both_"):
-            _badge = "同時責め・上下一段"
-        elif str(_choice).startswith("dual_mouth_"):
-            _badge = "同時責め・口トラック"
-        elif str(_choice).startswith("dual_nipple_"):
-            _badge = "同時責め・乳首トラック"
-        _self_html = ""
-        if st.session_state.get("mirror_self_voice", True):
-            _self_line = self_resist_line(
-                _choice or st.session_state.get("mirror_gauge") or "want",
-                mirror_name,
-                gauge=st.session_state.get("mirror_gauge"),
-                heat=mirror_heat,
-                edge_n=st.session_state.get("mirror_edge_loop", 0),
-            )
-            _self_html = render_self_voice_html(_self_line)
         st.markdown(f"""
 <div style="max-width:520px;margin:0.6em auto 0.4em;
   background:linear-gradient(160deg,rgba(194,24,91,0.22),rgba(40,0,25,0.55));
-  border:1px solid #ff4081;border-radius:14px;padding:1em;text-align:center;
-  box-shadow:0 0 18px rgba(255,64,129,0.25);">
-  <div style="color:#ff80ab;font-size:0.75em;letter-spacing:0.1em;margin-bottom:0.35em;">💋 {_badge}</div>
-  <div class="mirror-chu" style="font-size:0.8em;margin-bottom:0.35em;">ちゅっ……</div>
-  <div style="color:#ff80ab;font-size:0.7em;letter-spacing:0.06em;margin-bottom:0.2em;text-align:left;">彼女</div>
-  <div class="mirror-line-main" style="color:#ffb6d9;font-style:italic;font-size:1.02em;
-    margin-bottom:0.35em;line-height:1.55;text-align:left;">
-    「{st.session_state.mirror_reply_text}」
-  </div>
-  {_self_html}
-  <div style="color:#ff80ab;font-size:0.7em;letter-spacing:0.06em;margin:0.35em 0 0.2em;text-align:left;">彼女・追い打ち</div>
-  <div class="mirror-after-delay" style="color:#ffe0f0;font-style:italic;font-size:0.92em;
-    opacity:0.95;line-height:1.5;text-align:left;">
-    「{after}」
-  </div>
+  border:1px solid #ff4081;border-radius:14px;padding:1em;text-align:left;">
+  <div style="color:#ffb6d9;font-style:italic;line-height:1.55;">「{st.session_state.mirror_reply_text}」</div>
+  <div style="color:#ffe0f0;font-style:italic;font-size:0.92em;margin-top:0.45em;line-height:1.5;">「{after}」</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -2764,9 +2824,12 @@ if _mirror_with_img or _mirror_pool:
         st.session_state.mirror_edge_loop = edge_n
         _mirror_set_gauge("near" if edge_n < 5 else "cum")
         main, after = mirror_edge_loop_lines(mirror_name, edge_n, mirror_tags, mirror_loss_n, mirror_note)
-        st.session_state.mirror_choice = f"edge_loop_{edge_n}"
-        st.session_state.mirror_reply_text = mirror_with_voice(main, mirror_voice, mirror_name, heat=mirror_heat)
-        st.session_state.mirror_after_text = after
+        _mirror_append_exchange(
+            mirror_with_voice(main, mirror_voice, mirror_name, heat=mirror_heat),
+            after,
+            choice=f"edge_loop_{edge_n}",
+            name=mirror_name,
+        )
         st.session_state.mirror_permit = "ask" if edge_n >= 3 else "denied"
         st.rerun()
 
@@ -2776,6 +2839,8 @@ if _mirror_with_img or _mirror_pool:
         or st.session_state.get("mirror_gauge") == "cum"
         or st.session_state.get("mirror_choice") in _MIRROR_FINISH_KEYS
         or str(st.session_state.get("mirror_choice") or "").startswith("edge_loop_")
+        or str(st.session_state.get("mirror_choice") or "").startswith("dlg_")
+        or dialogue_turn_count(st.session_state.get("mirror_dialogue") or []) >= 5
         or int(st.session_state.get("mirror_step", 0) or 0) >= len(MIRROR_STEPS) - 1
     )
     permit_stage = st.session_state.get("mirror_permit") or "ask"
@@ -2806,11 +2871,12 @@ if _mirror_with_img or _mirror_pool:
                         mirror_permit_lines(mirror_name, "deny"), mirror_voice, mirror_name
                     )
                     _mirror_set_gauge("near")
-                    st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
-                    st.session_state.mirror_after_text = (
-                        f"口も一旦止めるわ。{mirror_name}のキスだけで、またふちまで戻しなさい。"
+                    _mirror_append_exchange(
+                        st.session_state.mirror_permit_line,
+                        f"口も一旦止めるわ。{mirror_name}のキスだけで、またふちまで戻しなさい。",
+                        choice="denied",
+                        name=mirror_name,
                     )
-                    st.session_state.mirror_choice = "denied"
                     st.rerun()
             with m2:
                 if st.button("出していいわ…イけ", key="mirror_allow", use_container_width=True):
@@ -2819,11 +2885,12 @@ if _mirror_with_img or _mirror_pool:
                         mirror_permit_lines(mirror_name, "grant"), mirror_voice, mirror_name
                     )
                     _mirror_set_gauge("cum")
-                    st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
-                    st.session_state.mirror_after_text = (
-                        f"射精の許可、出したわ。口に負けて出したら記録しなさい。余韻も続くわよ。"
+                    _mirror_append_exchange(
+                        st.session_state.mirror_permit_line,
+                        f"射精の許可、出したわ。口に負けて出したら記録しなさい。余韻も続くわよ。",
+                        choice="granted",
+                        name=mirror_name,
                     )
-                    st.session_state.mirror_choice = "granted"
                     st.rerun()
         else:
             d1, d2, d3 = st.columns(3)
@@ -2834,11 +2901,12 @@ if _mirror_with_img or _mirror_pool:
                         mirror_permit_lines(mirror_name, "deny"), mirror_voice, mirror_name
                     )
                     _mirror_set_gauge("near")
-                    st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
-                    st.session_state.mirror_after_text = (
-                        f"許可、まだないわ。{mirror_name}のキスと浅いフェラで、ふちのまま溶かされなさい。"
+                    _mirror_append_exchange(
+                        st.session_state.mirror_permit_line,
+                        f"許可、まだないわ。{mirror_name}のキスと浅いフェラで、ふちのまま溶かされなさい。",
+                        choice="denied",
+                        name=mirror_name,
                     )
-                    st.session_state.mirror_choice = "denied"
                     st.rerun()
             with d2:
                 if st.button("口だけ…いいわ", key="mirror_mouth_ok", use_container_width=True):
@@ -2847,12 +2915,15 @@ if _mirror_with_img or _mirror_pool:
                         mirror_permit_lines(mirror_name, "mouth"), mirror_voice, mirror_name
                     )
                     _mirror_set_gauge("near")
-                    st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
-                    st.session_state.mirror_after_text = (
-                        f"口だけ許可。咥えて、キスして……でもまだ出さない。"
-                        f"射精の許可は、そのあとね。"
+                    _mirror_append_exchange(
+                        st.session_state.mirror_permit_line,
+                        (
+                            f"口だけ許可。咥えて、キスして……でもまだ出さない。"
+                            f"射精の許可は、そのあとね。"
+                        ),
+                        choice="mouth_ok",
+                        name=mirror_name,
                     )
-                    st.session_state.mirror_choice = "mouth_ok"
                     st.rerun()
             with d3:
                 if st.button("出していい…イけ", key="mirror_allow", use_container_width=True):
@@ -2861,11 +2932,12 @@ if _mirror_with_img or _mirror_pool:
                         mirror_permit_lines(mirror_name, "grant"), mirror_voice, mirror_name
                     )
                     _mirror_set_gauge("cum")
-                    st.session_state.mirror_reply_text = st.session_state.mirror_permit_line
-                    st.session_state.mirror_after_text = (
-                        f"許可出たわ。口に負けて出したら、下のボタンで情けなく記録しなさい。"
+                    _mirror_append_exchange(
+                        st.session_state.mirror_permit_line,
+                        f"許可出たわ。口に負けて出したら、下のボタンで情けなく記録しなさい。",
+                        choice="granted",
+                        name=mirror_name,
                     )
-                    st.session_state.mirror_choice = "granted"
                     st.rerun()
 
     if st.session_state.get("mirror_permit") == "granted":
