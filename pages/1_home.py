@@ -15,6 +15,7 @@ from categories import (
 )
 from storage import save_data
 from utils import aggregate, all_months, make_key, img_to_html
+from self_voice import self_resist_line, render_self_voice_html
 
 style.apply()
 data = ensure_structure(get_data())
