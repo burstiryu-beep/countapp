@@ -2182,8 +2182,6 @@ if _mirror_with_img or _mirror_pool:
         dual_nipple_line,
         dual_sync_after,
         render_dual_bars_html,
-        self_resist_line,
-        render_self_voice_html,
     )
     from categories import category_labels as _cat_labels_fn
 
