@@ -1,5 +1,6 @@
 """オナサポモード：ちんぽに効く敗北誘導セッション。"""
 from datetime import datetime, timedelta, timezone
+import traceback
 
 import streamlit as st
 
@@ -8,25 +9,49 @@ from core import get_data, ensure_structure
 from categories import category_labels
 from storage import save_data
 from utils import active_items, make_key, img_to_html
-from onasapo import (
-    ONASAPO_STYLES,
-    ONASAPO_PACES,
-    dress_onasapo,
-    resolve_style,
-    next_phase,
-    prev_phase,
-    onasapo_line,
-    onasapo_after,
-    onasapo_self_line,
-    onasapo_react_options,
-    phase_label,
-    render_phase_dots_html,
-    render_tension_html,
-    denial_self_line,
-    denial_after,
-)
-from ero_flavor import MIRROR_HEAT
-from self_voice import render_self_voice_html
+
+try:
+    # onasapo.py ではなく sapo_engine（Cloud の名前衝突・欠落対策）
+    from sapo_engine import (
+        ONASAPO_STYLES,
+        ONASAPO_PACES,
+        dress_onasapo,
+        resolve_style,
+        next_phase,
+        prev_phase,
+        onasapo_line,
+        onasapo_after,
+        onasapo_self_line,
+        onasapo_react_options,
+        phase_label,
+        render_phase_dots_html,
+        render_tension_html,
+        denial_self_line,
+        denial_after,
+    )
+except Exception as _sapo_err:
+    style.apply()
+    st.error("オナサポの読み込みに失敗したわ")
+    st.code(f"{type(_sapo_err).__name__}: {_sapo_err}\n\n{traceback.format_exc()}")
+    st.stop()
+
+try:
+    from ero_flavor import MIRROR_HEAT
+except ImportError:
+    MIRROR_HEAT = [("soft", "甘い"), ("thick", "濃い"), ("filthy", "どろどろ")]
+
+try:
+    from self_voice import render_self_voice_html
+except ImportError:
+    def render_self_voice_html(line, label="あなた（声だけ）"):
+        if not line:
+            return ""
+        return (
+            f"<div style='margin:0.45em 0;padding:0.55em 0.7em;border-radius:10px;"
+            f"background:rgba(0,0,0,0.28);border:1px dashed rgba(255,182,217,0.45);'>"
+            f"<div style='color:#ff80ab;font-size:0.72em;'>🎙 {label}</div>"
+            f"<div style='color:#ffe0f0;font-style:italic;'>「{line}」</div></div>"
+        )
 
 JST = timezone(timedelta(hours=9))
 
