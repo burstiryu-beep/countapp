@@ -476,6 +476,8 @@ def tease_predict_next(history, items_list, hour_now):
 
 def mirror_reply(choice, name):
     """鏡チェック。フェラ＋亀頭キスでイかせに来る甘マゾ煽り（長め・描写寄り）。"""
+    from name_ja import nj
+    name = nj(name)
     if choice == "hard":
         lines = [
             (
@@ -838,6 +840,8 @@ def mirror_reply(choice, name):
 
 
 def mirror_after(choice, name, ab_days=None):
+    from name_ja import nj
+    name = nj(name)
     """回答後：フェラ＋亀頭キスでイかせる追い打ち（長め）。"""
     if choice == "hard":
         extras = [
@@ -1290,13 +1294,15 @@ def mirror_weak_combo_flavor(name, tags, loss_count=0):
 
 
 def mirror_voice_prefix(voice, name):
+    from name_ja import nj
+    n = nj(name)
     return {
-        "sweet": f"（甘い声で）……ねえ、{name}が優しくしてあげる。",
-        "sticky": f"（ねっとりと）……ふふ、離さないわよ、{name}。",
-        "urgent": f"（急かすように）ほら、早くとろけなさい。{name}、待たないわ。",
-        "tease": f"（からかうように）ふふ……{name}、また情けない顔しに来たの？",
-        "dote": f"（溺愛混じりに）……いい子ね、{name}がたっぷり可愛がってあげる。",
-        "command": f"（命令口調で）{name}の口に従いなさい。抵抗は無駄よ。",
+        "sweet": f"（甘い声で）……ねえ、{n}が優しくしてあげる。",
+        "sticky": f"（ねっとりと）……ふふ、{n}の唇、離さないわよ。",
+        "urgent": f"（急かすように）ほら、早くとろけなさい。{n}は待たないわ。",
+        "tease": f"（からかうように）ふふ……また情けない顔しに来たの？　相手は{n}よ。",
+        "dote": f"（溺愛混じりに）……いい子ね、{n}がたっぷり可愛がってあげる。",
+        "command": f"（命令口調で）{n}の口に従いなさい。抵抗は無駄よ。",
     }.get(voice or "sweet", "")
 
 
@@ -1367,6 +1373,8 @@ def mirror_history_whisper(name, history):
 
 
 def mirror_weak_flavor(name, tags, loss_count=0, self_note=""):
+    from name_ja import nj
+    name = nj(name)
     """弱点メモをセリフに混ぜる一文。負け回数で育つ。2タグ以上はコンボ優先。"""
     note = mirror_self_note_flavor(name, self_note)
     if tags and len(tags) >= 2:
@@ -1562,6 +1570,8 @@ def mirror_edge_loop_lines(name, loop_n, tags=None, loss_count=0, self_note=""):
 
 def mirror_afterglow_lines(name, tags=None, loss_count=0):
     """射精後の余韻。口を離さない追い打ち。"""
+    from name_ja import nj
+    name = nj(name)
     weak = mirror_weak_flavor(name, tags or [], loss_count)
     lines = [
         (
@@ -1772,6 +1782,8 @@ def mirror_enrich(
     loss_count=0, voice="sweet", self_note="", heat=None,
 ):
     """既存セリフに弱点・ゲージ・声色・エロ度・自己申告を足して返す。"""
+    from name_ja import nj
+    name = nj(name)
     main = mirror_reply(choice, name)
     after = mirror_after(choice, name, ab_days)
     weak = mirror_weak_flavor(name, tags or [], loss_count, self_note)

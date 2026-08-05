@@ -10,6 +10,8 @@ except ImportError:  # Streamlit Cloud の一時的な欠落に耐える
     def apply_heat(text, heat, name=""):
         return text
 
+from name_ja import nj
+
 
 ONASAPO_STYLES = [
     ("mouth", "口でちんぽ💋"),
@@ -39,13 +41,14 @@ def _rng(seed_key: str) -> random.Random:
 
 
 def _voice_prefix(voice, name):
+    n = nj(name)
     return {
-        "sweet": f"（甘い声で）……ねえ、{name}の口でちんぽ、溶かそうね。",
-        "sticky": f"（ねっとりと）……ふふ、先から離さないわよ、{name}。",
-        "urgent": f"（急かすように）ほら、しごいて。{name}、待たないわ。イかせる番よ。",
-        "tease": f"（からかうように）ふふ……ちんぽ、もう正直すぎる顔してるわね。",
-        "dote": f"（溺愛混じりに）……いい子ね、{name}がちんぽごと可愛がってあげる。",
-        "command": f"（命令口調で）手を動かしなさい。ちんぽは{name}のペースに従うの。",
+        "sweet": f"（甘い声で）……ねえ、{n}の口でちんぽ、溶かそうね。",
+        "sticky": f"（ねっとりと）……ふふ、{n}の唇、先から離さないわよ。",
+        "urgent": f"（急かすように）ほら、しごいて。{n}は待たないわ。イかせる番よ。",
+        "tease": f"（からかうように）ふふ……ちんぽ、もう正直すぎる顔してるわね。相手は{n}よ。",
+        "dote": f"（溺愛混じりに）……いい子ね、{n}がちんぽごと可愛がってあげる。",
+        "command": f"（命令口調で）手を動かしなさい。ちんぽは{n}のペースに従うの。",
     }.get(voice or "sweet", "")
 
 
@@ -94,6 +97,7 @@ def prev_phase(phase_key):
 
 def onasapo_line(phase, name, style="mouth", pace="normal", edge_n=0, tags=None, react=None):
     """段階ごとのちんぽ誘導セリフ。react で反応に寄せる。"""
+    name = nj(name)
     style = resolve_style(style, tags)
     tags = tags or []
     pace = pace or "normal"
@@ -284,6 +288,7 @@ def onasapo_line(phase, name, style="mouth", pace="normal", edge_n=0, tags=None,
 
 
 def onasapo_after(phase, name, style="mouth", edge_n=0):
+    name = nj(name)
     style = style if style != "auto" else "mouth"
     if phase == "ready":
         return (
@@ -303,7 +308,7 @@ def onasapo_after(phase, name, style="mouth", edge_n=0):
         if n < 5:
             return (
                 f"ふち×{n}、溜まってるわね。……先走りだらしない。"
-                f"仕上げていいかしら？　欲しければ進みなさい。{name}、待ってる。"
+                f"仕上げていいかしら？　欲しければ進みなさい。{name}が待ってるわ。"
             )
         return (
             f"ふち×{n}……もう限界でしょ。ちんぽ、真っ赤でびくびくしてる。"
@@ -322,11 +327,12 @@ def onasapo_after(phase, name, style="mouth", edge_n=0):
 
 def denial_roast_lines(name, phase="build", style="mouth"):
     """『我慢する・勃たない』宣言への追い打ち（フル勃起前提）。"""
+    name = nj(name)
     common = [
         (
             f"ふふ……オナサポなんかに負けない、って。"
             f"口では強気ね。じゃあそのフル勃起のちんぽ、説明しなさい。"
-            f"絶対我慢、って言いながら先が真っすぐ立ってるの、誰に見せてるの？　{name}よ。"
+            f"絶対我慢、って言いながら先が真っすぐ立ってるの、誰に見せてるの？　相手は{name}よ。"
         ),
         (
             f"勃たないぞ、って……いま目の前でビンビンじゃない。"
@@ -334,7 +340,7 @@ def denial_roast_lines(name, phase="build", style="mouth"):
         ),
         (
             f"負けん、って震える声。……なのに先走りまで滲んでる。"
-            f"フル勃起で我慢アピール？　甘マゾの最高形態よ。{name}、褒めてあげる。"
+            f"フル勃起で我慢アピール？　甘マゾの最高形態よ。{name}が褒めてあげる。"
         ),
         (
             f"ボッキすらしない、って大嘘。"
@@ -353,7 +359,7 @@ def denial_roast_lines(name, phase="build", style="mouth"):
         ],
         "build": [
             f"しごきながら『負けない』って。……手が止まってない時点で負けよ。"
-            f"フル勃起を口で溶かす想像、やめられないんでしょ。{name}、知ってるわ。",
+            f"フル勃起を口で溶かす想像、やめられないんでしょ。{name}は知ってるわ。",
         ],
         "edge": [
             f"ふちで我慢？　フル勃起のまま限界アピール、いちばんエロいわ。"
@@ -373,6 +379,7 @@ def denial_roast_lines(name, phase="build", style="mouth"):
 
 def denial_self_line(name, denial_n=1):
     """我慢宣言側の独り言（声は拒否・ちんぽはフル勃起）。"""
+    name = nj(name)
     n = max(1, int(denial_n or 1))
     rng = _rng(f"deny_self|{name}|{n}")
     lines = [
@@ -399,6 +406,7 @@ def denial_self_line(name, denial_n=1):
 
 
 def denial_after(name, denial_n=1):
+    name = nj(name)
     n = max(1, int(denial_n or 1))
     if n >= 5:
         return (
@@ -408,7 +416,7 @@ def denial_after(name, denial_n=1):
     if n >= 3:
         return (
             f"我慢×{n}回目。……宣言するたび硬くなってない？"
-            f"ふふ、{name}、その矛盾ごとしゃぶってあげる。"
+            f"ふふ、{name}が、その矛盾ごとしゃぶってあげる。"
         )
     return (
         f"負けないアピール、受け取ったわ。……じゃあフル勃起のまま続きなさい。"
@@ -418,6 +426,7 @@ def denial_after(name, denial_n=1):
 
 def onasapo_self_line(phase, name, edge_n=0, react=None):
     """声だけ抵抗・ちんぽは正直。"""
+    name = nj(name)
     edge_n = int(edge_n or 0)
     react = react or ""
     if react in ("deny", "noerect", "endure"):

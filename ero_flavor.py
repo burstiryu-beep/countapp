@@ -36,6 +36,8 @@ def apply_heat(text, heat, name=""):
     """エロ度に応じて描写を重ねる（声色とは別軸）。同一テキストは安定。"""
     if not text:
         return text
+    from name_ja import nj
+    name = nj(name)
     heat = heat or "soft"
     if heat == "soft":
         extras = [
@@ -172,6 +174,8 @@ def render_today_menu_html(menu):
 
 
 def dual_mouth_line(step_key, name):
+    from name_ja import nj
+    name = nj(name)
     pool = {
         "kiss": [
             f"{name}が先端にちゅっ……ちゅっ。……口トラック開始よ。"
@@ -202,6 +206,8 @@ def dual_mouth_line(step_key, name):
 
 
 def dual_nipple_line(step_key, name):
+    from name_ja import nj
+    name = nj(name)
     pool = {
         "stroke": [
             f"乳首、そっと撫でるわ。……{name}の指が乳輪を円でなぞって、頂点だけかすめる。"
@@ -233,6 +239,8 @@ def dual_nipple_line(step_key, name):
 
 def dual_sync_after(mouth_i, nipple_i, name):
     """両トラック進捗に応じた追い打ち。"""
+    from name_ja import nj
+    name = nj(name)
     m_max = len(DUAL_MOUTH_STEPS) - 1
     n_max = len(DUAL_NIPPLE_STEPS) - 1
     if mouth_i >= m_max and nipple_i >= n_max:

@@ -4,6 +4,8 @@ from __future__ import annotations
 import hashlib
 import random
 
+from name_ja import nj
+
 
 def _rng(seed_key: str) -> random.Random:
     return random.Random(int(hashlib.md5(seed_key.encode("utf-8")).hexdigest(), 16))
@@ -11,6 +13,7 @@ def _rng(seed_key: str) -> random.Random:
 
 def self_resist_line(choice, name, gauge=None, heat="thick", edge_n=0):
     """声だけ抵抗するも体は正直 — ユーザー側の情けない独り言。"""
+    name = nj(name)
     choice = str(choice or "")
     gauge = gauge or ""
     heat = heat or "thick"

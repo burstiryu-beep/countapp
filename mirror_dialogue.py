@@ -4,6 +4,8 @@ from __future__ import annotations
 import hashlib
 import random
 
+from name_ja import nj
+
 
 def _rng(seed_key: str) -> random.Random:
     return random.Random(int(hashlib.md5(seed_key.encode("utf-8")).hexdigest(), 16))
@@ -54,6 +56,7 @@ def dialogue_options(turn_n, gauge=None, permit=None):
 
 def _sensual_tail(name, turn_n, rng, has_nipple=False):
     """ターンが進むほど濃くなる感触の追い足し。"""
+    name = nj(name)
     early = [
         f"ちゅっ……って音、もう頭に残ってるでしょ。{name}の唇、温かいでしょう。",
         f"先端がぬるぬるになってきた。……{name}の唾液、混ざってるわよ。",
@@ -90,6 +93,7 @@ def dialogue_her_lines(user_key, name, turn_n, gauge=None, tags=None, loss_n=0):
 
     returns: (main, after, new_gauge, permit_hint)
     """
+    name = nj(name)
     gauge = gauge or "touch"
     tags = tags or []
     turn_n = int(turn_n or 0)

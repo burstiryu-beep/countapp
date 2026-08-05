@@ -1,8 +1,10 @@
-"""オナサポ：我慢宣言・フル勃起矛盾いじり（onasapo からも同関数を提供）。"""
+"""オナサポ：我慢宣言・フル勃起矛盾いじり（onasapo / sapo_engine からも同関数を提供）。"""
 from __future__ import annotations
 
 import hashlib
 import random
+
+from name_ja import nj
 
 
 def _rng(seed_key: str) -> random.Random:
@@ -11,11 +13,12 @@ def _rng(seed_key: str) -> random.Random:
 
 def denial_roast_lines(name, phase="build", style="mouth"):
     """『我慢する・勃たない』宣言への追い打ち（フル勃起前提）。"""
+    name = nj(name)
     common = [
         (
             f"ふふ……オナサポなんかに負けない、って。"
             f"口では強気ね。じゃあそのフル勃起のちんぽ、説明しなさい。"
-            f"絶対我慢、って言いながら先が真っすぐ立ってるの、誰に見せてるの？　{name}よ。"
+            f"絶対我慢、って言いながら先が真っすぐ立ってるの、誰に見せてるの？　相手は{name}よ。"
         ),
         (
             f"勃たないぞ、って……いま目の前でビンビンじゃない。"
@@ -23,7 +26,7 @@ def denial_roast_lines(name, phase="build", style="mouth"):
         ),
         (
             f"負けん、って震える声。……なのに先走りまで滲んでる。"
-            f"フル勃起で我慢アピール？　甘マゾの最高形態よ。{name}、褒めてあげる。"
+            f"フル勃起で我慢アピール？　甘マゾの最高形態よ。{name}が褒めてあげる。"
         ),
         (
             f"ボッキすらしない、って大嘘。"
@@ -42,11 +45,11 @@ def denial_roast_lines(name, phase="build", style="mouth"):
         ],
         "build": [
             f"しごきながら『負けない』って。……手が止まってない時点で負けよ。"
-            f"フル勃起を口で溶かす想像、やめられないんでしょ。{name}、知ってるわ。",
+            f"フル勃起を口で溶かす想像、やめられないんでしょ。{name}は知ってるわ。",
         ],
         "edge": [
             f"ふちで我慢？　フル勃起のまま限界アピール、いちばんエロいわ。"
-            f"出さないぞ、って言いながら先が泣いてる。……{name}、離さないわよ。",
+            f"出さないぞ、って言いながら先が泣いてる。……{name}は離さないわよ。",
         ],
         "finish": [
             f"絶対我慢、の結末が敗北射精ね。……いいわ、その矛盾のまま出しなさい。"
@@ -62,6 +65,7 @@ def denial_roast_lines(name, phase="build", style="mouth"):
 
 def denial_self_line(name, denial_n=1):
     """我慢宣言側の独り言（声は拒否・ちんぽはフル勃起）。"""
+    name = nj(name)
     n = max(1, int(denial_n or 1))
     rng = _rng(f"deny_self|{name}|{n}")
     lines = [
@@ -88,6 +92,7 @@ def denial_self_line(name, denial_n=1):
 
 
 def denial_after(name, denial_n=1):
+    name = nj(name)
     n = max(1, int(denial_n or 1))
     if n >= 5:
         return (
@@ -97,7 +102,7 @@ def denial_after(name, denial_n=1):
     if n >= 3:
         return (
             f"我慢×{n}回目。……宣言するたび硬くなってない？"
-            f"ふふ、{name}、その矛盾ごとしゃぶってあげる。"
+            f"ふふ、{name}が、その矛盾ごとしゃぶってあげる。"
         )
     return (
         f"負けないアピール、受け取ったわ。……じゃあフル勃起のまま続きなさい。"
