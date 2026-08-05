@@ -22,6 +22,8 @@ from onasapo import (
     phase_label,
     render_phase_dots_html,
     render_tension_html,
+    denial_self_line,
+    denial_after,
 )
 from ero_flavor import MIRROR_HEAT
 from self_voice import render_self_voice_html
@@ -156,6 +158,7 @@ st.markdown(f"""
 # --- セッション状態 ---
 st.session_state.setdefault("sapo_phase", "ready")
 st.session_state.setdefault("sapo_edge_n", 0)
+st.session_state.setdefault("sapo_denial_n", 0)
 st.session_state.setdefault("sapo_line", None)
 st.session_state.setdefault("sapo_after", None)
 st.session_state.setdefault("sapo_self", None)
@@ -169,6 +172,7 @@ if st.session_state.get("sapo_for") != sapo_name:
     st.session_state.sapo_for = sapo_name
     st.session_state.sapo_phase = "ready"
     st.session_state.sapo_edge_n = 0
+    st.session_state.sapo_denial_n = 0
     st.session_state.sapo_line = None
     st.session_state.sapo_after = None
     st.session_state.sapo_self = None
@@ -181,19 +185,25 @@ def _gen_line(phase=None, edge_n=None, react=None):
     ph = phase or st.session_state.sapo_phase
     en = st.session_state.sapo_edge_n if edge_n is None else edge_n
     rx = st.session_state.sapo_react if react is None else react
+    dn = int(st.session_state.get("sapo_denial_n") or 0)
     raw = onasapo_line(ph, sapo_name, resolved, sapo_pace, en, tags, react=rx)
     st.session_state.sapo_line = dress_onasapo(raw, sapo_name, sapo_voice, sapo_heat)
-    st.session_state.sapo_after = onasapo_after(ph, sapo_name, resolved, en)
-    if sapo_self_on:
-        st.session_state.sapo_self = onasapo_self_line(ph, sapo_name, en, react=rx)
+    if rx in ("deny", "noerect", "endure"):
+        st.session_state.sapo_after = denial_after(sapo_name, dn)
+        st.session_state.sapo_self = denial_self_line(sapo_name, dn) if sapo_self_on else None
     else:
-        st.session_state.sapo_self = None
+        st.session_state.sapo_after = onasapo_after(ph, sapo_name, resolved, en)
+        if sapo_self_on:
+            st.session_state.sapo_self = onasapo_self_line(ph, sapo_name, en, react=rx)
+        else:
+            st.session_state.sapo_self = None
 
 
 def _reset_session():
     st.session_state.sapo_active = False
     st.session_state.sapo_phase = "ready"
     st.session_state.sapo_edge_n = 0
+    st.session_state.sapo_denial_n = 0
     st.session_state.sapo_line = None
     st.session_state.sapo_after = None
     st.session_state.sapo_self = None
@@ -208,6 +218,7 @@ with b_start:
         st.session_state.sapo_active = True
         st.session_state.sapo_phase = "ready"
         st.session_state.sapo_edge_n = 0
+        st.session_state.sapo_denial_n = 0
         st.session_state.sapo_react = None
         st.session_state.sapo_permit = None
         _gen_line("ready", 0)
@@ -228,13 +239,15 @@ if not st.session_state.sapo_active:
 
 phase = st.session_state.sapo_phase
 edge_n = int(st.session_state.sapo_edge_n or 0)
+denial_n = int(st.session_state.get("sapo_denial_n") or 0)
 
 st.markdown(render_phase_dots_html(phase), unsafe_allow_html=True)
-st.markdown(render_tension_html(phase, edge_n), unsafe_allow_html=True)
+st.markdown(render_tension_html(phase, edge_n, denial_n), unsafe_allow_html=True)
 st.caption(
     f"いま：{phase_label(phase)}"
     + (f" ／ ふち ×{edge_n}" if phase == "edge" else "")
-    + " —— 手の動きは指示どおり。ちんぽは正直に"
+    + (f" ／ 我慢宣言 ×{denial_n}" if denial_n else "")
+    + " —— 口では負けない、ちんぽはフル勃起"
 )
 
 if not st.session_state.sapo_line:
@@ -266,15 +279,41 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# --- 我慢宣言（フル勃起特攻）---
+st.markdown("##### 🛡 我慢する？（フル勃起のまま）")
+st.caption("負けない宣言、大歓迎よ。……するたび張力が上がるわ❤️")
+d_a, d_b = st.columns(2)
+with d_a:
+    if st.button("オナサポなんかに負けん！絶対我慢！", key="sapo_deny_endure", use_container_width=True):
+        st.session_state.sapo_denial_n = denial_n + 1
+        st.session_state.sapo_react = "deny"
+        if denial_n + 1 >= 5 and phase in ("build", "edge"):
+            st.session_state.sapo_permit = "ask"
+        elif denial_n + 1 >= 3 and phase in ("ready", "warmup"):
+            st.session_state.sapo_phase = "build"
+        _gen_line(react="deny")
+        st.rerun()
+with d_b:
+    if st.button("ボッキすらしないぞ！（フル勃起）", key="sapo_deny_noerect", use_container_width=True):
+        st.session_state.sapo_denial_n = denial_n + 1
+        st.session_state.sapo_react = "noerect"
+        if denial_n + 1 >= 4 and phase == "build":
+            st.session_state.sapo_phase = "edge"
+            st.session_state.sapo_edge_n = max(1, edge_n)
+        _gen_line(react="noerect")
+        st.rerun()
+
 # --- ちんぽ反応（対話）---
 st.markdown("##### 💦 ちんぽの返事")
-st.caption("正直に言いなさい。反応するたびに誘導が寄ってくるわ")
+st.caption("正直に言いなさい。強がるほど誘導が寄ってくるわ")
 _opts = onasapo_react_options(phase, edge_n)
 _cols = st.columns(2)
 for i, (okey, olabel) in enumerate(_opts):
     with _cols[i % 2]:
-        if st.button(olabel, key=f"sapo_rx_{phase}_{okey}_{i}", use_container_width=True):
+        if st.button(olabel, key=f"sapo_rx_{phase}_{okey}_{i}_{denial_n}", use_container_width=True):
             st.session_state.sapo_react = okey
+            if okey in ("deny", "noerect", "endure"):
+                st.session_state.sapo_denial_n = denial_n + 1
             if okey == "near" and phase == "build":
                 st.session_state.sapo_phase = "edge"
                 st.session_state.sapo_edge_n = max(1, edge_n)
@@ -312,6 +351,7 @@ with c_next:
         if phase == "after":
             st.session_state.sapo_phase = "ready"
             st.session_state.sapo_edge_n = 0
+            st.session_state.sapo_denial_n = 0
             st.session_state.sapo_permit = None
         elif phase == "edge" and st.session_state.get("sapo_permit") != "granted" and edge_n < 3:
             # ふちが浅いと許可を促す

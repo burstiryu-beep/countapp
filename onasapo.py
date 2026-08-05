@@ -261,6 +261,9 @@ def onasapo_line(phase, name, style="mouth", pace="normal", edge_n=0, tags=None,
             f"出したいのね。……じゃあ仕上げのつもりで速くしごきなさい。"
             f"{name}が奥で受け止める。ちんぽ、許可待ちでも体はもう敗北よ。",
         ]
+    elif react in ("deny", "noerect", "endure"):
+        # 我慢宣言は追い打ちプール優先
+        lines = denial_roast_lines(name, phase, style)
 
     text = random.choice(lines)
 
@@ -313,10 +316,108 @@ def onasapo_after(phase, name, style="mouth", edge_n=0):
     )
 
 
+def denial_roast_lines(name, phase="build", style="mouth"):
+    """『我慢する・勃たない』宣言への追い打ち（フル勃起前提）。"""
+    common = [
+        (
+            f"ふふ……オナサポなんかに負けない、って。"
+            f"口では強気ね。じゃあそのフル勃起のちんぽ、説明しなさい。"
+            f"絶対我慢、って言いながら先が真っすぐ立ってるの、誰に見せてるの？　{name}よ。"
+        ),
+        (
+            f"勃たないぞ、って……いま目の前でビンビンじゃない。"
+            f"絶対我慢の宣言、ちんぽが即否定してるわ。かわいい。……{name}の勝ち確定ね。"
+        ),
+        (
+            f"負けん、って震える声。……なのに先走りまで滲んでる。"
+            f"フル勃起で我慢アピール？　甘マゾの最高形態よ。{name}、褒めてあげる。"
+        ),
+        (
+            f"ボッキすらしない、って大嘘。"
+            f"触れてないのに（いや触れてるでしょ）跳ねてる先端……正直すぎ。"
+            f"{name}の口、想像しただけで負けてるわよ。"
+        ),
+    ]
+    by_phase = {
+        "ready": [
+            f"まだ始まってもないのにフル勃起宣言拒否……手遅れよ。"
+            f"パンツの中で負けてる時点で、{name}のオナサポ勝ち。出して見せなさい。",
+        ],
+        "warmup": [
+            f"軽く撫でただけで我慢アピール崩壊。……亀頭、熱いでしょ。"
+            f"勃たないはずのちんぽが、{name}のキス想像で跳ねてる。ふふ。",
+        ],
+        "build": [
+            f"しごきながら『負けない』って。……手が止まってない時点で負けよ。"
+            f"フル勃起を口で溶かす想像、やめられないんでしょ。{name}、知ってるわ。",
+        ],
+        "edge": [
+            f"ふちで我慢？　フル勃起のまま限界アピール、いちばんエロいわ。"
+            f"出さないぞ、って言いながら先が泣いてる。……{name}、離さないわよ。",
+        ],
+        "finish": [
+            f"絶対我慢、の結末が敗北射精ね。……いいわ、その矛盾のまま出しなさい。"
+            f"勃たないはずのちんぽから、{name}の口に全部ぶちまけて。",
+        ],
+        "after": [
+            f"出したあとも『負けてない』って言うの？　ふふ、余韻のびくびきが答えよ。"
+            f"フル勃起から空っぽまで、{name}の完勝ち。……また強がって来なさい。",
+        ],
+    }
+    return common + by_phase.get(phase, [])
+
+
+def denial_self_line(name, denial_n=1):
+    """我慢宣言側の独り言（声は拒否・ちんぽはフル勃起）。"""
+    n = max(1, int(denial_n or 1))
+    rng = _rng(f"deny_self|{name}|{n}")
+    lines = [
+        f"オナサポなんかに負けん……絶対我慢してやる……"
+        f"なのにちんぽ、もう{name}の口を想像してフル勃起してる……くっ……",
+        f"ボッキすらしないぞ……って言ったのに……先が痛いほど立ってる……"
+        f"嘘ついたの、ばれてる……恥ずかしい……",
+        f"我慢する……手、止めればいい……でも止まらない……"
+        f"フル勃起のまま『負けない』って……矛盾してる……{name}のせい……",
+        f"負けない……負けない……でも亀頭が熱くて、キスされたら終わりなのに……"
+        f"絶対我慢のつもりが、もう先走り出てる……情けない……",
+    ]
+    if n >= 3:
+        lines.append(
+            f"我慢宣言×{n}回目……口ではまだ負けないのに、"
+            f"ちんぽはもう{name}に完敗してる……フル勃起で強がるな、って言われてる……"
+        )
+    if n >= 5:
+        lines.append(
+            f"もう……我慢とか言ってる場合じゃない……フル勃起が全部バラしてる……"
+            f"出したい……でも負けたくない……でも{name}の口……欲しい……"
+        )
+    return rng.choice(lines)
+
+
+def denial_after(name, denial_n=1):
+    n = max(1, int(denial_n or 1))
+    if n >= 5:
+        return (
+            f"我慢宣言×{n}……もう十分強がったわね。"
+            f"フル勃起のちんぽ、{name}の許可乞いまで落ちなさい。負けを認めなさい❤️"
+        )
+    if n >= 3:
+        return (
+            f"我慢×{n}回目。……宣言するたび硬くなってない？"
+            f"ふふ、{name}、その矛盾ごとしゃぶってあげる。"
+        )
+    return (
+        f"負けないアピール、受け取ったわ。……じゃあフル勃起のまま続きなさい。"
+        f"{name}は、強がりが崩れるところがいちばん好きよ。"
+    )
+
+
 def onasapo_self_line(phase, name, edge_n=0, react=None):
     """声だけ抵抗・ちんぽは正直。"""
     edge_n = int(edge_n or 0)
     react = react or ""
+    if react in ("deny", "noerect", "endure"):
+        return denial_self_line(name, edge_n or 1)
     rng = _rng(f"sapo_self|{phase}|{name}|{edge_n}|{react}")
     pools = {
         "ready": [
@@ -362,46 +463,53 @@ def onasapo_self_line(phase, name, edge_n=0, react=None):
 def onasapo_react_options(phase, edge_n=0):
     """段階ごとの反応ボタン。"""
     edge_n = int(edge_n or 0)
+    deny = ("deny", "我慢する！負けない！")
+    noerect = ("noerect", "勃たないぞ！（フル勃起）")
     if phase in ("ready", "warmup"):
         return [
+            deny,
+            noerect,
             ("hard", "ちんぽ…もう硬い"),
-            ("resist", "やめて…ちがう…"),
             ("want", "口で溶かして…"),
         ]
     if phase == "build":
         return [
-            ("hard", "先が跳ねてる…"),
+            deny,
+            noerect,
             ("near", "イキそう…ふちが…"),
-            ("resist", "やめて…速くしないで…"),
             ("want", "もっと奥…咥えて…"),
         ]
     if phase == "edge":
-        opts = [
+        if edge_n >= 3:
+            return [
+                deny,
+                ("near", "ふち限界…もうだめ…"),
+                ("cum", "もうだめ…イかせて…"),
+                noerect,
+            ]
+        return [
+            deny,
+            noerect,
             ("near", "限界…出ちゃう…"),
-            ("resist", "出さないで…お願い…"),
             ("cum", "出したい…口で受けて…"),
         ]
-        if edge_n >= 3:
-            opts = [
-                ("near", "ふち限界…もうだめ…"),
-                ("resist", "まだ出さないで…でも…"),
-                ("cum", "もうだめ…イかせて…"),
-            ]
-        return opts
     if phase == "finish":
         return [
+            deny,
             ("cum", "出る…敗北する…"),
             ("resist", "やめて…でも出る…"),
         ]
     return [
+        deny,
         ("hard", "また硬くなりそう…"),
         ("want", "もう一回…口で…"),
     ]
 
 
-def tension_pct(phase, edge_n=0):
-    """ちんぽ張力ゲージ（表示用）。"""
+def tension_pct(phase, edge_n=0, denial_n=0):
+    """ちんぽ張力ゲージ（表示用）。我慢宣言するほど逆に上がる。"""
     edge_n = int(edge_n or 0)
+    denial_n = int(denial_n or 0)
     base = {
         "ready": 12,
         "warmup": 28,
@@ -410,12 +518,21 @@ def tension_pct(phase, edge_n=0):
         "finish": 96,
         "after": 40,
     }.get(phase, 20)
+    # 我慢するたびにフル勃起補正
+    base += min(denial_n, 8) * 4
     return max(5, min(99, base))
 
 
-def render_tension_html(phase, edge_n=0):
-    pct = tension_pct(phase, edge_n)
-    label = "とろけ始め" if pct < 40 else ("ちんぽ限界付近" if pct < 80 else "敗北射精寸前❤️")
+def render_tension_html(phase, edge_n=0, denial_n=0):
+    pct = tension_pct(phase, edge_n, denial_n)
+    if denial_n >= 3:
+        label = f"我慢宣言×{denial_n}なのにフル勃起❤️"
+    elif pct < 40:
+        label = "とろけ始め"
+    elif pct < 80:
+        label = "ちんぽ限界付近"
+    else:
+        label = "敗北射精寸前❤️"
     return f"""
 <div style="max-width:560px;margin:0.2em auto 0.7em;">
   <div style="display:flex;justify-content:space-between;color:#ff80ab;font-size:0.75em;margin-bottom:0.25em;">
